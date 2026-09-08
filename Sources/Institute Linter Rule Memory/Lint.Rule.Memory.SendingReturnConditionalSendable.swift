@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Prohibits a `sending`-typed return position on a public/package

@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// A file's basename equals the declared type's full nested dotted path

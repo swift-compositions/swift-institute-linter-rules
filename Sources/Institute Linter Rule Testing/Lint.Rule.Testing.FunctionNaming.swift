@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// `@Test` functions MUST use backticked descriptive names, not camelCase

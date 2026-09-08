@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// A target whose name ends in `Foundation Integration` MUST be a

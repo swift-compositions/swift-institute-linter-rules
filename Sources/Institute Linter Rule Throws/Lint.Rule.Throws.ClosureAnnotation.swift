@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Closures inside a `throws(E)` context MUST carry an explicit

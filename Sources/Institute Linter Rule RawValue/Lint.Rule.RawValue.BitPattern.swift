@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// R4 — `X(bitPattern: …rawValue)` integration-overload anti-pattern.

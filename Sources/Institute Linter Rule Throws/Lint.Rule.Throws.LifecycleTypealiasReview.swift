@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Typealiasing per-primitive `Error` to a shared `*.Lifecycle.Error`

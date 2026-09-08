@@ -10,7 +10,7 @@
 // ===----------------------------------------------------------------------===//
 
 import Byte
-import Linter
+import Lint
 import SwiftParser
 import SwiftSyntax
 import Testing

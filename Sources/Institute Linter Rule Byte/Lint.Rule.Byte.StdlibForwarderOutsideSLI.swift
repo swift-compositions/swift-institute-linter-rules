@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Stdlib-interop `@_disfavoredOverload` UInt8 forwarders DECLARED AS

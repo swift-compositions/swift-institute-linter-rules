@@ -27,7 +27,7 @@ public import Institute_Linter_Rule_Testing
 public import Institute_Linter_Rule_Throws
 public import Institute_Linter_Rule_Try
 public import Institute_Linter_Rule_Unchecked
-public import Linter
+public import Lint
 public import Linter_Rules
 
 /// Institute-tier rule bundle.

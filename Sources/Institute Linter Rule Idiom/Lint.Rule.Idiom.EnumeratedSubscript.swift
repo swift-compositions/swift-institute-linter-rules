@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// `for (i, _) in <expr>.enumerated()` followed by `<expr>[i]` silently

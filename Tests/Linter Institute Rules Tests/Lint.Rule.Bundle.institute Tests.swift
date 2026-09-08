@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Linter
+import Lint
 import Linter_Rules
 import Testing
 

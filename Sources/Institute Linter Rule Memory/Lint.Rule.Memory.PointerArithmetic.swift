@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Raw pointer arithmetic via `unsafe …advanced(by:)` is mechanism the

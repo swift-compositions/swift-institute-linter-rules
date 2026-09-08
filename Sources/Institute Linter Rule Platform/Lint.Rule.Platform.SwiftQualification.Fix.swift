@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-internal import Linter
+internal import Lint
 internal import SwiftSyntax
 
 /// The canonical fix for `[PLAT-ARCH-022]`: qualify the bare stdlib

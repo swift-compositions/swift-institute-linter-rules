@@ -1,4 +1,4 @@
-public import Linter
+public import Lint
 internal import Linter_Rule_Structure
 internal import SwiftSyntax
 

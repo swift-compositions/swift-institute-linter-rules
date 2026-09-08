@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Wave 3 Thread 7 (2026-05-11) — `nonisolated(unsafe)` declarations

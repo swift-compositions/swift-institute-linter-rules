@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// `UInt8` MUST NOT conform to `Byte.\`Protocol\``. The stdlib arithmetic

@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-internal import Linter
+internal import Lint
 internal import SwiftSyntax
 
 /// The canonical fix for `[TEST-005]`: append the missing canonical

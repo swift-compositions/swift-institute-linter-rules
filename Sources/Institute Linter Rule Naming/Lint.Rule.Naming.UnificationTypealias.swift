@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// `typealias X = Y.Z` (with X != Z) is a rename-bridge anti-pattern.

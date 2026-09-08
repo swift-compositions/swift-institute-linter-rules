@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Wave 4 (mechanization-program) — ad-hoc `_Box` (or `Box` / `_Storage`)

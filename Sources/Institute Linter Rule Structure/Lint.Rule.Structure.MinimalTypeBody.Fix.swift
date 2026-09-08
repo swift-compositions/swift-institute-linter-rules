@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-internal import Linter
+internal import Lint
 internal import SwiftSyntax
 
 /// The canonical fix for `[API-IMPL-008]`: move the members the rule flags

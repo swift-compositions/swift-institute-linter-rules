@@ -10,7 +10,7 @@
 // ===----------------------------------------------------------------------===//
 
 internal import Byte
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// Diagnostic-emitting rules' message strings MUST follow the educational-

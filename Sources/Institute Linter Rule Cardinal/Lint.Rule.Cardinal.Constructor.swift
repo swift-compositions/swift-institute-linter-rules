@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter
+public import Lint
 internal import SwiftSyntax
 
 /// R2 — `Cardinal(0)` / `Cardinal(1)` constructor calls.

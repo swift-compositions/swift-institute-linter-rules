@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-internal import Linter
+internal import Lint
 internal import SwiftSyntax
 
 /// Returns true if `name` is the institute `Protocol` sentinel — a
