@@ -131,7 +131,9 @@ extension Lint.Rule.`extension file naming Tests`.Positive {
   }
 
   @Test
-  func `bare member-only extension file - the 497-finding shape - fires`() {
+  func `member-only extension file with a topic segment fires`() {
+    // `+` names a type; a free-text grouping word after it has no
+    // declaration to resolve to. The members belong in `Iterator.swift`.
     let source = """
       extension Iterator {
           func next() -> Element? { nil }
@@ -139,11 +141,11 @@ extension Lint.Rule.`extension file naming Tests`.Positive {
       """
     let findings = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
-      file: "Sources/X/Iterator.swift"
+      file: "Sources/X/Iterator+Iteration.swift"
     )
     #expect(findings.count == 1)
     if findings.count == 1 {
-      #expect(findings[0].message.contains("+<Topic>"))
+      #expect(findings[0].message.contains("'Iterator.swift'"))
     }
   }
 
@@ -235,10 +237,10 @@ extension Lint.Rule.`extension file naming Tests`.Negative {
   }
 
   @Test
-  func `stdlib conformance extension next to a member-only extension is a topic file`() {
-    // Not stdlib-ONLY as a file: the member-only extension makes this a
-    // `+<Topic>` file, and the `Sendable` extension is dropped from the
-    // conformance classification rather than naming the file.
+  func `stdlib conformance extension next to a member-only extension is the type's own file`() {
+    // Not stdlib-ONLY as a file: the member-only extension makes this
+    // the type's own file, and the `Sendable` extension is dropped from
+    // the conformance classification rather than naming the file.
     let source = """
       extension Iterator: Sendable {}
       extension Iterator {
@@ -247,7 +249,7 @@ extension Lint.Rule.`extension file naming Tests`.Negative {
       """
     let findings = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
-      file: "Sources/X/Iterator+Iteration.swift"
+      file: "Sources/X/Iterator.swift"
     )
     #expect(findings.isEmpty)
   }
@@ -299,7 +301,10 @@ extension Lint.Rule.`extension file naming Tests`.Negative {
   }
 
   @Test
-  func `member-only extension with a topic segment is permitted`() {
+  func `member-only extension in the type's own file is permitted`() {
+    // The extended type is declared elsewhere (another module, the
+    // standard library, a macro expansion); this file is its own file
+    // in this module.
     let source = """
       extension Iterator {
           func next() -> Element? { nil }
@@ -307,7 +312,7 @@ extension Lint.Rule.`extension file naming Tests`.Negative {
       """
     let findings = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
-      file: "Sources/X/Iterator+Iteration.swift"
+      file: "Sources/X/Iterator.swift"
     )
     #expect(findings.isEmpty)
   }
@@ -358,7 +363,7 @@ extension Lint.Rule.`extension file naming Tests`.Edge {
     // A top-level `#if os(...)` type declaration must be visible to the
     // by-hand top-level scan (IfConfigDeclSyntax descent), or the file is
     // wrongly classified as extension-only and judged against the
-    // `+<Topic>` / ` where ` shapes it has no reason to satisfy.
+    // `<Base>` / ` where ` shapes it has no reason to satisfy.
     let source = """
       #if os(macOS)
       public struct Iterator {}

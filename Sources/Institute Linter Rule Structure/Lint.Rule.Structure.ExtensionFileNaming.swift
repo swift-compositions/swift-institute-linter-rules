@@ -12,18 +12,23 @@
 public import Lint
 internal import SwiftSyntax
 
-/// Extension-only files name their base type plus a discriminator:
-/// `Array.Dynamic+Cursor.Protocol.swift` (non-standard-library
-/// conformance addition — standard-library conformances such as
-/// `Sendable` stay in `Array.Dynamic.swift` itself),
+/// Extension-only files name their base type, optionally plus a type
+/// discriminator: `Array.Dynamic+Cursor.Protocol.swift` (non-standard-
+/// library conformance addition — standard-library conformances such
+/// as `Sendable` stay in `Array.Dynamic.swift` itself),
 /// `Array.Dynamic where Element Comparable.swift` (constraint-
-/// discriminated extension), or `Array.Dynamic+Iteration.swift`
-/// (`+<Topic>` for member-only extensions).
+/// discriminated extension), `Algebra.Group+Algebra.Magma.swift`
+/// (conversion initializer owned by its input domain), or plain
+/// `Swift.Collection.swift` (member-only extensions of a type declared
+/// elsewhere — the type's own file in this module).
 ///
 /// Citation: `[API-IMPL-007]`. Adjudicated on
 /// swift-institute-linter-rules#6 (ruling D2, 2026-07-30); implemented
-/// per swift-institute-linter-rules#9. Every design decision below
-/// mirrors that issue verbatim.
+/// per swift-institute-linter-rules#9. Revised 2026-09-16: the
+/// free-text `+<Topic>` member-group shape is withdrawn — `+` names a
+/// type (a conformance or a conversion owner), never a grouping word,
+/// so a filename's `+` segment is always resolvable to a declaration.
+/// Member-only extensions live in the extended type's own file.
 ///
 /// The rule's surface is a source file under `Sources/` whose
 /// top-level declarations are exclusively `extension` declarations
@@ -56,12 +61,17 @@ internal import SwiftSyntax
 ///    begin with `<Base> where `. The discriminator's exact text is
 ///    repository-owned and not further constrained.
 /// 4. Else (member-only extensions), the basename is either
-///    `<Base>+<Topic>.swift` for members owned by the extended type,
-///    or `<Owner>+<Base>.swift` for a conversion initializer owned by
-///    its input domain. The latter is accepted only when an initializer
-///    parameter has the exact dotted `<Owner>` type path. This preserves
-///    names such as `Algebra.Group+Algebra.Magma.swift` for
-///    `extension Algebra.Magma { init(_: Algebra.Group<Element>) }`.
+///    `<Base>.swift` — the extended type's own file, which an
+///    extension-only file can be only when the type is declared
+///    elsewhere (another module, the standard library, or a macro
+///    expansion); a type declared in this module already owns
+///    `<Base>.swift`, so its member-only extensions move into that
+///    file — or `<Owner>+<Base>.swift` for a conversion initializer
+///    owned by its input domain. The latter is accepted only when an
+///    initializer parameter has the exact dotted `<Owner>` type path.
+///    This preserves names such as `Algebra.Group+Algebra.Magma.swift`
+///    for `extension Algebra.Magma { init(_: Algebra.Group<Element>) }`.
+///    A free-text `<Base>+<Topic>.swift` is not a shape.
 ///
 /// The rule fires when the basename does not satisfy the classified
 /// shape.
@@ -79,16 +89,16 @@ extension Lint.Rule {
     default: .warning,
     controls: [
       .init(
-        id: "extension file naming missing topic",
+        id: "extension file naming member own file",
         source: "extension Array.Dynamic { func iterate() {} }",
         path: "Sources/Structure Core/Array.Dynamic.swift",
-        expectation: .findings(1)
+        expectation: .clean
       ),
       .init(
         id: "extension file naming member topic",
         source: "extension Array.Dynamic { func iterate() {} }",
         path: "Sources/Structure Core/Array.Dynamic+Iteration.swift",
-        expectation: .clean
+        expectation: .findings(1)
       ),
       .init(
         id: "extension file naming conversion owner",
@@ -253,9 +263,9 @@ private func structureExtensionFileNamingFindings(
     return record(structureExtensionFileNamingWhereMessage(basename: basename, base: base))
   }
 
-  // Member-only: `<Base>+<Topic>`.
-  let prefix = "\(base)+"
-  if basename.hasPrefix(prefix), basename.count > prefix.count {
+  // Member-only: the type's own file `<Base>`, or a conversion
+  // initializer owned by its input domain `<Owner>+<Base>`.
+  if basename == base {
     return []
   }
   if structureExtensionFileNamingIsConversionOwned(
@@ -265,7 +275,7 @@ private func structureExtensionFileNamingFindings(
   ) {
     return []
   }
-  return record(structureExtensionFileNamingTopicMessage(basename: basename, base: base))
+  return record(structureExtensionFileNamingOwnFileMessage(basename: basename, base: base))
 }
 
 @usableFromInline
@@ -310,13 +320,15 @@ internal func structureExtensionFileNamingWhereMessage(
 }
 
 @usableFromInline
-internal func structureExtensionFileNamingTopicMessage(
+internal func structureExtensionFileNamingOwnFileMessage(
   basename: Swift.String,
   base: Swift.String
 ) -> Swift.String {
-  "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' must carry a "
-    + "'+<Topic>' member group (e.g. '\(base)+Topic.swift') or, for a conversion "
-    + "initializer, use '<Owner>+\(base).swift' with a parameter of that owner type"
+  "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' holds "
+    + "member-only extensions of '\(base)'; those live in the type's own file "
+    + "'\(base).swift' (merge into it when the type is declared in this module), or, "
+    + "for a conversion initializer, in '<Owner>+\(base).swift' with a parameter of "
+    + "that owner type. A '+' segment names a type, never a topic"
 }
 
 private func structureExtensionFileNamingIsConversionOwned(
