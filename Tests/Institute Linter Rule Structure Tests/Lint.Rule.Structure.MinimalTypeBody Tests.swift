@@ -411,6 +411,89 @@ extension Lint.Rule.`minimal type body Tests`.`Edge Case` {
     #expect(findings.count == 1)
   }
 
+  // Exemption shape: [RULE-EXEMPT-4] broadened to every attached
+  // macro (2026-09-16). A macro-expanded body is shaped by the macro's
+  // contract; the members the macro reads must sit in the body.
+
+  @Test
+  func `@Table struct with a computed column is exempt as macro-generated`() {
+    let source = """
+      @Table("reminders")
+      struct Record {
+          var title: String
+          var isBlank: Bool { title.isEmpty }
+      }
+      """
+    let findings = Lint.Rule.`minimal type body Tests`.findings(in: source)
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `@Reducer struct nesting State and Action is exempt as macro-generated`() {
+    let source = """
+      @Reducer
+      struct Feature {
+          struct State {}
+          enum Action {}
+          var body: some Reducer<State, Action> { EmptyReducer() }
+      }
+      """
+    let findings = Lint.Rule.`minimal type body Tests`.findings(in: source)
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `module-qualified macro attribute is exempt`() {
+    let source = """
+      @SQLiteData.Selection
+      struct Row {
+          let count: Int
+          var isEmpty: Bool { count == 0 }
+      }
+      """
+    let findings = Lint.Rule.`minimal type body Tests`.findings(in: source)
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `nested macro-attributed type inside a plain parent is exempt`() {
+    let source = """
+      struct Request {
+          var limit: Int
+          @Selection
+          struct Counts { let all: Int }
+      }
+      """
+    let findings = Lint.Rule.`minimal type body Tests`.findings(in: source)
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `@MainActor is not a macro and does not exempt`() {
+    let source = """
+      @MainActor
+      struct Screen {
+          var title: String
+          func present() {}
+      }
+      """
+    let findings = Lint.Rule.`minimal type body Tests`.findings(in: source)
+    #expect(findings.count == 1)
+  }
+
+  @Test
+  func `lowercase built-in attributes do not exempt`() {
+    let source = """
+      @frozen
+      struct Value {
+          var x: Int
+          func read() -> Int { x }
+      }
+      """
+    let findings = Lint.Rule.`minimal type body Tests`.findings(in: source)
+    #expect(findings.count == 1)
+  }
+
   // Exemption shape: [RULE-EXEMPT-5] (Protocol-sentinel). The
   // institute hoisted-protocol pattern per [API-IMPL-009] /
   // [PKG-NAME-001] places a `typealias Protocol = _FooProtocol`

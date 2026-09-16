@@ -267,6 +267,19 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
 /// extraction yields empty-body + extension-with-only-witnesses for
 /// zero semantic gain.
 ///
+/// Revised 2026-09-16: every attached macro exempts its type. A
+/// macro-expanded body (`@Table`, `@Selection`, `@Reducer`,
+/// `@Observable`, …) is shaped by the macro's contract, and the
+/// members the macro reads — nested `State`/`Action`, computed
+/// columns, the `Columns` selection — must sit in the body for the
+/// expansion to see them. Syntax cannot tell a macro from any other
+/// custom attribute, so the predicate is: an attribute whose leaf
+/// name is capitalised and is not a known non-macro capitalised
+/// attribute (`@MainActor`, the `@NS…`/`@UI…`/`@IB…`/`@GK…` families).
+/// A user-declared global actor is the one capitalised non-macro this
+/// admits; a type body under a custom global actor is rare enough that
+/// the false exemption is accepted over a false finding on every macro.
+///
 /// Pack-local duplicate of `namingHasExtensionPatternAttribute` in
 /// `Lint.Rule.Naming.Shared.swift` — the two packs are independently
 /// consumable library products, so the contract is copied rather
@@ -286,11 +299,25 @@ internal func structureMinimalTypeBodyHasExtensionPatternAttribute(
     // (`@Testing.Suite`) too, matching `Shared.swift`'s handling —
     // the bare-name-only comparison previously dropped the
     // [RULE-EXEMPT-4] exemption for it.
-    if name == "resultBuilder" || name == "Suite"
-      || name.hasSuffix(".resultBuilder") || name.hasSuffix(".Suite")
-    {
+    if name == "resultBuilder" || name.hasSuffix(".resultBuilder") {
       return true
     }
+    let leaf = name.split(separator: ".").last.map(Swift.String.init) ?? name
+    guard let first = leaf.first, first.isUppercase else { continue }
+    if structureMinimalTypeBodyNonMacroCapitalisedAttributes.contains(leaf) { continue }
+    return true
   }
   return false
 }
+
+/// Capitalised attributes the compiler or Apple frameworks define that
+/// are not macros: the global actor `@MainActor` and the Objective-C
+/// bridging families. Everything else capitalised is taken to be an
+/// attached macro (see `structureMinimalTypeBodyHasExtensionPatternAttribute`).
+internal let structureMinimalTypeBodyNonMacroCapitalisedAttributes: Swift.Set<Swift.String> = [
+  "MainActor",
+  "NSCopying", "NSManaged", "NSApplicationMain",
+  "UIApplicationMain",
+  "IBOutlet", "IBAction", "IBDesignable", "IBInspectable", "IBSegueAction",
+  "GKInspectable",
+]
