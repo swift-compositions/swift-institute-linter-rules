@@ -318,6 +318,37 @@ extension Lint.Rule.`extension file naming Tests`.Negative {
   }
 
   @Test
+  func `generic specialisation extension keeps its arguments in the basename`() {
+    // `extension Binding<Reminder>` has no `where` clause to name and a
+    // generic typealias (`StoreOf<Feature>`) admits none; the verbatim
+    // spelling is the own-file name. The stripped `Binding.swift` is
+    // also accepted, as for any type declared elsewhere.
+    let source = """
+      extension Binding<Reminder> {
+          func dueOn() -> Binding<Bool> { fatalError() }
+      }
+      """
+    #expect(
+      Lint.Rule.`extension file naming Tests`.findings(
+        in: source,
+        file: "Sources/X/Binding<Reminder>.swift"
+      ).isEmpty
+    )
+    #expect(
+      Lint.Rule.`extension file naming Tests`.findings(
+        in: source,
+        file: "Sources/X/Binding.swift"
+      ).isEmpty
+    )
+    #expect(
+      Lint.Rule.`extension file naming Tests`.findings(
+        in: source,
+        file: "Sources/X/Binding<Int>.swift"
+      ).count == 1
+    )
+  }
+
+  @Test
   func `conversion initializer may be owned by its input domain`() {
     let source = """
       extension Algebra.Magma {

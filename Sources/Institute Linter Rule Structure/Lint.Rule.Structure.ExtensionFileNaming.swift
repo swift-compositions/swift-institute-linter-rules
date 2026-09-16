@@ -66,7 +66,13 @@ internal import SwiftSyntax
 ///    elsewhere (another module, the standard library, or a macro
 ///    expansion); a type declared in this module already owns
 ///    `<Base>.swift`, so its member-only extensions move into that
-///    file — or `<Owner>+<Base>.swift` for a conversion initializer
+///    file. A generic specialisation keeps its arguments:
+///    `extension Binding<Reminder>` lives in `Binding<Reminder>.swift`,
+///    `extension StoreOf<Feature>` in `StoreOf<Feature>.swift` — the
+///    basename may equal the extended type's verbatim spelling, since
+///    the stripped `Binding.swift` would conflate every specialisation
+///    and a generic typealias admits no `where` spelling at all —
+///    or `<Owner>+<Base>.swift` for a conversion initializer
 ///    owned by its input domain. The latter is accepted only when an
 ///    initializer parameter has the exact dotted `<Owner>` type path.
 ///    This preserves names such as `Algebra.Group+Algebra.Magma.swift`
@@ -92,6 +98,12 @@ extension Lint.Rule {
         id: "extension file naming member own file",
         source: "extension Array.Dynamic { func iterate() {} }",
         path: "Sources/Structure Core/Array.Dynamic.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "extension file naming generic specialisation own file",
+        source: "extension Binding<Reminder> { func dueOn() {} }",
+        path: "Sources/Structure Core/Binding<Reminder>.swift",
         expectation: .clean
       ),
       .init(
@@ -263,9 +275,14 @@ private func structureExtensionFileNamingFindings(
     return record(structureExtensionFileNamingWhereMessage(basename: basename, base: base))
   }
 
-  // Member-only: the type's own file `<Base>`, or a conversion
+  // Member-only: the type's own file `<Base>` — or the extended
+  // type's verbatim spelling, so a generic specialisation keeps its
+  // arguments (`Binding<Reminder>.swift`) — or a conversion
   // initializer owned by its input domain `<Owner>+<Base>`.
   if basename == base {
+    return []
+  }
+  if collector.extensions.allSatisfy({ $0.extendedType.trimmedDescription == basename }) {
     return []
   }
   if structureExtensionFileNamingIsConversionOwned(
@@ -326,7 +343,8 @@ internal func structureExtensionFileNamingOwnFileMessage(
 ) -> Swift.String {
   "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' holds "
     + "member-only extensions of '\(base)'; those live in the type's own file "
-    + "'\(base).swift' (merge into it when the type is declared in this module), or, "
+    + "'\(base).swift' (merge into it when the type is declared in this module; a "
+    + "generic specialisation keeps its arguments, e.g. 'Binding<Reminder>.swift'), or, "
     + "for a conversion initializer, in '<Owner>+\(base).swift' with a parameter of "
     + "that owner type. A '+' segment names a type, never a topic"
 }
