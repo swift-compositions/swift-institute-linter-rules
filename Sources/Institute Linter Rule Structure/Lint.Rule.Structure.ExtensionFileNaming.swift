@@ -13,7 +13,9 @@ public import Lint
 internal import SwiftSyntax
 
 /// Extension-only files name their base type plus a discriminator:
-/// `Array.Dynamic+Sequence.swift` (conformance addition),
+/// `Array.Dynamic+Cursor.Protocol.swift` (non-standard-library
+/// conformance addition — standard-library conformances such as
+/// `Sendable` stay in `Array.Dynamic.swift` itself),
 /// `Array.Dynamic where Element Comparable.swift` (constraint-
 /// discriminated extension), or `Array.Dynamic+Iteration.swift`
 /// (`+<Topic>` for member-only extensions).
@@ -32,12 +34,22 @@ internal import SwiftSyntax
 /// 1. Every extension must extend the same dotted base-type path;
 ///    otherwise the rule fires once — a mixed-base extension file has
 ///    no lawful name.
-/// 2. Else, if any extension adds a conformance, the required
-///    basename is `<Base>+<Conformance>.swift`, naming one of the
-///    added conformances (matching ANY added conformance satisfies
-///    the rule — a conditional conformance restated on a conditional
-///    extension, `extension T: P where …`, still classifies here, not
-///    under 3).
+/// 1a. Else, if EVERY extension adds only standard-library
+///    conformances (`extension Custom: Sendable {}`,
+///    `extension Custom: Hashable { … }`), the file has no lawful
+///    name at all: standard-library conformances stay in the type's
+///    own file, `Custom.swift`, as extensions directly under the type
+///    declaration. The rule fires once with a relocation message.
+///    Standard-library conformances never count as conformances for
+///    step 2 — `<Base>+<Conformance>` is reserved for protocols
+///    outside the standard library. The set is
+///    `structureStdlibProtocolNames` (`Lint.Rule.Structure.Shared.swift`).
+/// 2. Else, if any extension adds a (non-standard-library)
+///    conformance, the required basename is
+///    `<Base>+<Conformance>.swift`, naming one of the added
+///    conformances (matching ANY added conformance satisfies the rule
+///    — a conditional conformance restated on a conditional extension,
+///    `extension T: P where …`, still classifies here, not under 3).
 /// 3. Else, if any extension carries a `where` clause, the required
 ///    basename is the `<Base> where <discriminator>.swift` shape: the
 ///    segment after ` where ` must be non-empty and the basename must
@@ -83,6 +95,12 @@ extension Lint.Rule {
         source: "extension Algebra.Magma { init(_ group: Algebra.Group<Element>) {} }",
         path: "Sources/Algebra Group/Algebra.Group+Algebra.Magma.swift",
         expectation: .clean
+      ),
+      .init(
+        id: "extension file naming stdlib conformance relocation",
+        source: "extension Array.Dynamic: Sendable {}",
+        path: "Sources/Structure Core/Array.Dynamic+Sendable.swift",
+        expectation: .findings(1)
       ),
       .init(
         id: "extension file naming test scope",
@@ -180,11 +198,22 @@ private func structureExtensionFileNamingFindings(
     )
   }
 
+  // Standard-library conformances have no extension-file shape: they
+  // live in the type's own file. A file consisting solely of them
+  // fires the relocation message, and they are dropped from the
+  // conformance classification below so a `Custom+Sendable.swift`
+  // never passes as a lawful `<Base>+<Conformance>` name.
+  if collector.extensions.allSatisfy(structureIsStdlibOnlyConformanceExtension) {
+    return record(
+      structureExtensionFileNamingStdlibConformanceMessage(basename: basename, base: base)
+    )
+  }
   let conformances = collector.extensions.flatMap { extensionDecl -> [Swift.String] in
     guard let clause = extensionDecl.inheritanceClause else { return [] }
     return clause.inheritedTypes.compactMap {
       structureDottedName(of: $0.type).map(Lint.Syntax.Identifier.unescaped)
     }
+    .filter { !structureIsStdlibConformance($0) }
   }
   let hasWhere = collector.extensions.contains { $0.genericWhereClause != nil }
 
@@ -248,6 +277,17 @@ internal func structureExtensionFileNamingMixedBaseMessage(
   return "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' mixes "
     + "extensions on different base types ('\(sorted)'); a mixed-base extension file has "
     + "no lawful name — split into one file per base type."
+}
+
+@usableFromInline
+internal func structureExtensionFileNamingStdlibConformanceMessage(
+  basename: Swift.String,
+  base: Swift.String
+) -> Swift.String {
+  "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' adds only "
+    + "standard-library conformances; those stay in the type's own file '\(base).swift' as "
+    + "extensions directly under the type declaration (e.g. `extension \(base): Sendable {}`), "
+    + "never in a '+<Conformance>' sibling file — move the extension(s) there"
 }
 
 @usableFromInline

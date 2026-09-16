@@ -188,7 +188,7 @@ extension Lint.Rule.`file name nested path Tests`.Edge {
   func `cascade-suppression file where every extension carries a conformance is suppressed`() {
     let source = """
       public struct Iterator {}
-      extension Iterator: Sendable {}
+      extension Iterator: Iterating {}
       extension Iterator where Iterator: Equatable {}
       """
     let findings = Lint.Rule.`file name nested path Tests`.findings(
@@ -306,6 +306,23 @@ extension Lint.Rule.`file name nested path Tests`.`Near Miss` {
       extension Iterator {
           func helper() {}
       }
+      """
+    let findings = Lint.Rule.`file name nested path Tests`.findings(
+      in: source,
+      file: "Sources/X/Wrong.swift"
+    )
+    #expect(findings.count == 1)
+  }
+
+  @Test
+  func `a stdlib-only conformance extension among conformance extensions still fires`() {
+    // `extension Iterator: Sendable {}` stays in `Iterator.swift` by
+    // design — 007 never moves it out, so it does not discriminate and
+    // the rename remains the only fix.
+    let source = """
+      public struct Iterator {}
+      extension Iterator: Sendable {}
+      extension Iterator: Iterating {}
       """
     let findings = Lint.Rule.`file name nested path Tests`.findings(
       in: source,

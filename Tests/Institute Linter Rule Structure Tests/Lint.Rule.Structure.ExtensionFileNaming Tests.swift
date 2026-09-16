@@ -45,13 +45,76 @@ extension Lint.Rule.`extension file naming Tests`.Positive {
   @Test
   func `conformance-adding extension with wrong or missing plus segment fires`() {
     let findings = Lint.Rule.`extension file naming Tests`.findings(
-      in: "extension Iterator: Sendable {}",
+      in: "extension Iterator: Iterating {}",
       file: "Sources/X/Iterator.swift"
     )
     #expect(findings.count == 1)
     if findings.count == 1 {
       #expect(findings[0].identifier == "extension file naming")
-      #expect(findings[0].message.contains("Iterator+Sendable.swift"))
+      #expect(findings[0].message.contains("Iterator+Iterating.swift"))
+    }
+  }
+
+  @Test
+  func `stdlib-only conformance extension file fires relocation regardless of basename`() {
+    // `extension Custom: Sendable {}` belongs in `Custom.swift`, directly
+    // under the type declaration — a `Custom+Sendable.swift` sibling has
+    // no lawful name, so even the would-be-canonical basename fires.
+    let source = "extension Iterator: Sendable {}"
+    let canonicalLooking = Lint.Rule.`extension file naming Tests`.findings(
+      in: source,
+      file: "Sources/X/Iterator+Sendable.swift"
+    )
+    #expect(canonicalLooking.count == 1)
+    if canonicalLooking.count == 1 {
+      #expect(canonicalLooking[0].message.contains("standard-library conformances"))
+      #expect(canonicalLooking[0].message.contains("'Iterator.swift'"))
+    }
+
+    let bare = Lint.Rule.`extension file naming Tests`.findings(
+      in: source,
+      file: "Sources/X/Iterator.swift"
+    )
+    #expect(bare.count == 1)
+  }
+
+  @Test
+  func `module-qualified stdlib conformance is still stdlib`() {
+    let findings = Lint.Rule.`extension file naming Tests`.findings(
+      in: "extension Iterator: Swift.Hashable { func hash(into hasher: inout Hasher) {} }",
+      file: "Sources/X/Iterator+Hashable.swift"
+    )
+    #expect(findings.count == 1)
+    if findings.count == 1 {
+      #expect(findings[0].message.contains("standard-library conformances"))
+    }
+  }
+
+  @Test
+  func `several stdlib-only conformance extensions in one file fire once`() {
+    let source = """
+      extension Iterator: Sendable {}
+      extension Iterator: Equatable {}
+      """
+    let findings = Lint.Rule.`extension file naming Tests`.findings(
+      in: source,
+      file: "Sources/X/Iterator+Sendable.swift"
+    )
+    #expect(findings.count == 1)
+  }
+
+  @Test
+  func `stdlib conformance alongside a non-stdlib one does not name the file`() {
+    // The non-stdlib conformance owns the `<Base>+<Conformance>` shape;
+    // the stdlib one is dropped from classification entirely.
+    let source = "extension Iterator: Sendable, Iterating {}"
+    let namedForStdlib = Lint.Rule.`extension file naming Tests`.findings(
+      in: source,
+      file: "Sources/X/Iterator+Sendable.swift"
+    )
+    #expect(namedForStdlib.count == 1)
+    if namedForStdlib.count == 1 {
+      #expect(namedForStdlib[0].message.contains("Iterator+Iterating.swift"))
     }
   }
 
@@ -156,21 +219,48 @@ extension Lint.Rule.`extension file naming Tests`.Negative {
   @Test
   func `conformance-adding extension with correct plus segment is permitted`() {
     let findings = Lint.Rule.`extension file naming Tests`.findings(
-      in: "extension Iterator: Sendable {}",
-      file: "Sources/X/Iterator+Sendable.swift"
+      in: "extension Iterator: Iterating {}",
+      file: "Sources/X/Iterator+Iterating.swift"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `stdlib conformance alongside a non-stdlib one accepts the non-stdlib name`() {
+    let findings = Lint.Rule.`extension file naming Tests`.findings(
+      in: "extension Iterator: Sendable, Iterating {}",
+      file: "Sources/X/Iterator+Iterating.swift"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `stdlib conformance extension next to a member-only extension is a topic file`() {
+    // Not stdlib-ONLY as a file: the member-only extension makes this a
+    // `+<Topic>` file, and the `Sendable` extension is dropped from the
+    // conformance classification rather than naming the file.
+    let source = """
+      extension Iterator: Sendable {}
+      extension Iterator {
+          func next() -> Element? { nil }
+      }
+      """
+    let findings = Lint.Rule.`extension file naming Tests`.findings(
+      in: source,
+      file: "Sources/X/Iterator+Iteration.swift"
     )
     #expect(findings.isEmpty)
   }
 
   @Test
   func `module-qualified conformance accepts the leaf-component basename`() {
-    // `extension Array.Dynamic: Swift.Sequence` records its conformance
-    // as `Swift.Sequence`, but the canonical basename names only the
-    // leaf `Sequence` — no repository names files
-    // `Array.Dynamic+Swift.Sequence.swift`.
+    // `extension Array.Dynamic: Institute.Iterating` records its
+    // conformance as `Institute.Iterating`, but the canonical basename
+    // names only the leaf `Iterating` — no repository names files
+    // `Array.Dynamic+Institute.Iterating.swift`.
     let findings = Lint.Rule.`extension file naming Tests`.findings(
-      in: "extension Array.Dynamic: Swift.Sequence {}",
-      file: "Sources/X/Array.Dynamic+Sequence.swift"
+      in: "extension Array.Dynamic: Institute.Iterating {}",
+      file: "Sources/X/Array.Dynamic+Iterating.swift"
     )
     #expect(findings.isEmpty)
   }
@@ -181,8 +271,8 @@ extension Lint.Rule.`extension file naming Tests`.Negative {
     // a blanket pass — a basename naming an unrelated conformance still
     // fires.
     let findings = Lint.Rule.`extension file naming Tests`.findings(
-      in: "extension Array.Dynamic: Swift.Sequence {}",
-      file: "Sources/X/Array.Dynamic+Collection.swift"
+      in: "extension Array.Dynamic: Institute.Iterating {}",
+      file: "Sources/X/Array.Dynamic+Cursoring.swift"
     )
     #expect(findings.count == 1)
   }
@@ -290,10 +380,10 @@ extension Lint.Rule.`extension file naming Tests`.Edge {
   func
     `conditional conformance restated on a conditional extension classifies as conformance-adding`()
   {
-    let source = "extension Iterator: Sequence where Element: Comparable {}"
+    let source = "extension Iterator: Iterating where Element: Comparable {}"
     let matching = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
-      file: "Sources/X/Iterator+Sequence.swift"
+      file: "Sources/X/Iterator+Iterating.swift"
     )
     #expect(matching.isEmpty)
 
@@ -303,27 +393,27 @@ extension Lint.Rule.`extension file naming Tests`.Edge {
     )
     #expect(whereShaped.count == 1)
     if whereShaped.count == 1 {
-      #expect(whereShaped[0].message.contains("+Sequence.swift"))
+      #expect(whereShaped[0].message.contains("+Iterating.swift"))
     }
   }
 
   @Test
   func `multiple conformances in one file - matching any added conformance satisfies the rule`() {
     let source = """
-      extension Iterator: Sendable {}
-      extension Iterator: Equatable {}
+      extension Iterator: Iterating {}
+      extension Iterator: Cursoring {}
       """
-    let sendable = Lint.Rule.`extension file naming Tests`.findings(
+    let iterating = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
-      file: "Sources/X/Iterator+Sendable.swift"
+      file: "Sources/X/Iterator+Iterating.swift"
     )
-    #expect(sendable.isEmpty)
+    #expect(iterating.isEmpty)
 
-    let equatable = Lint.Rule.`extension file naming Tests`.findings(
+    let cursoring = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
-      file: "Sources/X/Iterator+Equatable.swift"
+      file: "Sources/X/Iterator+Cursoring.swift"
     )
-    #expect(equatable.isEmpty)
+    #expect(cursoring.isEmpty)
   }
 }
 
@@ -368,10 +458,21 @@ extension Lint.Rule.`extension file naming Tests`.`Near Miss` {
     // No standards-layer exemption applies in a plain Sources/ fixture —
     // the shape must still be enforced.
     let findings = Lint.Rule.`extension file naming Tests`.findings(
-      in: "extension Iterator: Sendable {}",
+      in: "extension Iterator: Iterating {}",
       file: "Sources/X/Iterator+NotTheRightConformance.swift"
     )
     #expect(findings.count == 1)
+  }
+
+  @Test
+  func `non-Swift qualification of a stdlib-named protocol is not a stdlib conformance`() {
+    // `Institute.Sendable` is a different protocol; only bare and
+    // `Swift.`-qualified spellings resolve to the standard library.
+    let findings = Lint.Rule.`extension file naming Tests`.findings(
+      in: "extension Iterator: Institute.Sendable {}",
+      file: "Sources/X/Iterator+Sendable.swift"
+    )
+    #expect(findings.isEmpty)
   }
 
   @Test
@@ -392,7 +493,7 @@ extension Lint.Rule.`extension file naming Tests`.`Self Firing` {
   func
     `self-firing control - a synthetic mismatch of this rule's own extension shape fires and its corrected name does not`()
   {
-    let source = "extension Institute: Sendable {}"
+    let source = "extension Institute: Iterating {}"
 
     let mismatched = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
@@ -402,7 +503,7 @@ extension Lint.Rule.`extension file naming Tests`.`Self Firing` {
 
     let corrected = Lint.Rule.`extension file naming Tests`.findings(
       in: source,
-      file: "Sources/X/Institute+Sendable.swift"
+      file: "Sources/X/Institute+Iterating.swift"
     )
     #expect(corrected.isEmpty)
   }

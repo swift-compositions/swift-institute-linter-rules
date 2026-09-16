@@ -50,7 +50,10 @@ internal import SwiftSyntax
 /// the canonical `[API-IMPL-007]` repair for those extensions
 /// necessarily moves the file into 007's own excluded shape. A single
 /// bare, member-only extension among them defeats the suppression and
-/// this rule still fires.
+/// this rule still fires. So does an extension adding only
+/// standard-library conformances (`extension Custom: Sendable {}`):
+/// those stay in the type's own file by design, so no 007 repair
+/// applies and the rename is the only fix.
 ///
 /// Known false positives prevented by resolution, not exemption:
 /// - The hoisted-`Protocol` idiom (a module-scope protocol declared
@@ -187,7 +190,11 @@ private func structureFileNameNestedPathFindings(
 
   // Cascade suppression (D1): every OTHER top-level extension (not the
   // one nesting the primary type, if any) must carry a conformance or
-  // where-clause discriminator to suppress this finding.
+  // where-clause discriminator to suppress this finding. An extension
+  // adding only standard-library conformances (`extension Custom:
+  // Sendable {}`) does NOT discriminate: its home IS the type's own
+  // file, so 007's repair never moves it out and the rename this rule
+  // prescribes remains the only fix. See `structureStdlibProtocolNames`.
   let wrappingPosition = primary.wrappingExtension?.position
   let others = collector.topLevelExtensions.filter { $0.position != wrappingPosition }
   if !others.isEmpty {
@@ -195,7 +202,9 @@ private func structureFileNameNestedPathFindings(
       let hasConformance =
         extensionDecl.inheritanceClause.map { !$0.inheritedTypes.isEmpty } ?? false
       let hasWhere = extensionDecl.genericWhereClause != nil
-      return hasConformance || hasWhere
+      let staysWithType =
+        !hasWhere && structureIsStdlibOnlyConformanceExtension(extensionDecl)
+      return (hasConformance || hasWhere) && !staysWithType
     }
     if allDiscriminated { return [] }
   }

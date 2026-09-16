@@ -192,3 +192,89 @@ internal func structureExtendsSyntaxVisitor(_ clause: InheritanceClauseSyntax?) 
     }
     return false
 }
+
+/// The Swift standard library protocols a type conforms to in its
+/// OWN file — `extension Custom: Sendable {}` lives in `Custom.swift`,
+/// directly under the type declaration, never in a
+/// `Custom+Sendable.swift` sibling. Standard-library conformances are
+/// part of a type's basic shape (its value semantics, hashing,
+/// ordering, concurrency safety, literal construction), not a
+/// separable topic; splitting them out scatters the shape across files
+/// for zero semantic gain. The `[API-IMPL-007]` `<Base>+<Conformance>`
+/// file shape is reserved for conformances to protocols OUTSIDE the
+/// standard library.
+///
+/// Leaf-name semantics: both bare (`Sendable`) and module-qualified
+/// (`Swift.Sendable`) spellings resolve here; see
+/// `structureIsStdlibConformance(_:)`. The set is the protocol
+/// surface of the `Swift` module — `Foundation`, `_Concurrency`
+/// extras that are not re-exported from `Swift`, and institute
+/// protocols are deliberately absent.
+internal let structureStdlibProtocolNames: Swift.Set<Swift.String> = [
+    // Value shape
+    "Equatable", "Hashable", "Comparable", "Identifiable",
+    "Copyable", "Escapable", "BitwiseCopyable",
+    "Sendable", "SendableMetatype",
+    "Error", "CustomStringConvertible", "CustomDebugStringConvertible",
+    "CustomReflectable", "CustomLeafReflectable", "CustomPlaygroundDisplayConvertible",
+    "TextOutputStream", "TextOutputStreamable", "LosslessStringConvertible",
+    "CaseIterable", "RawRepresentable", "OptionSet",
+    "Encodable", "Decodable", "Codable", "CodingKey",
+    "CodingKeyRepresentable",
+    // Literals
+    "ExpressibleByNilLiteral", "ExpressibleByBooleanLiteral",
+    "ExpressibleByIntegerLiteral", "ExpressibleByFloatLiteral",
+    "ExpressibleByStringLiteral", "ExpressibleByExtendedGraphemeClusterLiteral",
+    "ExpressibleByUnicodeScalarLiteral", "ExpressibleByStringInterpolation",
+    "ExpressibleByArrayLiteral", "ExpressibleByDictionaryLiteral",
+    "StringInterpolationProtocol",
+    // Numerics
+    "AdditiveArithmetic", "Numeric", "SignedNumeric",
+    "BinaryInteger", "FixedWidthInteger", "SignedInteger", "UnsignedInteger",
+    "FloatingPoint", "BinaryFloatingPoint", "Strideable",
+    "SIMD", "SIMDScalar", "SIMDStorage",
+    // Sequences and collections
+    "Sequence", "IteratorProtocol", "Collection", "BidirectionalCollection",
+    "RandomAccessCollection", "MutableCollection", "RangeReplaceableCollection",
+    "LazySequenceProtocol", "LazyCollectionProtocol",
+    "SetAlgebra", "RangeExpression",
+    "StringProtocol", "Unicode.Encoding", "UnicodeCodec",
+    // Concurrency (re-exported from `Swift`)
+    "AsyncSequence", "AsyncIteratorProtocol",
+    "Actor", "GlobalActor",
+    "Executor", "SerialExecutor", "TaskExecutor",
+    // Misc
+    "AnyObject", "RandomNumberGenerator",
+]
+
+/// Returns true if `conformance` — a dotted conformance name as
+/// produced by `structureDottedName(of:)` — names a standard-library
+/// protocol, spelled either bare (`Sendable`) or module-qualified
+/// (`Swift.Sendable`). Any other qualification (`Institute.Sendable`)
+/// is a different protocol and is NOT a standard-library conformance.
+internal func structureIsStdlibConformance(_ conformance: Swift.String) -> Swift.Bool {
+    if structureStdlibProtocolNames.contains(conformance) { return true }
+    guard conformance.hasPrefix("Swift.") else { return false }
+    return structureStdlibProtocolNames.contains(
+        Swift.String(conformance.dropFirst("Swift.".count))
+    )
+}
+
+/// Returns true if `extensionDecl` adds ONLY standard-library
+/// conformances: its inheritance clause is non-empty and every listed
+/// type resolves to a member of `structureStdlibProtocolNames`. Such an
+/// extension belongs in the extended type's own file (see
+/// `structureStdlibProtocolNames`); an inheritance clause mixing a
+/// standard-library protocol with any other protocol is NOT
+/// stdlib-only — the non-stdlib conformance owns the file shape.
+internal func structureIsStdlibOnlyConformanceExtension(
+    _ extensionDecl: ExtensionDeclSyntax
+) -> Swift.Bool {
+    guard let clause = extensionDecl.inheritanceClause, !clause.inheritedTypes.isEmpty else {
+        return false
+    }
+    return clause.inheritedTypes.allSatisfy { inherited in
+        guard let name = structureDottedName(of: inherited.type) else { return false }
+        return structureIsStdlibConformance(Lint.Syntax.Identifier.unescaped(name))
+    }
+}
