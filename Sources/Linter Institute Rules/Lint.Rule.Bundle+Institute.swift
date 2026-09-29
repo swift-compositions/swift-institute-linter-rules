@@ -93,7 +93,7 @@ extension Lint.Rule.Bundle {
             .enable(.`c type in public api`),
             .enable(.`convention c representability`),
             .enable(.`dead case per platform`),
-            .enable(.`compound platform namespace root`),
+            .enable(.`compound platform namespace root`, severity: .error),
             .enable(.`optimize suppression attribute`),
             .enable(.`optionset shell pattern`),
             .enable(.`platform layer import`),
