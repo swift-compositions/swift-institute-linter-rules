@@ -14,6 +14,7 @@ import Linter_Rules_Test_Support
 import SwiftParser
 import SwiftSyntax
 import Testing
+import Text
 
 @testable import Institute_Linter_Rule_Testing
 

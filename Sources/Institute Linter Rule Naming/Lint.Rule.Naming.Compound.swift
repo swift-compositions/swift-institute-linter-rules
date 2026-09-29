@@ -378,7 +378,7 @@ internal final class NamingCompoundVisitor: SyntaxVisitor {
     // attribute lives in a different file, the walker stops at the
     // extension and the exemption never fires. Surfaced 2026-05-15
     // by the byte-extraction arc against
-    // `swift-parser/Sources/Parser Core/Parser.Builder.swift`
+    // `swift-parser/Sources/Parser Core/Builder.swift`
     // (the extension lives in one file; the `@resultBuilder` decl in
     // another). False-negative risk of name-only relaxation is
     // negligible — the 8 builder method names are unique

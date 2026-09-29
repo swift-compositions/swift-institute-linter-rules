@@ -111,14 +111,22 @@ extension Lint.Rule {
 }
 
 /// Returns true when `filePath` names a SwiftPM package manifest:
-/// `Package.swift` or a versioned `Package@swift-*.swift` variant.
+/// `Package.swift` or a versioned `Package@swift-*.swift` variant at a
+/// package root — never inside a `Sources` or `Plugins` tree (nested test packages
+/// under `Tests` are real manifests).
 @usableFromInline
 internal func manifestIsPackageManifest(_ filePath: Swift.String) -> Swift.Bool {
-  guard let filename = filePath.split(separator: "/", omittingEmptySubsequences: true).last
-  else { return false }
-  if filename == "Package.swift" { return true }
-  return filename.hasPrefix("Package@swift-") && filename.hasSuffix(".swift")
+  let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
+  guard let filename = components.last else { return false }
+  guard !components.dropLast().contains(where: manifestTargetTreeNames.contains) else {
+    return false
+  }
+  return filename == "Package.swift"
+    || (filename.hasPrefix("Package@swift-") && filename.hasSuffix(".swift"))
 }
+
+/// Directories whose contents are target sources, never manifests.
+private let manifestTargetTreeNames: Swift.Set<Swift.Substring> = ["Sources", "Plugins"]
 
 @usableFromInline
 internal let manifestBareStringDependencyMessage: Swift.String =

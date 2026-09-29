@@ -300,7 +300,7 @@ extension Lint.Rule.`compound identifier Tests`.`Edge Case` {
     // in a different file; the extension here cannot see it via
     // walker. Name-only relaxation handles this case correctly.
     let source = """
-      extension Parser.Builder where Element: Equatable {
+      extension Builder where Element: Equatable {
           public static func buildExpression(_ x: Int) -> [Int] { [x] }
           public static func buildBlock(_ components: [Int]...) -> [Int] {
               components.flatMap { $0 }

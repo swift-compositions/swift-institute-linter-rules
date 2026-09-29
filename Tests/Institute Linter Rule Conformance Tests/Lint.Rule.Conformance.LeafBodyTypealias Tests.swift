@@ -37,7 +37,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.Unit {
   @Test
   func `generic Parser leaf conformer without typealias is flagged`() {
     let source = """
-      extension Binary.LEB128.Unsigned: Parser.`Protocol` {
+      extension Binary.LEB128.Unsigned: Parsing {
           public typealias Input = ArraySlice<UInt8>
           public typealias Output = T
           public typealias Failure = Binary.LEB128.Error
@@ -58,7 +58,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.Unit {
   @Test
   func `generic Serializer leaf conformer without typealias is flagged`() {
     let source = """
-      extension Binary.LEB128.Signed: Serializer.`Protocol` {
+      extension Binary.LEB128.Signed: Serializing {
           public typealias Output = T
           public typealias Buffer = [UInt8]
           public typealias Failure = Never
@@ -72,7 +72,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.Unit {
   @Test
   func `Coder leaf conformer without typealias is flagged`() {
     let source = """
-      extension Binary.Coder: Coder.`Protocol` {
+      extension Binary.Coder: Coding {
           public typealias Input = ArraySlice<Byte>
           public typealias Output = Foo
           public typealias Buffer = [UInt8]
@@ -88,13 +88,13 @@ extension Lint.Rule.`leaf body typealias missing Tests`.Unit {
   @Test
   func `multiple leaf conformers in one file are all flagged`() {
     let source = """
-      extension A: Parser.`Protocol` {
+      extension A: Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
           public func parse(_ input: inout Input) throws(Failure) -> Int { 0 }
       }
-      extension B: Serializer.`Protocol` {
+      extension B: Serializing {
           public typealias Output = Int
           public typealias Buffer = [UInt8]
           public typealias Failure = Never
@@ -110,7 +110,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.Unit {
     // The conformance can be declared on the type's own decl rather
     // than an extension — same link-time failure, must still fire.
     let source = """
-      public struct MyParser: Parser.`Protocol` {
+      public struct MyParser: Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
@@ -124,7 +124,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.Unit {
   @Test
   func `class-declared conformance without typealias is flagged`() {
     let source = """
-      public final class MyCoder: Coder.`Protocol` {
+      public final class MyCoder: Coding {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Buffer = [UInt8]
@@ -140,7 +140,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.Unit {
   @Test
   func `module-qualified Parser conformance still flagged`() {
     let source = """
-      extension X: Parser_Core.Parser.`Protocol` {
+      extension X: Parser_Core.Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
@@ -156,7 +156,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
   @Test
   func `leaf conformer with typealias Body equals Never is NOT flagged`() {
     let source = """
-      extension Binary.LEB128.Unsigned: Parser.`Protocol` {
+      extension Binary.LEB128.Unsigned: Parsing {
           public typealias Input = ArraySlice<UInt8>
           public typealias Output = T
           public typealias Failure = Binary.LEB128.Error
@@ -173,7 +173,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
   @Test
   func `leaf conformer with typealias Body equals Swift dot Never is NOT flagged`() {
     let source = """
-      extension X: Parser.`Protocol` {
+      extension X: Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
@@ -190,11 +190,11 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
     // Declarative shape: body returns another Parser. Body is inferred from
     // the body property's return type; explicit typealias not required.
     let source = """
-      extension MyParser: Parser.`Protocol` {
+      extension MyParser: Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
-          public var body: some Parser.`Protocol` {
+          public var body: some Parsing {
               Binary.LEB128.Unsigned<Int>()
           }
       }
@@ -209,7 +209,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
     // inheritance clause is empty (or contains protocol refinements, not
     // leaf-body protocols). The rule fires on conformance, not extension.
     let source = """
-      extension Parser.`Protocol` where Self: ~Copyable, Body == Never {
+      extension Parsing where Self: ~Copyable, Body == Never {
           public var body: Never { fatalError() }
       }
       """
@@ -243,7 +243,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
   @Test
   func `mixed conformance with Sendable AND Parser still flagged when typealias missing`() {
     let source = """
-      extension X: Sendable, Parser.`Protocol` {
+      extension X: Sendable, Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
@@ -260,13 +260,13 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
     // declares the conformance, another (same file) supplies `body`.
     // Detection is file-scope per type, not per member block.
     let source = """
-      extension MyParser: Parser.`Protocol` {
+      extension MyParser: Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
       }
       extension MyParser {
-          public var body: some Parser.`Protocol` {
+          public var body: some Parsing {
               Binary.LEB128.Unsigned<Int>()
           }
       }
@@ -278,7 +278,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
   @Test
   func `conformance and Body Never typealias split across two extensions is NOT flagged`() {
     let source = """
-      extension MyParser: Parser.`Protocol` {
+      extension MyParser: Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never
@@ -297,7 +297,7 @@ extension Lint.Rule.`leaf body typealias missing Tests`.`Edge Case` {
     `conformance in one extension, body missing everywhere for that type, is still flagged once`()
   {
     let source = """
-      extension MyParser: Parser.`Protocol` {
+      extension MyParser: Parsing {
           public typealias Input = [UInt8]
           public typealias Output = Int
           public typealias Failure = Never

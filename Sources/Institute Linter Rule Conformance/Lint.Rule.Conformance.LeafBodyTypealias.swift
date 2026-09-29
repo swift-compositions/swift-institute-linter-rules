@@ -12,8 +12,8 @@
 public import Lint
 internal import SwiftSyntax
 
-/// Leaf conformers to `Parser.Protocol` / `Serializer.Protocol` /
-/// `Coder.Protocol` MUST declare `public typealias Body = Never`
+/// Leaf conformers to `Parsing` / `Serializing` /
+/// `Coding` MUST declare `public typealias Body = Never`
 /// explicitly. Without it, witness-table emission for generic
 /// conformers fails at link time with `Undefined symbols ... protocol
 /// witness for body.getter`. Citation: `[API-IMPL-020]`.
@@ -33,13 +33,13 @@ extension Lint.Rule {
         controls: [
             .init(
                 id: "leaf body typealias missing Parser",
-                source: "extension Example: Parser.`Protocol` {}",
+                source: "extension Example: Parsing {}",
                 path: "Sources/Conformance Core/MissingBody.swift",
                 expectation: .findings(1)
             ),
             .init(
                 id: "leaf body typealias missing Never",
-                source: "extension Example: Parser.`Protocol` { public typealias Body = Never }",
+                source: "extension Example: Parsing { public typealias Body = Never }",
                 path: "Sources/Conformance Core/NeverBody.swift",
                 expectation: .clean
             ),
@@ -66,8 +66,8 @@ extension Lint.Rule {
 @usableFromInline
 internal let conformanceLeafBodyTypealiasMessage: Swift.String =
     "[leaf body typealias missing] [API-IMPL-020]: leaf conformer to "
-    + "`Parser.\\`Protocol\\`` / `Serializer.\\`Protocol\\`` / "
-    + "`Coder.\\`Protocol\\`` MUST declare `public typealias Body = Never` "
+    + "`Parsing` / `Serializing` / "
+    + "`Coding` MUST declare `public typealias Body = Never` "
     + "explicitly. Generic leaf conformers without it fail at link time "
     + "with `Undefined symbols ... protocol witness for body.getter`; "
     + "non-generic leaf conformers SHOULD include it as the minimum-safe "
@@ -212,48 +212,30 @@ private func conformanceLeafBodyTypeKey(_ type: TypeSyntax) -> Swift.String {
     return type.trimmedDescription
 }
 
-/// The trailing path components of every protocol whose conformance
-/// triggers the leaf-body-typealias requirement. Pairs are
-/// `(host-namespace, protocol-name)` matched against the last two
-/// segments of an inherited type's qualified name.
-private let leafBodyProtocolPairs: [(host: Swift.String, name: Swift.String)] = [
-    ("Parser", "Protocol"),
-    ("Serializer", "Protocol"),
-    ("Coder", "Protocol"),
-]
+/// The protocols whose conformance triggers the leaf-body-typealias
+/// requirement, matched against the last segment of an inherited
+/// type's name.
+private let leafBodyProtocolNames: Swift.Set<Swift.String> = ["Parsing", "Serializing", "Coding"]
 
-/// Returns true when any inherited type in `clause` matches one of the
-/// leaf-body-protocol pairs. Matching tolerates arbitrary leading
-/// module / namespace qualification (e.g.,
-/// `Parser_Core.Parser.\`Protocol\``) by inspecting only the
-/// trailing two path segments.
+/// Returns true when any inherited type in `clause` names one of the
+/// leaf-body protocols. Matching tolerates leading module qualification
+/// (e.g., `Parser.Parsing`) by inspecting only the last segment.
 private func inheritanceContainsLeafBodyProtocol(_ clause: InheritanceClauseSyntax) -> Swift.Bool {
-    for inherited in clause.inheritedTypes {
-        if typeMatchesLeafBodyProtocol(inherited.type) {
-            return true
-        }
-    }
-    return false
+    clause.inheritedTypes.contains { typeMatchesLeafBodyProtocol($0.type) }
 }
 
-/// Returns true when `type` is a `MemberTypeSyntax` whose trailing
-/// `(baseTypeName, memberName)` pair (after stripping backticks) matches
-/// any entry in `leafBodyProtocolPairs`.
+/// Returns true when `type`'s last name segment (after stripping
+/// backticks) is one of `leafBodyProtocolNames`.
 private func typeMatchesLeafBodyProtocol(_ type: TypeSyntax) -> Swift.Bool {
-    guard let memberType = type.as(MemberTypeSyntax.self) else { return false }
-    let trailingName = Lint.Syntax.Identifier.unescaped(memberType.name.text)
-    let baseName: Swift.String
-    if let identifier = memberType.baseType.as(IdentifierTypeSyntax.self) {
-        baseName = Lint.Syntax.Identifier.unescaped(identifier.name.text)
-    } else if let nestedMember = memberType.baseType.as(MemberTypeSyntax.self) {
-        baseName = Lint.Syntax.Identifier.unescaped(nestedMember.name.text)
-    } else {
-        return false
-    }
-    for pair in leafBodyProtocolPairs where pair.host == baseName && pair.name == trailingName {
-        return true
-    }
-    return false
+    let name: Swift.String? =
+        if let identifier = type.as(IdentifierTypeSyntax.self) {
+            Lint.Syntax.Identifier.unescaped(identifier.name.text)
+        } else if let member = type.as(MemberTypeSyntax.self) {
+            Lint.Syntax.Identifier.unescaped(member.name.text)
+        } else {
+            nil
+        }
+    return name.map(leafBodyProtocolNames.contains) ?? false
 }
 
 /// Returns true if `block` declares any binding named `body`.

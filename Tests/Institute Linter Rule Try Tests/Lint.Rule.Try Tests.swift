@@ -31,7 +31,7 @@ extension Lint.Rule.`try optional Tests` {
     let tree = Parser.parse(source: source)
     let converter = SourceLocationConverter(fileName: file, tree: tree)
     var manager = Source.Manager()
-    let id = manager.register(fileID: file, filePath: file, content: source.utf8.map(Byte.init))
+    let id = manager.register(fileID: file, filePath: file, content: [Byte](utf8: source))
     let parsed = Lint.Source.Parsed(
       file: manager.file(for: id),
       path: Lint.Source.Path(file),
@@ -101,7 +101,7 @@ extension Lint.Rule.`try optional Tests`.Unit {
     let id = manager.register(
       fileID: "test.swift",
       filePath: "test.swift",
-      content: source.utf8.map(Byte.init)
+      content: [Byte](utf8: source)
     )
     let parsed = Lint.Source.Parsed(
       file: manager.file(for: id),

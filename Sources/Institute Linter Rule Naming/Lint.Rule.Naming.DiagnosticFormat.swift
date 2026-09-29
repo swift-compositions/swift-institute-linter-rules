@@ -104,21 +104,21 @@ internal func namingDiagnosticFormatIsLintRuleSource(_ filePath: Swift.String) -
 /// then word characters or hyphens — no spaces); the citation segment is
 /// non-empty, colon-free, and terminated by `:` plus whitespace.
 internal func namingDiagnosticFormatMatches(_ text: Swift.String) -> Swift.Bool {
-  var bytes = text.utf8.map(Byte.init)[...]
+  var bytes = [Byte](utf8: text)[...]
   // `^\[`
-  guard bytes.first == 0x5B else { return false }
+  guard bytes.first?.bitPattern == 0x5B else { return false }
   bytes = bytes.dropFirst()
   // `[a-z_]`
   guard let first = bytes.first,
-    (first >= 0x61 && first <= 0x7A) || first == 0x5F
+    (first.bitPattern >= 0x61 && first.bitPattern <= 0x7A) || first.bitPattern == 0x5F
   else { return false }
   bytes = bytes.dropFirst()
   // `[\w-]*`
-  while let byte = bytes.first, namingDiagnosticFormatIsWord(byte) || byte == 0x2D {
+  while let byte = bytes.first, namingDiagnosticFormatIsWord(byte) || byte.bitPattern == 0x2D {
     bytes = bytes.dropFirst()
   }
   // `\]`
-  guard bytes.first == 0x5D else { return false }
+  guard bytes.first?.bitPattern == 0x5D else { return false }
   bytes = bytes.dropFirst()
   // `\s+`
   guard let space = bytes.first, namingDiagnosticFormatIsWhitespace(space)
@@ -129,30 +129,30 @@ internal func namingDiagnosticFormatMatches(_ text: Swift.String) -> Swift.Bool 
   // `\S` — the citation's first character exists and is non-whitespace
   // (guaranteed non-whitespace by the loop above) and is not the `:`
   // terminator itself, which would leave the citation empty.
-  guard let citationFirst = bytes.first, citationFirst != 0x3A else { return false }
+  guard let citationFirst = bytes.first, citationFirst.bitPattern != 0x3A else { return false }
   bytes = bytes.dropFirst()
   // `[^:]*?\s*:\s` — scan to the first `:`; it must be followed by
   // whitespace. (`[^:]*?` is colon-free by construction when scanning to
   // the FIRST colon; `\s*` permits trailing whitespace inside it.)
-  while let byte = bytes.first, byte != 0x3A {
+  while let byte = bytes.first, byte.bitPattern != 0x3A {
     bytes = bytes.dropFirst()
   }
-  guard bytes.first == 0x3A else { return false }
+  guard bytes.first?.bitPattern == 0x3A else { return false }
   bytes = bytes.dropFirst()
   guard let after = bytes.first else { return false }
   return namingDiagnosticFormatIsWhitespace(after)
 }
 
 private func namingDiagnosticFormatIsWord(_ byte: Byte) -> Swift.Bool {
-  (byte >= 0x61 && byte <= 0x7A) || (byte >= 0x41 && byte <= 0x5A)
-    || (byte >= 0x30 && byte <= 0x39) || byte == 0x5F
+  (byte.bitPattern >= 0x61 && byte.bitPattern <= 0x7A) || (byte.bitPattern >= 0x41 && byte.bitPattern <= 0x5A)
+    || (byte.bitPattern >= 0x30 && byte.bitPattern <= 0x39) || byte.bitPattern == 0x5F
 }
 
 private func namingDiagnosticFormatIsWhitespace(_ byte: Byte) -> Swift.Bool {
   // The Python's `\s`: space, tab, newline, carriage return, form feed,
   // vertical tab.
-  byte == 0x20 || byte == 0x09 || byte == 0x0A || byte == 0x0D
-    || byte == 0x0B || byte == 0x0C
+  byte.bitPattern == 0x20 || byte.bitPattern == 0x09 || byte.bitPattern == 0x0A || byte.bitPattern == 0x0D
+    || byte.bitPattern == 0x0B || byte.bitPattern == 0x0C
 }
 
 internal final class NamingDiagnosticFormatVisitor: SyntaxVisitor {

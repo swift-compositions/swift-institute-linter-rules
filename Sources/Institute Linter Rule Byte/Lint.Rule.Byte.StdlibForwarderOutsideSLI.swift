@@ -398,14 +398,43 @@ private func byteStdlibForwarderTypeIsStdlibType(_ type: TypeSyntax) -> Swift.Bo
         {
             return true
         }
-        // Multi-segment nested type (e.g., `ArraySlice<Byte>`, `RFC_4122.UUID`):
-        // an institute / domain-nested type. Not stdlib.
+        // Multi-segment nested type (e.g., `RFC_4122.UUID`): an institute /
+        // domain-nested type. Not stdlib.
         return false
     }
-    // Bare identifier — check leaf-name against the allowlist.
+    // Bare identifier — check leaf-name against the allowlist. A stdlib
+    // generic specialised to an institute type (e.g., `ArraySlice<Byte>`)
+    // is institute surface, not a stdlib type.
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         let leaf = Lint.Syntax.Identifier.unescaped(identifier.name.text)
-        return byteStdlibForwarderStdlibTypeLeafNames.contains(leaf)
+        guard byteStdlibForwarderStdlibTypeLeafNames.contains(leaf) else { return false }
+        let arguments = identifier.genericArgumentClause?.arguments ?? []
+        return arguments.allSatisfy { argument in
+            guard case .type(let argumentType) = argument.argument else { return true }
+            return byteStdlibForwarderTypeIsStdlibType(argumentType)
+                || byteStdlibForwarderTypeIsStdlibScalar(argumentType)
+        }
     }
     return false
 }
+
+/// Stdlib scalar element types that keep a specialised stdlib generic
+/// (e.g., `ArraySlice<UInt8>`) a stdlib type.
+private func byteStdlibForwarderTypeIsStdlibScalar(_ type: TypeSyntax) -> Swift.Bool {
+    let name: Swift.String? =
+        if let identifier = type.as(IdentifierTypeSyntax.self) {
+            Lint.Syntax.Identifier.unescaped(identifier.name.text)
+        } else if let member = type.as(MemberTypeSyntax.self),
+            member.baseType.trimmedDescription == "Swift"
+        {
+            Lint.Syntax.Identifier.unescaped(member.name.text)
+        } else {
+            nil
+        }
+    return name.map(byteStdlibForwarderStdlibScalarNames.contains) ?? false
+}
+
+private let byteStdlibForwarderStdlibScalarNames: Swift.Set<Swift.String> = [
+    "UInt8", "Int8", "UInt16", "Int16", "UInt32", "Int32", "UInt64", "Int64",
+    "UInt", "Int", "Bool", "Character", "Double", "Float",
+]

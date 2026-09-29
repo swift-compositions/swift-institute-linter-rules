@@ -121,7 +121,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Unit {
             extension RFC_9110.Parse {
                 public struct Token<Input: Collection.Slice.`Protocol`>: Sendable {}
             }
-            extension RFC_9110.Parse.Token: Parser.`Protocol` {
+            extension RFC_9110.Parse.Token: Parsing {
                 public typealias Failure = RFC_9110.Parse.Token<Input>.Error
             }
             """
@@ -144,7 +144,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Unit {
         // shape — every one co-locates the generic type with its `typealias Failure`
         // — but a future package that splits them would be missed here.
         let source = """
-            extension RFC_9110.Parse.Token: Parser.`Protocol` {
+            extension RFC_9110.Parse.Token: Parsing {
                 public typealias Failure = RFC_9110.Parse.Token<Input>.Error
             }
             """
@@ -363,7 +363,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Integration {
                     case emptySegment
                 }
             }
-            extension RFC_7519.JWT.Parse: Parser.`Protocol` {
+            extension RFC_7519.JWT.Parse: Parsing {
                 public typealias Failure = RFC_7519.JWT.Parse<Input>.Error
             }
             """
@@ -388,7 +388,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Integration {
             extension RFC_7519.JWT.Parse {
                 public typealias Error = __JWTParserError
             }
-            extension RFC_7519.JWT.Parse: Parser.`Protocol` {
+            extension RFC_7519.JWT.Parse: Parsing {
                 public typealias Failure = __JWTParserError
             }
             """
@@ -404,7 +404,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Integration {
             extension ISO_8601.DateTime {
                 public struct Parse<Input>: Sendable {}
             }
-            extension ISO_8601.DateTime.Parse: Parser.`Protocol` {
+            extension ISO_8601.DateTime.Parse: Parsing {
                 public typealias Failure = ISO_8601.DateTime.Parse<Input>.Error
             }
             """
@@ -425,7 +425,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Integration {
             extension ISO_8601.DateTime {
                 public struct Parser<Input>: Sendable {}
             }
-            extension ISO_8601.DateTime.Parser: Parser.`Protocol` {
+            extension ISO_8601.DateTime.Parser: Parsing {
                 public typealias Failure = __DateTimeParserError
             }
             """
@@ -485,7 +485,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Integration {
                     case expectedDigit
                 }
             }
-            extension Digit: Parser.`Protocol` {
+            extension Digit: Parsing {
                 typealias Failure = Digit<Input>.Error
             }
             """
@@ -508,7 +508,7 @@ extension Lint.Rule.`phantom generic error in typed throws Tests`.Integration {
             }
             struct Digit<Input: Collection.Slice.`Protocol`>: Sendable {}
             extension Digit { typealias Error = __DigitError }
-            extension Digit: Parser.`Protocol` {
+            extension Digit: Parsing {
                 typealias Failure = Digit<Input>.Error
             }
             """

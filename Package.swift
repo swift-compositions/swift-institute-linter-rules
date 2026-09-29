@@ -122,6 +122,7 @@ let package = Package(
     .package(
       url: "https://github.com/swift-atoms/swift-cardinal.git", branch: "main"),
     .package(url: "https://github.com/swift-atoms/swift-byte.git", branch: "main"),
+    .package(url: "https://github.com/swift-atoms/swift-text.git", branch: "main"),
     .package(url: "https://github.com/swift-compositions/swift-linter-rules.git", branch: "main"),
     .package(url: "https://github.com/swiftlang/swift-syntax.git", "603.0.2"..<"604.0.0"),
   ],
@@ -352,6 +353,7 @@ let package = Package(
         .product(name: "Linter Rule Testing", package: "swift-linter-rules"),
         .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
         .product(name: "SwiftParser", package: "swift-syntax"),
+        .product(name: "Text", package: "swift-text"),
       ]
     ),
     // Manifest pack (swift-institute-linter-rules#4).
@@ -397,11 +399,13 @@ let package = Package(
         .product(name: "Linter Rule Testing", package: "swift-linter-rules"),
         .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
         .product(name: "SwiftParser", package: "swift-syntax"),
+        .product(name: "Text", package: "swift-text"),
       ]
     ),
     .testTarget(
       name: "Institute Linter Rule Throws Tests",
       dependencies: [
+        .product(name: "Lint", package: "swift-lint"),
         .target(name: "Institute Linter Rule Throws"),
         .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
         .product(name: "SwiftParser", package: "swift-syntax"),

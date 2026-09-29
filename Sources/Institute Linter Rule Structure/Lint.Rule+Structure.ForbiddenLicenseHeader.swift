@@ -1,4 +1,5 @@
 public import Lint
+internal import Cardinal
 internal import Linter_Rule_Structure
 internal import SwiftSyntax
 

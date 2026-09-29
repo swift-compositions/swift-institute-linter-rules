@@ -70,16 +70,15 @@ private func compoundSuiteHasSuiteAttribute(_ attributes: AttributeListSyntax) -
 }
 
 private func compoundSuiteHasDomain(_ node: Syntax) -> Swift.Bool {
-    guard let parent = node.parent else { return false }
-    if parent.is(MemberBlockItemSyntax.self), let memberBlock = parent.parent {
-        guard let declaration = memberBlock.parent else { return false }
-        return declaration.is(ExtensionDeclSyntax.self)
-            || declaration.is(StructDeclSyntax.self)
-            || declaration.is(EnumDeclSyntax.self)
-            || declaration.is(ClassDeclSyntax.self)
-            || declaration.is(ActorDeclSyntax.self)
-    }
-    return false
+    guard
+        node.parent?.is(MemberBlockItemSyntax.self) == true,
+        let declaration = node.parent?.parent?.parent?.parent
+    else { return false }
+    return declaration.is(ExtensionDeclSyntax.self)
+        || declaration.is(StructDeclSyntax.self)
+        || declaration.is(EnumDeclSyntax.self)
+        || declaration.is(ClassDeclSyntax.self)
+        || declaration.is(ActorDeclSyntax.self)
 }
 
 internal final class NamingCompoundSuiteVisitor: SyntaxVisitor {

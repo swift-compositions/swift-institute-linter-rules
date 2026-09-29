@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Linter_Primitives
+import Lint
 import Linter_Rules_Test_Support
 import Testing
 
@@ -29,7 +29,7 @@ extension Lint.Rule.`fully qualified error in typed throws Tests` {
 
     @Test
     func `bare nested Error shorthand is flagged`() {
-        #expect(findings(in: "func read() throws(Error) {}").count == 1)
+        #expect(Self.findings(in: "func read() throws(Error) {}").count == 1)
     }
 
     @Test
@@ -37,23 +37,23 @@ extension Lint.Rule.`fully qualified error in typed throws Tests` {
         let source = """
             func read<Element>() throws(Algebra.Field<Element>.Error) {}
             """
-        #expect(findings(in: source).isEmpty)
+        #expect(Self.findings(in: source).isEmpty)
     }
 
     @Test
     func `closure function type is checked`() {
         let source = "let body: () throws(Error) -> Void"
-        #expect(findings(in: source).count == 1)
+        #expect(Self.findings(in: source).count == 1)
     }
 
     @Test
     func `do throws is checked`() {
         let source = "do throws(Error) {} catch {}"
-        #expect(findings(in: source).count == 1)
+        #expect(Self.findings(in: source).count == 1)
     }
 
     @Test
     func `standalone descriptive error type is accepted`() {
-        #expect(findings(in: "func read() throws(ReadError) {}").isEmpty)
+        #expect(Self.findings(in: "func read() throws(ReadError) {}").isEmpty)
     }
 }

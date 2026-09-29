@@ -9,7 +9,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Linter_Primitives
+public import Lint
 internal import SwiftSyntax
 
 /// Nested `Error` types in typed-throws positions use their full owner path.
