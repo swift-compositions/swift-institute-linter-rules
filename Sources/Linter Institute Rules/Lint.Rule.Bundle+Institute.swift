@@ -63,6 +63,7 @@ extension Lint.Rule.Bundle {
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
             .enable(.`path dependency`),
+            .enable(.`unchecked try outside tests`),
             .enable(.`test target naming`),
             .enable(.`default trait`),
             .enable(.`package policy revision 1`),
