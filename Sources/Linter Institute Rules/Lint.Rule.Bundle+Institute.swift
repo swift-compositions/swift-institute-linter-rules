@@ -88,7 +88,7 @@ extension Lint.Rule.Bundle {
             .enable(.`pointer advanced by`),
             .enable(.`sendable struct with class member`),
             .enable(.`unchecked sendable revalidation anchor`),
-            .enable(.`unsafe assignment granularity`),
+            .enable(.`unsafe assignment granularity`, severity: .error),
             .enable(.`sending return conditional sendable state`, severity: .error),
             .enable(.`c type in public api`),
             .enable(.`convention c representability`),
