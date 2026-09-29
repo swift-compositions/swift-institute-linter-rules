@@ -76,7 +76,7 @@ extension Lint.Rule.Bundle {
             .enable(.`unchecked try outside tests`),
             .enable(.`test target naming`),
             .enable(.`default trait`),
-            .enable(.`package policy revision 1`),
+            .enable(.`package policy revision 1`, severity: .warning),
             .enable(.`manifest naming grammar`),
             .enable(.`path name grammar`),
             .enable(.`foundation integration leaf target`),
