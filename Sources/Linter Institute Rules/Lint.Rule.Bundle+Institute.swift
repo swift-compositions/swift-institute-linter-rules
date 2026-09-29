@@ -62,6 +62,7 @@ extension Lint.Rule.Bundle {
             .enable(.`sli literal`),  // [IDX-019] (/promote-rule 2026-07-06)
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
+            .enable(.`path dependency`),
             .enable(.`package policy revision 1`),
             .enable(.`manifest naming grammar`),
             .enable(.`path name grammar`),
