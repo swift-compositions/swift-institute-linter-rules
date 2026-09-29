@@ -26,7 +26,7 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
 
     internal init(_ tree: SourceFileSyntax, filePath: Swift.String) {
         self.sourceText = tree.description
-        self.isL1 = filePath.contains("/swift-molecules/")
+        self.isL1 = filePath.contains("/swift-atoms/") || filePath.contains("/swift-molecules/")
         super.init(viewMode: .sourceAccurate)
         walk(tree)
     }

@@ -130,6 +130,26 @@ extension Lint.Rule.`package policy revision 1 Tests`.`Edge Case` {
     #expect(observation.findings.count == 1)
     #expect(observation.findings[0].message.contains("must not declare a macro"))
   }
+
+  @Test
+  func `L1 macro target in an atoms package is rejected`() {
+    let source = """
+      // swift-tools-version: 6.4
+      import PackageDescription
+      let package = Package(
+          name: "macro-fixture",
+          targets: [.macro(name: "Fixture Macro")],
+          swiftLanguageModes: [.v6]
+      )
+      """
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(
+      source,
+      file: "/workspace/swift-atoms/macro-fixture/Package.swift"
+    )
+    #expect(observation.coverage == .measured)
+    #expect(observation.findings.count == 1)
+    #expect(observation.findings[0].message.contains("must not declare a macro"))
+  }
 }
 
 extension Lint.Rule.`package policy revision 1 Tests`.Integration {
