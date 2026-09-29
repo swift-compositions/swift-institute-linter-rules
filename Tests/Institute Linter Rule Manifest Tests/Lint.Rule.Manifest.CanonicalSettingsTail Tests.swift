@@ -117,3 +117,13 @@ extension Lint.Rule.`canonical settings tail Tests`.Integration {
     }
   }
 }
+
+extension Lint.Rule.`canonical settings tail Tests`.`Edge Case` {
+  @Test
+  func `repair leaves non-manifest files unchanged`() {
+    let proposal = Lint.Rule.`canonical settings tail`.repair(
+      Lint.Source.parsed(from: "struct Value {}\n", file: "Sources/Fixture/Value.swift")
+    )
+    #expect(proposal == .unchanged)
+  }
+}

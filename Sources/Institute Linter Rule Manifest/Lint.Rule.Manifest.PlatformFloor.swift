@@ -81,6 +81,7 @@ extension Lint.Rule {
       return Lint.Rule.Observation(findings: findings, coverage: .measured)
     },
     repair: { source in
+      guard manifestIsPackageManifest(source.file.filePath) else { return .unchanged }
       let visitor = ManifestPlatformFloorVisitor(viewMode: .sourceAccurate)
       visitor.walk(source.tree)
       let declared = visitor.declared

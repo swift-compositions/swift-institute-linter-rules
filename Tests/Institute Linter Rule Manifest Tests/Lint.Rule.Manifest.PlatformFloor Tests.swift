@@ -150,3 +150,13 @@ extension Lint.Rule.`platform floor Tests`.Integration {
     #expect(proposal == .unchanged)
   }
 }
+
+extension Lint.Rule.`platform floor Tests`.`Edge Case` {
+  @Test
+  func `repair leaves non-manifest files unchanged`() {
+    let proposal = Lint.Rule.`platform floor`.repair(
+      Lint.Source.parsed(from: "let package = Package(name: \"Fixture\")", file: "Sources/Fixture/Fixture.swift")
+    )
+    #expect(proposal == .unchanged)
+  }
+}

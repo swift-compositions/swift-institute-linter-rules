@@ -68,6 +68,7 @@ extension Lint.Rule {
       )
     },
     repair: { source in
+      guard manifestIsPackageManifest(source.file.filePath) else { return .unchanged }
       let text = source.tree.description
       let tail = text.range(of: manifestCanonicalSettingsTailHead).map { Swift.String(text[$0.lowerBound...]) }
       return if manifestCanonicalSettingsTailNormalized(tail)
