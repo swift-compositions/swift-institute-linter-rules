@@ -122,7 +122,7 @@ let package = Package(
     .package(
       url: "https://github.com/swift-atoms/swift-cardinal.git", branch: "main"),
     .package(url: "https://github.com/swift-atoms/swift-byte.git", branch: "main"),
-    .package(url: "https://github.com/swift-atoms/swift-text.git", branch: "main"),
+    .package(url: "https://github.com/swift-atoms/swift-text.git", branch: "main", traits: ["Byte"]),
     .package(url: "https://github.com/swift-compositions/swift-linter-rules.git", branch: "main"),
     .package(url: "https://github.com/swiftlang/swift-syntax.git", "603.0.2"..<"604.0.0"),
   ],
