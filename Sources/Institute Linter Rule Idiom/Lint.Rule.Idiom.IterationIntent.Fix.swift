@@ -187,17 +187,17 @@ private func idiomIterationIntentBodyEscapes(_ node: Syntax) -> Swift::Bool {
 internal func idiomIterationIntentCall(for loop: ForStmtSyntax) -> ExprSyntax? {
     guard let pattern = loop.pattern.as(IdentifierPatternSyntax.self) else { return nil }
 
-    let receiver: ExprSyntax
     let bare = loop.sequence.with(\.leadingTrivia, []).with(\.trailingTrivia, [])
-    if bare.is(SequenceExprSyntax.self) || bare.is(InfixOperatorExprSyntax.self) {
-        receiver = ExprSyntax(
-            TupleExprSyntax(
-                elements: LabeledExprListSyntax([LabeledExprSyntax(expression: bare)])
+    let receiver: ExprSyntax =
+        if bare.is(SequenceExprSyntax.self) || bare.is(InfixOperatorExprSyntax.self) {
+            ExprSyntax(
+                TupleExprSyntax(
+                    elements: LabeledExprListSyntax([LabeledExprSyntax(expression: bare)])
+                )
             )
-        )
-    } else {
-        receiver = bare
-    }
+        } else {
+            bare
+        }
 
     let braceTrailing = loop.body.leftBrace.trailingTrivia
     let firstLeading = loop.body.statements.first?.leadingTrivia ?? []

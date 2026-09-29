@@ -151,14 +151,14 @@ private func phantomParameterName(ofWrapper leaf: Swift::String) -> Swift::Strin
 }
 
 private func phantomWrapperBaseName(_ type: TypeSyntax) -> Swift::String? {
-    let leaf: Swift::String?
-    if let identifier = type.as(IdentifierTypeSyntax.self) {
-        leaf = identifier.name.text
-    } else if let member = type.as(MemberTypeSyntax.self) {
-        leaf = member.name.text
-    } else {
-        leaf = nil
-    }
+    let leaf: Swift::String? =
+        if let identifier = type.as(IdentifierTypeSyntax.self) {
+            identifier.name.text
+        } else if let member = type.as(MemberTypeSyntax.self) {
+            member.name.text
+        } else {
+            nil
+        }
     guard let leaf, leaf == "Tagged" || leaf == "Index" || leaf == "Property" else { return nil }
     return leaf
 }

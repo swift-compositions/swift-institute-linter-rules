@@ -174,12 +174,12 @@ internal final class ThrowsClosureAnnotationVisitor: SyntaxVisitor {
             if finder.found { break }
         }
         guard finder.found else { return .visitChildren }
-        let position: AbsolutePosition
-        if let signature = node.signature {
-            position = signature.positionAfterSkippingLeadingTrivia
-        } else {
-            position = node.leftBrace.positionAfterSkippingLeadingTrivia
-        }
+        let position: AbsolutePosition =
+            if let signature = node.signature {
+                signature.positionAfterSkippingLeadingTrivia
+            } else {
+                node.leftBrace.positionAfterSkippingLeadingTrivia
+            }
         emit(at: position)
         return .visitChildren
     }

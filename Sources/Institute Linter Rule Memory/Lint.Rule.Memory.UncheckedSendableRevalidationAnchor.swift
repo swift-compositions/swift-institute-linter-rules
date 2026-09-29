@@ -176,7 +176,7 @@ internal final class MemoryUncheckedSendableRevalidationAnchorVisitor: SyntaxVis
   }
 
   private func check(
-    declaration: any DeclSyntaxProtocol,
+    declaration: some DeclSyntaxProtocol,
     inheritanceClause: InheritanceClauseSyntax?
   ) {
     guard let inheritanceClause else { return }

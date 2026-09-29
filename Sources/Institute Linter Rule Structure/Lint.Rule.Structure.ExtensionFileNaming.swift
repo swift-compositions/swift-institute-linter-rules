@@ -74,12 +74,12 @@ private func structureExtensionFileNamingFindings(
   converter: SourceLocationConverter,
   tree: SourceFileSyntax
 ) -> [Diagnostic.Record] {
-  let filename: Swift::String
-  if let slashIndex = path.lastIndex(of: "/") {
-    filename = Swift::String(path[path.index(after: slashIndex)...])
-  } else {
-    filename = path
-  }
+  let filename: Swift::String =
+    if let slashIndex = path.lastIndex(of: "/") {
+      Swift::String(path[path.index(after: slashIndex)...])
+    } else {
+      path
+    }
   guard filename.hasSuffix(".swift") else { return [] }
   let basename = Swift::String(filename.dropLast(".swift".count))
 

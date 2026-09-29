@@ -16,14 +16,14 @@ extension Naming.Visitor {
     guard let clause else { return false }
     for inherited in clause.inheritedTypes {
       let type = inherited.type
-      let leaf: Swift::String?
-      if let identifier = type.as(IdentifierTypeSyntax.self) {
-        leaf = identifier.name.text
-      } else if let member = type.as(MemberTypeSyntax.self) {
-        leaf = member.name.text
-      } else {
-        leaf = nil
-      }
+      let leaf: Swift::String? =
+        if let identifier = type.as(IdentifierTypeSyntax.self) {
+          identifier.name.text
+        } else if let member = type.as(MemberTypeSyntax.self) {
+          member.name.text
+        } else {
+          nil
+        }
       if let leaf, family.contains(leaf) {
         return true
       }
