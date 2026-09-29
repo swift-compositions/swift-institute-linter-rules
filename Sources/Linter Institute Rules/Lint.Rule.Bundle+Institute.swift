@@ -55,7 +55,7 @@ extension Lint.Rule.Bundle {
             .enable(.`lifecycle order`),
             .enable(.`unlabeled lifecycle closure`),
             .enable(.`bounded index static capacity`),
-            .enable(.`enumerated with subscript`),
+            .enable(.`enumerated with subscript`, severity: .error),
             .enable(.`intermediate binding then return`),
             .enable(.`counter loop iteration`),
             .enable(.`string utf8 scanning`),
