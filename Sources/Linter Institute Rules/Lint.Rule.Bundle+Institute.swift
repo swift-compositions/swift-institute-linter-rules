@@ -110,7 +110,7 @@ extension Lint.Rule.Bundle {
             .enable(.`throwing wrapper init`),
             .enable(.`type transform placement`),
             .enable(.`wrapper backing exposed`),
-            .enable(.`protocol sentinel under generic front door`),
+            .enable(.`protocol sentinel under generic front door`, severity: .error),
             .enable(.`test file suffix`),
             .enable(.`test function naming`),
             .enable(.`performance suite serialized`, severity: .error),
