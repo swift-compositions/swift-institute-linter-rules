@@ -46,7 +46,7 @@ extension Lint.Rule.Bundle {
             .enable(.`uint8 conforms to byte protocol`),
             .enable(.`byte conforms to arithmetic protocol`),
             .enable(.`binary serializable uint8 witness`),
-            .enable(.`binary serializable rawvalue uint8`),
+            .enable(.`binary serializable rawvalue uint8`, severity: .error),
             .enable(.`uint8 ascii extension`),
             .enable(.`uint8 forwarder missing disfavored`),
             .enable(.`stdlib forwarder outside sli`),
