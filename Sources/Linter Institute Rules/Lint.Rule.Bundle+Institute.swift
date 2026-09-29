@@ -63,6 +63,7 @@ extension Lint.Rule.Bundle {
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
             .enable(.`path dependency`),
+            .enable(.`upward layer edge`),
             .enable(.`module selector spelling`),
             .enable(.`ascii identifier`),
             .enable(.`exported import`),
