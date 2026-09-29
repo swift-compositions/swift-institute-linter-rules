@@ -81,7 +81,7 @@ extension Lint.Rule.Bundle {
             .enable(.`path name grammar`),
             .enable(.`foundation integration leaf target`),
             .enable(.`borrowing self short circuit`),
-            .enable(.`noncopyable error`),
+            .enable(.`noncopyable error`, severity: .error),
             .enable(.`extension noncopyable constraint`),
             .enable(.`nonisolated unsafe without invariant`),
             .enable(.`safe attribute undocumented`),
