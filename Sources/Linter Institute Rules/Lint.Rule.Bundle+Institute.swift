@@ -113,7 +113,7 @@ extension Lint.Rule.Bundle {
             .enable(.`protocol sentinel under generic front door`),
             .enable(.`test file suffix`),
             .enable(.`test function naming`),
-            .enable(.`performance suite serialized`),
+            .enable(.`performance suite serialized`, severity: .error),
             .enable(.`test display name string`),
             .enable(.`closure typed throws annotation`),
             .enable(.`do throws for typed catch`),
