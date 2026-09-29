@@ -98,3 +98,55 @@ extension Lint.Rule.`platform floor Tests`.Integration {
     #expect(observation.findings[0].message.contains("visionOS"))
   }
 }
+
+extension Lint.Rule.`platform floor Tests`.Integration {
+  static func repaired(_ source: Swift.String) -> Swift.String? {
+    let proposal = Lint.Rule.`platform floor`.repair(Lint.Source.parsed(from: source, file: "Package.swift"))
+    guard case .edits(let edits) = proposal, case .rewrite(_, let contents) = edits.first else {
+      return nil
+    }
+    return contents
+  }
+
+  static let canonical = """
+    [
+            .macOS(.v27),
+            .iOS(.v27),
+            .tvOS(.v27),
+            .watchOS(.v27),
+            .visionOS(.v27),
+        ]
+    """
+
+  @Test
+  func `repair rewrites a lower platform list`() {
+    let repaired = Self.repaired(
+      "let package = Package(\n    name: \"Fixture\",\n    platforms: [.macOS(.v26)],\n    products: []\n)"
+    )
+    #expect(
+      repaired
+        == "let package = Package(\n    name: \"Fixture\",\n    platforms: \(Self.canonical),\n    products: []\n)"
+    )
+    #expect(repaired.map { Lint.Rule.`platform floor Tests`.observation($0).findings.isEmpty } == true)
+  }
+
+  @Test
+  func `repair inserts platforms after the name`() {
+    let repaired = Self.repaired("let package = Package(\n    name: \"Fixture\",\n    products: []\n)")
+    #expect(
+      repaired
+        == "let package = Package(\n    name: \"Fixture\",\n    platforms: \(Self.canonical),\n    products: []\n)"
+    )
+  }
+
+  @Test
+  func `repair leaves a floor-compliant manifest unchanged`() {
+    let proposal = Lint.Rule.`platform floor`.repair(
+      Lint.Source.parsed(
+        from: "let package = Package(name: \"Fixture\", platforms: [.macOS(.v27), .iOS(.v27), .tvOS(.v27), .watchOS(.v27), .visionOS(.v27)])",
+        file: "Package.swift"
+      )
+    )
+    #expect(proposal == .unchanged)
+  }
+}

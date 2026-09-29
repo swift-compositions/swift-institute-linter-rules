@@ -79,9 +79,26 @@ extension Lint.Rule {
         )
       }
       return Lint.Rule.Observation(findings: findings, coverage: .measured)
+    },
+    repair: { source in
+      let visitor = ManifestPlatformFloorVisitor(viewMode: .sourceAccurate)
+      visitor.walk(source.tree)
+      let declared = visitor.declared
+      guard visitor.unmeasured == nil,
+        let edit = visitor.edit,
+        !manifestPlatformFloorPlatforms.allSatisfy({ declared?[$0] == "v27" })
+      else {
+        return visitor.unmeasured.map { .refused(.ambiguousRepair($0)) } ?? .unchanged
+      }
+      var bytes = Swift.Array(source.tree.description.utf8)
+      bytes.replaceSubrange(edit.range, with: edit.text.utf8)
+      return .edits([.rewrite(path: source.path, contents: Swift.String(decoding: bytes, as: Swift.UTF8.self))])
     }
   )
 }
+
+private let manifestPlatformFloorCanonical: Swift.String =
+  "[\n" + manifestPlatformFloorPlatforms.map { "        .\($0)(.v27),\n" }.joined() + "    ]"
 
 private let manifestPlatformFloorPlatforms: [Swift.String] = [
   "macOS", "iOS", "tvOS", "watchOS", "visionOS",
@@ -91,6 +108,7 @@ internal final class ManifestPlatformFloorVisitor: SyntaxVisitor {
   var package: AbsolutePosition?
   var declared: [Swift.String: Swift.String]?
   var unmeasured: Swift.String?
+  var edit: (range: Swift.Range<Swift.Int>, text: Swift.String)?
 
   override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
     guard package == nil,
@@ -100,8 +118,20 @@ internal final class ManifestPlatformFloorVisitor: SyntaxVisitor {
     }
     package = node.positionAfterSkippingLeadingTrivia
     guard let argument = node.arguments.first(where: { $0.label?.text == "platforms" }) else {
+      let anchor = node.arguments.first(where: { $0.label?.text == "name" })?.expression
+      edit = anchor.map { name in
+        (
+          name.endPositionBeforeTrailingTrivia.utf8Offset..<name.endPositionBeforeTrailingTrivia.utf8Offset,
+          ",\n    platforms: " + manifestPlatformFloorCanonical
+        )
+      }
       return .skipChildren
     }
+    edit = (
+      argument.expression.positionAfterSkippingLeadingTrivia.utf8Offset
+        ..< argument.expression.endPositionBeforeTrailingTrivia.utf8Offset,
+      manifestPlatformFloorCanonical
+    )
     guard let array = argument.expression.as(ArrayExprSyntax.self) else {
       unmeasured = "`platforms:` is not an array literal"
       return .skipChildren
