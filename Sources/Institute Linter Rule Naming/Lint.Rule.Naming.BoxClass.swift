@@ -1,21 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 4 (mechanization-program) — ad-hoc `_Box` (or `Box` / `_Storage`)
-/// reference wrappers reach for ecosystem primitives that already exist.
-///
-/// Citation: `[IMPL-107]` (implementation skill, the ownership note).
 extension Lint.Rule {
     public static let `ad hoc box class` = Lint.Rule(
         id: "ad hoc box class",
@@ -85,8 +70,6 @@ internal final class NamingBoxClassVisitor: SyntaxVisitor {
     }
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        // Free-standing wrappers only — skip declarations with an
-        // inheritance clause (frameworks, ManagedBuffer-derived types).
         if node.inheritanceClause != nil {
             return .visitChildren
         }
@@ -94,18 +77,6 @@ internal final class NamingBoxClassVisitor: SyntaxVisitor {
         if !namingBoxClassIsFlaggedName(name) {
             return .visitChildren
         }
-        // Canonical internal-CoW-backing exemption: `final` + an
-        // `@usableFromInline` attribute on the class itself is the
-        // standard pattern for value-type COW backing inside ownership
-        // primitives and similar low-level types. The rule's
-        // recommended alternatives `Reference<T>` / `Owned<T>` are
-        // themselves built using this pattern — within their canonical
-        // home (swift-ownership) no recommended alternative
-        // exists for self-reference, and the `@usableFromInline`
-        // annotation serves elsewhere as an opt-in signal of "this is
-        // a known reference-wrapper backing for a value type, not an
-        // ad-hoc invention." Ad-hoc wrappers in consumer code (no
-        // `@usableFromInline`) continue to flag.
         if namingBoxClassIsCanonicalCoWBacking(node) {
             return .visitChildren
         }

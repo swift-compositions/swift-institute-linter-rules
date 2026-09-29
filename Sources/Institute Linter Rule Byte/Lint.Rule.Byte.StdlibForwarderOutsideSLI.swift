@@ -1,25 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Stdlib-interop `@_disfavoredOverload` UInt8 forwarders DECLARED AS
-/// extensions ON stdlib types (Array, ContiguousArray, ArraySlice, Span,
-/// UnsafeBufferPointer, …) MUST live in `* Standard Library Integration`
-/// modules, NOT in byte-domain primary modules. Extensions on INSTITUTE
-/// types (ArraySlice<Byte>, RFC_*.*, …) that happen to take UInt8 as a
-/// stdlib-bridge convenience belong in the primary module and DO NOT
-/// fire this rule.
-/// Citation: `[API-BYTE-007]`.
 extension Lint.Rule {
     public static let `stdlib forwarder outside sli` = Lint.Rule(
         id: "stdlib forwarder outside sli",
@@ -77,8 +58,6 @@ internal final class ByteStdlibForwarderOutsideSLIVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    /// True when the source file's host target is a Standard Library
-    /// Integration module — rule does not fire there.
     private let hostIsSLI: Swift.Bool
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
@@ -143,16 +122,10 @@ internal final class ByteStdlibForwarderOutsideSLIVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns true when `filePath` indicates the source is in a target whose
-/// name ends in `Standard Library Integration`. The host target name is
-/// the path component immediately following `Sources/`.
 private func byteStdlibForwarderHostIsSLI(_ filePath: Swift.String) -> Swift.Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true).map(
         Swift.String.init
     )
-    // The target-owning `Sources/` is the LAST one on the path — a checkout
-    // root containing an earlier `Sources` component (e.g. a workspace path
-    // segment literally named `Sources`) must not steal the anchor.
     for index in components.indices.reversed() where components[index] == "Sources" {
         let targetIndex = components.index(after: index)
         guard targetIndex < components.endIndex else { return false }
@@ -219,11 +192,6 @@ private func byteStdlibForwarderWhereClauseMentionsUInt8(
 {
     for requirement in whereClause.requirements {
         if let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self) {
-            // leftType and rightType are specialized `SameTypeRequirementSyntax.LeftType` /
-            // `.RightType` (not bare `TypeSyntax`) in current SwiftSyntax. Wrap via
-            // `Syntax(_:).as(TypeSyntax.self)` so we can re-use the recursive
-            // type-mention detector that handles Optional / Array / generic
-            // nesting (e.g., `Element == UInt8?`, `Element == [UInt8]`).
             if let rightTS = Syntax(sameType.rightType).as(TypeSyntax.self),
                 byteStdlibForwarderTypeMentionsUInt8(rightTS)
             {
@@ -308,19 +276,6 @@ private func byteStdlibForwarderTypeMentionsUInt8(_ type: TypeSyntax) -> Swift.B
     return false
 }
 
-/// Curated set of stdlib type leaf-names whose extensions are the
-/// canonical home for `@_disfavoredOverload` UInt8 forwarders. The rule
-/// fires only when the enclosing extension's extended type's leaf-name
-/// matches one of these (or the extended type is explicitly
-/// `Swift.<X>`).
-///
-/// Note on `Array`: included even though `Array.Array` shadows
-/// `Swift.Array` in the institute. The institute convention is to write
-/// `extension Swift.Array` when the stdlib type is intended; bare
-/// `extension Array` in a file that resolves `Array` to institute is
-/// arguably misnamed and the rule will fire — that is acceptable, since
-/// the in-file shadow ambiguity is itself a hygiene issue independently
-/// flagged at the qualification level.
 private let byteStdlibForwarderStdlibTypeLeafNames: Swift.Set<Swift.String> = [
     "Array",
     "ContiguousArray",
@@ -355,9 +310,6 @@ private let byteStdlibForwarderStdlibTypeLeafNames: Swift.Set<Swift.String> = [
     "Result",
 ]
 
-/// Walks parent nodes from `node` up to the nearest `ExtensionDeclSyntax`
-/// and returns it. Returns `nil` when the declaration is not inside an
-/// extension (top-level / inside a struct or class body).
 private func byteStdlibForwarderEnclosingExtension(_ node: Syntax) -> ExtensionDeclSyntax? {
     var current: Syntax? = node.parent
     while let parent = current {
@@ -369,10 +321,6 @@ private func byteStdlibForwarderEnclosingExtension(_ node: Syntax) -> ExtensionD
     return nil
 }
 
-/// Returns true when the extension carries a `where`-clause constraint
-/// mentioning `UInt8` (e.g., `extension Array where Element == UInt8`).
-/// This is how [API-BYTE-003]'s canonical 6-forwarder allowlist
-/// expresses byte-interop constraints on stdlib-collection extensions.
 private func byteStdlibForwarderExtensionConstraintMentionsUInt8(
     _ ext: ExtensionDeclSyntax
 )
@@ -383,28 +331,18 @@ private func byteStdlibForwarderExtensionConstraintMentionsUInt8(
     {
         return true
     }
-    // Also check generic arguments on the extendedType itself, e.g.
-    // `extension ContiguousArray<UInt8> { ... }`.
     return byteStdlibForwarderTypeMentionsUInt8(ext.extendedType)
 }
 
-/// `Swift.<X>` is always stdlib. Otherwise check the type's leaf-name
-/// against the curated allowlist. Strips backticks before comparison.
 private func byteStdlibForwarderTypeIsStdlibType(_ type: TypeSyntax) -> Swift.Bool {
-    // `Swift.<X>` — explicit module qualifier means stdlib.
     if let memberType = type.as(MemberTypeSyntax.self) {
         if let baseIdentifier = memberType.baseType.as(IdentifierTypeSyntax.self),
             Lint.Syntax.Identifier.unescaped(baseIdentifier.name.text) == "Swift"
         {
             return true
         }
-        // Multi-segment nested type (e.g., `RFC_4122.UUID`): an institute /
-        // domain-nested type. Not stdlib.
         return false
     }
-    // Bare identifier — check leaf-name against the allowlist. A stdlib
-    // generic specialised to an institute type (e.g., `ArraySlice<Byte>`)
-    // is institute surface, not a stdlib type.
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         let leaf = Lint.Syntax.Identifier.unescaped(identifier.name.text)
         guard byteStdlibForwarderStdlibTypeLeafNames.contains(leaf) else { return false }
@@ -418,8 +356,6 @@ private func byteStdlibForwarderTypeIsStdlibType(_ type: TypeSyntax) -> Swift.Bo
     return false
 }
 
-/// Stdlib scalar element types that keep a specialised stdlib generic
-/// (e.g., `ArraySlice<UInt8>`) a stdlib type.
 private func byteStdlibForwarderTypeIsStdlibScalar(_ type: TypeSyntax) -> Swift.Bool {
     let name: Swift.String? =
         if let identifier = type.as(IdentifierTypeSyntax.self) {

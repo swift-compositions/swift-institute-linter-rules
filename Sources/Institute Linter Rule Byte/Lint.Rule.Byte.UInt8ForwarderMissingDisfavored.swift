@@ -1,28 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// In byte-domain extensions (`extension [Byte]`, `extension Array where
-/// Element == Byte`, `extension ContiguousArray where Element == Byte`,
-/// `extension ArraySlice where Element == Byte`, `extension
-/// RangeReplaceableCollection where Element == Byte`), any function or
-/// initializer that takes a `UInt8` parameter or returns `[UInt8]` /
-/// `Array<UInt8>` / `ContiguousArray<UInt8>` MUST carry the
-/// `@_disfavoredOverload` attribute. These are stdlib-interop forwarders;
-/// the primary path is byte-typed and the forwarders exist only to bridge
-/// for stdlib callers. Without `@_disfavoredOverload` the forwarder
-/// competes with the Byte-typed primary at overload resolution.
-/// Citation: `[API-BYTE-006]`.
 extension Lint.Rule {
     public static let `uint8 forwarder missing disfavored` = Lint.Rule(
         id: "uint8 forwarder missing disfavored",
@@ -75,9 +53,6 @@ internal final class ByteUInt8ForwarderMissingDisfavoredVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    /// Stack of byte-domain context markers (true when inside an
-    /// extension whose extended type is `[Byte]` or an extension on a
-    /// stdlib collection with a `where Element == Byte` clause).
     private var contextStack: [Swift.Bool] = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
@@ -134,8 +109,6 @@ internal final class ByteUInt8ForwarderMissingDisfavoredVisitor: SyntaxVisitor {
     }
 }
 
-/// Stdlib collection type names whose `where Element == Byte` extension
-/// brings us into byte-domain context.
 private let byteCollectionTypeNames: Swift.Set<Swift.String> = [
     "Array",
     "ContiguousArray",
@@ -145,9 +118,6 @@ private let byteCollectionTypeNames: Swift.Set<Swift.String> = [
     "Sequence",
 ]
 
-/// Returns true when the extension's extended type and where-clause
-/// indicate byte-domain context (i.e., `extension [Byte]`, `extension
-/// Array<Byte>`, `extension Array where Element == Byte`, etc.).
 private func byteExtensionIsByteDomain(_ node: ExtensionDeclSyntax) -> Swift.Bool {
     if byteTypeIsArrayOfByte(node.extendedType) {
         return true
@@ -161,8 +131,6 @@ private func byteExtensionIsByteDomain(_ node: ExtensionDeclSyntax) -> Swift.Boo
     return false
 }
 
-/// `extension [Byte]` / `extension Array<Byte>` / `extension
-/// ContiguousArray<Byte>` shapes.
 private func byteTypeIsArrayOfByte(_ type: TypeSyntax) -> Swift.Bool {
     if let arrayType = type.as(ArrayTypeSyntax.self) {
         return byteTypeIsByteToken(arrayType.element)
@@ -185,7 +153,6 @@ private func byteTypeIsArrayOfByte(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-/// `extension Array where Element == Byte` shape.
 private func byteTypeIsStdlibCollectionWithByteElement(
     _ type: TypeSyntax,
     whereClause: GenericWhereClauseSyntax?
@@ -225,10 +192,6 @@ private func byteRequirementIsElementEqualsByte(
     }
     let left = Lint.Syntax.Identifier.unescaped(sameType.leftType.trimmedDescription)
     let right = Lint.Syntax.Identifier.unescaped(sameType.rightType.trimmedDescription)
-    // Accept both bare `Element` and the idiomatic protocol-extension
-    // spelling `Self.Element` (and, defensively, any `<Prefix>.Element`).
-    // Also accept the reversed spelling `Byte == Element` — a same-type
-    // requirement's operand order is not semantically meaningful.
     func isElement(_ text: Swift.String) -> Swift.Bool {
         text == "Element" || text.hasSuffix(".Element")
     }
@@ -238,8 +201,6 @@ private func byteRequirementIsElementEqualsByte(
     return false
 }
 
-/// Returns true when `node` has any parameter typed `UInt8` (or `[UInt8]`
-/// / `Array<UInt8>` / etc.) OR a return type involving `UInt8`.
 private func byteFunctionMentionsUInt8(_ node: FunctionDeclSyntax) -> Swift.Bool {
     for parameter in node.signature.parameterClause.parameters {
         if byteTypeMentionsUInt8(parameter.type) {
@@ -263,9 +224,6 @@ private func byteInitializerMentionsUInt8(_ node: InitializerDeclSyntax) -> Swif
     return false
 }
 
-/// Returns true when `type` contains a `UInt8` token at any depth
-/// (`UInt8`, `[UInt8]`, `Array<UInt8>`, `Swift.UInt8`, `inout UInt8`,
-/// `Optional<UInt8>`, `Span<UInt8>`).
 private func byteTypeMentionsUInt8(_ type: TypeSyntax) -> Swift.Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         if Lint.Syntax.Identifier.unescaped(identifier.name.text) == "UInt8" {

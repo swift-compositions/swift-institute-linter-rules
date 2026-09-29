@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — namespace-bridging typealias that
-/// preserves the leaf name silently re-points new nested-type
-/// declarations to a foreign module's namespace.
-///
-/// Citation: `[PLAT-ARCH-018]` (platform skill — typealiased namespace-
-/// path conflict rule).
 extension Lint.Rule {
   public static let `typealiased namespace bridge` = Lint.Rule(
     id: "typealiased namespace bridge",
@@ -85,30 +68,6 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
       return .visitChildren
     }
     guard member.name.text == aliasName else { return .visitChildren }
-    // Exempt per [RULE-EXEMPT-3] (conformance-context): a typealias
-    // satisfying a protocol's associatedtype requirement is not a
-    // foreign-namespace bridge. The exemption recognises three
-    // declaration shapes:
-    //
-    // - (a) `extension X: P { typealias E = Y.E }` — conformance on
-    //   the immediate enclosing extension.
-    // - (b) `struct X: P { typealias E = Y.E }` — conformance on the
-    //   immediate enclosing type declaration.
-    // - (c) The typealias lives in a sibling extension of a type
-    //   whose conformance is declared elsewhere in the file
-    //   (commonly on the original `struct X: P` declaration nested
-    //   inside `extension Outer { struct X: P { … } }`). The walk-
-    //   up alone misses this case because the typealias's parent
-    //   chain ascends through the methods extension, not through
-    //   the conformance-declaring extension that lies in a sibling
-    //   subtree at file scope.
-    //
-    // Deliberate per-pack copy: rule packs are independently
-    // consumable library products, so the contract is copied rather
-    // than shared, even though Platform and Naming are two targets
-    // of the same package with no tier boundary between them. See
-    // #17. Semantics match the equivalent Naming.Shared helpers
-    // where they overlap.
     if isInsideConformingExtension(Syntax(node)) {
       return .visitChildren
     }
@@ -130,8 +89,6 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
   }
 
   private func isInsideConformingExtension(_ node: Syntax) -> Swift.Bool {
-    // Case (a) + (b): immediate enclosing extension OR enclosing
-    // type declaration carries an inheritance clause.
     var current: Syntax? = node.parent
     var immediateExtension: ExtensionDeclSyntax? = nil
     while let candidate = current {
@@ -152,9 +109,6 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
         return typeDecl.inheritanceClause != nil
       }
       if candidate.is(ProtocolDeclSyntax.self) {
-        // A typealias inside a protocol body declares the
-        // associatedtype's default — definitively a conformance
-        // context.
         return true
       }
       current = candidate.parent
@@ -162,11 +116,6 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
     guard let ext = immediateExtension else { return false }
     if ext.inheritanceClause != nil { return true }
 
-    // Case (c): walk the file for sibling declarations of the same
-    // extended type. The conformance may be declared on the
-    // original `struct X: P { … }` nested inside another extension
-    // (`extension Outer { struct X: P { … } }`), or on a sibling
-    // `extension X: P { … }` at file scope.
     return fileDeclaresConformance(
       forExtendedType: ext.extendedType.trimmedDescription,
       origin: node
@@ -177,7 +126,6 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
     forExtendedType targetPath: Swift.String,
     origin: Syntax
   ) -> Swift.Bool {
-    // Walk to the source file root.
     var current: Syntax? = origin
     while let candidate = current {
       if let file = candidate.as(SourceFileSyntax.self) {
@@ -197,12 +145,6 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
     return false
   }
 
-  /// Returns true if `item` (or any nested type / extension inside it)
-  /// is a declaration of `targetPath` that carries an inheritance
-  /// clause. `currentPrefix` accumulates the type-path components as
-  /// we descend through nested extensions so that the leaf comparison
-  /// matches `Outer.Inner` against an extension `extension Outer`
-  /// containing `struct Inner`.
   private static func declConformsToProtocol(
     _ item: CodeBlockItemSyntax.Item,
     targetPath: Swift.String,
@@ -217,9 +159,6 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
       if fullPath == targetPath, ext.inheritanceClause != nil {
         return true
       }
-      // Descend into the extension's members looking for nested
-      // type / extension declarations whose composed path equals
-      // `targetPath` and which carry an inheritance clause.
       for member in Lint.Syntax.Conditional.members(ext.memberBlock) {
         if Self.memberConformsToProtocol(
           member.decl,
@@ -270,18 +209,11 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
     return false
   }
 
-  /// Same as ``declConformsToProtocol(_:targetPath:currentPrefix:)``
-  /// but operates on a `DeclSyntax` (the member-level decl shape)
-  /// rather than the top-level code-block-item shape.
   private static func memberConformsToProtocol(
     _ decl: DeclSyntax,
     targetPath: Swift.String,
     currentPrefix: Swift.String
   ) -> Swift.Bool {
-    // No `ExtensionDeclSyntax` arm here: an extension cannot legally
-    // appear inside a member block in Swift, unlike the top-level
-    // `declConformsToProtocol` case above, so there is nothing
-    // defensive to guard (#21 nit 4).
     if let structDecl = decl.as(StructDeclSyntax.self) {
       return Self.typeDeclConformsToProtocol(
         name: structDecl.name.text,

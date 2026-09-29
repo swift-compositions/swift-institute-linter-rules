@@ -1,10 +1,6 @@
 internal import Lint
 internal import SwiftSyntax
 
-/// Collects the expression supplied by each manifest-local property accessor on
-/// `extendedType`. Initializers and shorthand getter bodies are admitted; an
-/// explicit accessor or a multi-statement body remains unresolved and therefore
-/// fails closed at the consuming rule.
 internal func manifestAccessorBodies(
   in file: SourceFileSyntax,
   extendedTypes: Swift.Set<Swift.String>,
@@ -46,10 +42,6 @@ private func manifestAccessorExpression(_ binding: PatternBindingSyntax) -> Expr
   return item.item.as(ExprSyntax.self)
 }
 
-/// Resolves the intentionally small string-expression grammar used by typed
-/// manifest name vocabularies: literals, manifest-local static accessors,
-/// manifest-local instance accessors, and `+` concatenation. Every other shape
-/// is reported as unsupported by the caller.
 internal func manifestResolvedString(
   _ expression: ExprSyntax,
   staticAccessors: [Swift.String: ExprSyntax],

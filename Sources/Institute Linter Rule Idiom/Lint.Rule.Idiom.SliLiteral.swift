@@ -1,22 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Compile-time-constant `Index`/`Tagged` construction of the form
-/// `Index<…>(Ordinal(UInt(<literal>)))` MUST be written as the bare integer
-/// literal — the tagged SLI carve-out
-/// (`Tagged: ExpressibleByIntegerLiteral`) makes literals infer. Runtime
-/// bindings keep the explicit construction. Citation: `[IDX-019]`.
 extension Lint.Rule {
     public static let `sli literal` = Lint.Rule(
         id: "sli literal",
@@ -63,9 +47,6 @@ internal let idiomSliLiteralMessage: Swift.String =
     + "`Index<Element>(Ordinal(UInt(x)))` construction only for runtime "
     + "values (identifiers, member accesses, call results)."
 
-/// The callee name of an outer `Index`/`Tagged` construction: either a bare
-/// `DeclReferenceExprSyntax` or a `GenericSpecializationExprSyntax` over one
-/// (any generic arguments).
 internal func idiomSliOuterCalleeName(_ call: FunctionCallExprSyntax) -> Swift.String? {
     let callee = call.calledExpression
     if let reference = callee.as(DeclReferenceExprSyntax.self) {
@@ -79,16 +60,10 @@ internal func idiomSliOuterCalleeName(_ call: FunctionCallExprSyntax) -> Swift.S
     return nil
 }
 
-/// The callee name of an inner `Ordinal`/`UInt` wrapper — a bare
-/// `DeclReferenceExprSyntax` only.
 internal func idiomSliBareCalleeName(_ call: FunctionCallExprSyntax) -> Swift.String? {
     call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text
 }
 
-/// The single unlabeled argument expression of a call, or `nil` when the call
-/// does not have exactly one argument with no label (and no trailing closure).
-/// A labeled argument (e.g. `Index(_unchecked: …)`) yields `nil` — that is a
-/// different API surface ([CONV-015]).
 internal func idiomSliSingleUnlabeledArgument(_ call: FunctionCallExprSyntax) -> ExprSyntax? {
     guard call.trailingClosure == nil,
         call.additionalTrailingClosures.isEmpty,
@@ -113,21 +88,15 @@ internal final class IdiomSliLiteralVisitor: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        // Outer call: `Index(…)` or `Tagged(…)`, bare or generic-specialized.
         guard let outerName = idiomSliOuterCalleeName(node),
             outerName == "Index" || outerName == "Tagged",
-            // Exactly one unlabeled argument (no `_unchecked:` surface).
             let ordinalArgument = idiomSliSingleUnlabeledArgument(node),
-            // That argument is `Ordinal(<x>)`.
             let ordinalCall = ordinalArgument.as(FunctionCallExprSyntax.self),
             idiomSliBareCalleeName(ordinalCall) == "Ordinal",
             let uintArgument = idiomSliSingleUnlabeledArgument(ordinalCall),
-            // `<x>` is `UInt(<y>)`.
             let uintCall = uintArgument.as(FunctionCallExprSyntax.self),
             idiomSliBareCalleeName(uintCall) == "UInt",
             let innerArgument = idiomSliSingleUnlabeledArgument(uintCall),
-            // `<y>` is an integer literal — SLI is literals-only; runtime
-            // bindings (identifier / member-access / call) are exempt.
             innerArgument.is(IntegerLiteralExprSyntax.self)
         else { return .visitChildren }
 

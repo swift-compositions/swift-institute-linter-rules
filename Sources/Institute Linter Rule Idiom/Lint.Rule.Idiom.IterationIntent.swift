@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `for index in 0..<n` index-counted iteration is mechanism, not
-/// intent. Citation: `[IMPL-033]`.
 extension Lint.Rule {
     public static let `counter loop iteration` = Lint.Rule(
         id: "counter loop iteration",
@@ -70,10 +57,6 @@ internal let idiomIterationIntentMessage: Swift.String =
     + "and erases `throws(E)` to `any Error`, so the counter loop is the "
     + "lawful spelling there, not mechanism."
 
-/// Returns true for a bare `<a>..<<b>` / `<a>...<b>` range expression,
-/// or that same shape wrapped in a single trailing `.reversed()` call
-/// (`(<a>..<<b>).reversed()`) — the loop-direction inversion doesn't
-/// change what's being iterated.
 internal func idiomIsRangeExpression(_ expression: ExprSyntax) -> Swift.Bool {
     if idiomIsBareRangeExpression(expression) {
         return true
@@ -109,7 +92,6 @@ private func idiomIsBareRangeExpression(_ expression: ExprSyntax) -> Swift.Bool 
 }
 
 extension ExprSyntax {
-    /// Strips a single layer of enclosing parentheses, if present.
     fileprivate var unwrappingParens: ExprSyntax {
         if let tuple = self.as(TupleExprSyntax.self), tuple.elements.count == 1,
             let onlyElement = tuple.elements.first, onlyElement.label == nil
@@ -120,17 +102,11 @@ extension ExprSyntax {
     }
 }
 
-/// True when `loop`'s body performs a `try` and the nearest enclosing
-/// function-like declaration is declared with TYPED throws (`throws(E)`).
-/// See the call site for the [IMPL-033] rationale.
 internal func idiomLoopPreservesTypedThrows(_ loop: ForStmtSyntax) -> Swift.Bool {
     guard idiomContainsTryExpression(Syntax(loop.body)) else { return false }
     return idiomEnclosingDeclHasTypedThrows(Syntax(loop))
 }
 
-/// True when `node`'s subtree contains a `try` expression. `try?` and
-/// `try!` do NOT count: both discard the typed error, so `forEach` erases
-/// nothing the site still relies on.
 private func idiomContainsTryExpression(_ node: Syntax) -> Swift.Bool {
     if let tryExpr = node.as(TryExprSyntax.self), tryExpr.questionOrExclamationMark == nil {
         return true
@@ -141,11 +117,6 @@ private func idiomContainsTryExpression(_ node: Syntax) -> Swift.Bool {
     return false
 }
 
-/// True when the nearest enclosing function / initializer / accessor /
-/// closure declares typed throws — a `ThrowsClauseSyntax` carrying a
-/// non-nil `type`. The walk stops at the FIRST function-like ancestor:
-/// an inner untyped-throws closure inside a `throws(E)` function does not
-/// inherit the exemption, because `forEach` erases nothing there.
 private func idiomEnclosingDeclHasTypedThrows(_ node: Syntax) -> Swift.Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
@@ -182,22 +153,6 @@ internal final class IdiomIterationIntentVisitor: SyntaxVisitor {
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
         guard node.pattern.is(IdentifierPatternSyntax.self) else { return .visitChildren }
         guard idiomIsRangeExpression(node.sequence) else { return .visitChildren }
-        // Typed-throws exemption ([IMPL-033] refinement, ruled
-        // swift-institute/.github#90 comment 5150641576 item 1, sourced from
-        // the batch-1 backlog, comment 5150595934, W1-E entry "IMPL-033
-        // typed-throws exception"): `Sequence.forEach(_:)` is declared
-        // `rethrows`, which ERASES a typed `throws(E)` to untyped `any Error`
-        // at the call site. A loop whose body performs a `try` inside a
-        // function declared `throws(E)` therefore cannot climb the iteration
-        // ladder without losing the typed-throws contract — the counter/for
-        // loop is the lawful spelling, not mechanism-over-intent.
-        //
-        // Predicate: the loop body contains a `try` expression AND the nearest
-        // enclosing function-like declaration has a throws clause with a
-        // non-nil type specification (i.e. `throws(E)`, not bare `throws`,
-        // not `rethrows`). Both conjuncts are required — a typed-throws
-        // function whose range loop never throws is still ordinary mechanism
-        // and still fires.
         if idiomLoopPreservesTypedThrows(node) { return .visitChildren }
         let location = converter.location(for: node.forKeyword.positionAfterSkippingLeadingTrivia)
         matches.append(

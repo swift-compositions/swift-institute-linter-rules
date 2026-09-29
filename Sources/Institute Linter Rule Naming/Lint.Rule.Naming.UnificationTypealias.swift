@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `typealias X = Y.Z` (with X != Z) is a rename-bridge anti-pattern.
-/// Citation: `[API-NAME-004]`.
 extension Lint.Rule {
     public static let `unification typealias` = Lint.Rule(
         id: "unification typealias",
@@ -77,36 +64,14 @@ internal final class NamingUnificationTypealiasVisitor: SyntaxVisitor {
         if member.genericArgumentClause != nil { return .visitChildren }
         let rhsLeaf = member.name.text
         guard rhsLeaf != lhsName else { return .visitChildren }
-        // Exempt stdlib bridges: `public typealias Protocol = Swift.Equatable`
-        // (Equation/Hash/Comparison primitives under Swift 6.4+ SE-0499) is a
-        // namespace alias TO the stdlib, not a rename bridge between two
-        // co-equal type definitions. The structural signal is the RHS base
-        // identifier resolving to `Swift`.
         if let baseIdentifier = member.baseType.as(IdentifierTypeSyntax.self),
             baseIdentifier.name.text == "Swift"
         {
             return .visitChildren
         }
-        // Exempt per [RULE-EXEMPT-3] (conformance-context): typealiases
-        // that satisfy an associatedtype requirement of a protocol the
-        // enclosing context adopts — `extension X: Y { typealias
-        // Underlying = Unicode.Scalar }` declares conformance to `Y`;
-        // the LHS name is dictated by `Y`'s associatedtype, the RHS
-        // is whatever satisfies it. Forced by the protocol shape, not
-        // by a discretionary [API-NAME-004] rename-bridge choice.
-        // Helper lives in `Lint.Rule.Naming.Shared.swift`.
         if Naming.isInsideConformingContext(Syntax(node)) {
             return .visitChildren
         }
-        // Exempt per [RULE-EXEMPT-5] (Protocol-sentinel): the
-        // gerund-as-capability typealias pattern per [PKG-NAME-001]
-        // pairs a noun-form namespace (`Carrier`) with a gerund-form
-        // capability alias (`Carrying`) so conformance sites read as
-        // verb-form predicates (`extension Cardinal: Carrying`). The
-        // structural signal is the RHS targeting a member named
-        // `Protocol` — the institute sentinel for the [API-IMPL-009]
-        // hoisted-protocol pattern. Helper lives in
-        // `Lint.Rule.Naming.Shared.swift`.
         if Naming.isProtocolSentinel(rhsLeaf) {
             return .visitChildren
         }

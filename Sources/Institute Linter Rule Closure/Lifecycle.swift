@@ -1,10 +1,5 @@
 internal import SwiftSyntax
 
-/// Classifies a closure parameter's lifecycle tier from its label.
-///
-/// Both the external argument label (`parameter.firstName`, when not an
-/// anonymous `_`) and the internal parameter name
-/// (`parameter.secondName`) are checked against the known label sets.
 internal func tier(of parameter: FunctionParameterSyntax) -> Tier {
     let external: Swift.String? =
         parameter.firstName.tokenKind == .wildcard ? nil : parameter.firstName.text

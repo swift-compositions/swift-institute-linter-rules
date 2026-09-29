@@ -1,37 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// R4 — `X(bitPattern: …rawValue)` integration-overload anti-pattern.
-///
-/// Subsumes the regex `bitpattern_rawvalue_chain_anti_pattern`. The AST
-/// predicate is a `FunctionCallExprSyntax` carrying a `bitPattern:`
-/// labeled argument whose expression chains through a `.rawValue`
-/// member access (anywhere inside the argument expression).
-///
-/// Typename-swap evasion (`Int(bitPattern:)` vs `UInt(bitPattern:)` vs
-/// `self.init(bitPattern:)` vs `Int.init(bitPattern:)` vs
-/// `Int8(bitPattern:)` …) is closed natively: every form parses to a
-/// `FunctionCallExprSyntax` carrying the same labeled argument. The
-/// predicate doesn't constrain the callee, so all spellings hit.
-///
-/// References:
-/// - the cardinal/ordinal/vector enforcement design note
-///   §"R4. `Int(bitPattern: <something>.rawValue ...)`"
-/// - the SwiftSyntax-based custom-linter investigation note
-///   §"Q2 — Evasion-class closure matrix" (typename-swap row)
 extension Lint.Rule {
-  /// Flags `init(bitPattern:)` calls whose argument chains through `.rawValue`, bypassing the typed conversion hierarchy ([CONV-016]).
   public static let `bitpattern rawvalue chain` = Lint.Rule(
     id: "bitpattern rawvalue chain",
     default: .warning,
@@ -56,10 +26,6 @@ extension Lint.Rule {
       ),
     ],
     observe: Lint.Rule.measured { source, severity in
-      // §A brand-owner recognizer: the owner's own `Int(bitPattern:
-      // brand.rawValue)` integration overload ([INFRA-002]) is
-      // legitimate-by-construction. Retires the per-package
-      // `.excluding(rules:)` stopgap ([LINT-EXCLUDE-*]).
       if Lint.Brand.owned(Lint.Brand.vocabulary, in: source) { return [] }
       let visitor = RawValueBitPatternVisitor(
         source: source.file,

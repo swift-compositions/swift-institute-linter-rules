@@ -1,53 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `@Test` and `@Suite` declarations MUST carry their name in the backticked
-/// raw-identifier declaration name, not in a string display-name argument.
-/// Citation: `[SWIFT-TEST-006]`.
-///
-/// Predicate. Fires on an unlabelled string-literal argument to a `@Test` or
-/// `@Suite` attribute (bare or qualified `@Testing.Test` / `@Testing.Suite`),
-/// on a function declaration or on a struct/enum/class/actor declaration,
-/// when the literal's content could be spelled as a backticked raw
-/// identifier. Trailing trait arguments (`.serialized`, `.tags(...)`,
-/// `arguments:` …) are untouched — only the display-name string is matched.
-///
-/// Two shapes, one predicate and two fix dispositions:
-/// (a) the general could-be-an-identifier display string, and
-/// (b) the duplicate-name shape, where the string equals the declaration's own
-/// backticked name. Shape (b) is a *compile error* on Swift 6.3/6.4 (the
-/// explicit display name duplicates the implicit one), so the rule removes
-/// only that redundant argument. Shape (a) requires changing the declaration
-/// token and is routed as rename-required rather than autofixed.
-///
-/// Canonical fix: when the string exactly duplicates the declaration's own
-/// backticked name, remove only the string argument, keeping the declaration
-/// token, attribute qualification, trailing traits and trivia. Otherwise,
-/// refuse the autofix: a reviewed or compiler-aware rename must account for
-/// references, filters, `#function`, and snapshot keys.
-///
-/// Exemption, in-predicate: a display string whose content cannot be a raw
-/// identifier — it contains a backtick, a backslash (escape or interpolation),
-/// whitespace other than U+0020 (a multiline literal or an escaped tab or
-/// newline), is empty or all-spaces, or consists solely of operator
-/// characters. Such a string carries information the declaration name cannot,
-/// so it stays.
-///
-/// Known false negatives: a display name built from a constant or any
-/// non-literal expression is invisible to a syntactic rule. Known false
-/// positives: none observed — an unlabelled string literal in the leading
-/// argument position of `@Test`/`@Suite` is the display name by construction.
 extension Lint.Rule {
     public static let `test display name string` = Lint.Rule(
         id: "test display name string",
@@ -115,14 +68,10 @@ internal let testingDisplayNameDuplicateMessage: Swift.String =
     + "argument and keep the backticked declaration token, attribute "
     + "qualification, every trailing trait, and trivia."
 
-/// Characters a raw identifier may not consist *solely* of, per the raw
-/// identifier grammar: a name made only of operator characters would be
-/// ambiguous with an operator declaration.
 private let displayNameOperatorCharacters: Set<Character> = [
     "/", "=", "-", "+", "!", "*", "%", "<", ">", "&", "|", "^", "~", ".", "?",
 ]
 
-/// The `@Test` or `@Suite` attribute, bare or qualified, if present.
 internal func testingDisplayNameAttribute(_ attributes: AttributeListSyntax) -> AttributeSyntax? {
     for attribute in attributes {
         guard let attr = attribute.as(AttributeSyntax.self) else { continue }
@@ -135,9 +84,6 @@ internal func testingDisplayNameAttribute(_ attributes: AttributeListSyntax) -> 
     return nil
 }
 
-/// The unlabelled string-literal display-name argument, if the attribute
-/// carries one. A labelled argument (`arguments:`) is not a display name,
-/// and a trait (`.serialized`) is not a string literal.
 internal func testingDisplayNameLiteral(_ attribute: AttributeSyntax) -> StringLiteralExprSyntax? {
     guard case .argumentList(let arguments) = attribute.arguments else { return nil }
     for argument in arguments {
@@ -147,8 +93,6 @@ internal func testingDisplayNameLiteral(_ attribute: AttributeSyntax) -> StringL
     return nil
 }
 
-/// The literal's content as written, or `nil` when it is not a single plain
-/// segment (an interpolation makes the display name non-static).
 internal func testingDisplayNameContent(_ literal: StringLiteralExprSyntax) -> Swift.String? {
     var content = ""
     for segment in literal.segments {
@@ -158,7 +102,6 @@ internal func testingDisplayNameContent(_ literal: StringLiteralExprSyntax) -> S
     return content
 }
 
-/// Whether deleting the display-name argument preserves declaration identity.
 internal func testingDisplayNameDuplicatesDeclaration(
     name: TokenSyntax,
     content: Swift.String
@@ -168,13 +111,6 @@ internal func testingDisplayNameDuplicatesDeclaration(
         && Swift.String(spelled.dropFirst().dropLast()) == content
 }
 
-/// True when `text` — the literal's content *as written in source* — could be
-/// spelled as a backticked raw identifier.
-///
-/// Working on the as-written segment text rather than a decoded value is
-/// deliberate: an escape sequence (`\n`, `\t`, `\u{...}`, an interpolation)
-/// appears here as a backslash and is rejected, which is the conservative
-/// direction — the rule declines to prescribe a rename it cannot spell.
 internal func displayNameCanBeRawIdentifier(_ text: Swift.String) -> Swift.Bool {
     guard !text.isEmpty else { return false }
     for character in text {
@@ -207,10 +143,6 @@ internal final class TestingDisplayNameStringVisitor: SyntaxVisitor {
         guard let content = testingDisplayNameContent(literal) else { return }
         guard displayNameCanBeRawIdentifier(content) else { return }
 
-        // Duplicate-name shape: the string repeats the declaration's own
-        // backticked raw-identifier name. The backticks are part of the token's
-        // spelling for a raw identifier, so strip them explicitly rather than
-        // relying on `TokenSyntax.text` to have done it.
         let isDuplicate = testingDisplayNameDuplicatesDeclaration(name: name, content: content)
 
         let location = converter.location(for: literal.positionAfterSkippingLeadingTrivia)

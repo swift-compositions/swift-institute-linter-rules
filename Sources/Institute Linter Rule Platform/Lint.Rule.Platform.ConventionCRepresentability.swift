@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — `@convention(c)` function types
-/// MUST NOT take `UnsafeMutablePointer<UserType>?` parameters where
-/// `UserType` is a Swift-defined struct.
-///
-/// Citation: `[PLAT-ARCH-005b]` (platform skill — `@convention(c)`
-/// representability pre-check).
 extension Lint.Rule {
     public static let `convention c representability` = Lint.Rule(
         id: "convention c representability",
@@ -87,22 +70,6 @@ internal func platformConventionCRepresentabilityHasConventionC(
     return false
 }
 
-/// Returns true when `type` (after stripping optional / IUO /
-/// attributed wrappers) is `UnsafeMutablePointer<X>` /
-/// `UnsafePointer<X>` where `X` is a Swift-defined struct — i.e. NOT
-/// itself an `UnsafeMutablePointer`/`UnsafePointer` type, NOT a type
-/// reached through a known C-interop module qualifier (`Darwin.kevent`,
-/// `Glibc.stat`, etc. — genuinely C-representable, and the house style
-/// for reaching such types in exactly the platform code this rule
-/// targets), and NOT one of the stdlib's own C-representable
-/// fixed-layout primitives (`[PLAT-ARCH-005b]` exemption, #34).
-///
-/// Both a bare bare `MyStruct` (`IdentifierTypeSyntax`) and a
-/// Swift-namespace-qualified `MyNamespace.MyStruct`
-/// (`MemberTypeSyntax` whose root is NOT a C-interop module) count as
-/// Swift-defined; only a `MemberTypeSyntax` rooted at a recognized
-/// C-interop module, or a bare identifier matching the closed stdlib
-/// primitive set, is exempt.
 internal func platformConventionCRepresentabilityIsUnsafePointerToUserType(
     _ type: TypeSyntax
 )
@@ -134,18 +101,6 @@ internal func platformConventionCRepresentabilityIsUnsafePointerToUserType(
     return true
 }
 
-/// True when `type` is a bare identifier naming one of the stdlib's
-/// closed set of C-representable fixed-layout primitives: the
-/// fixed-width integers, `Int`/`UInt`, `Float`, `Double`, `Bool`, and
-/// the raw/opaque pointer types. Being a "Swift-defined struct" is an
-/// implementation detail of these types, not an ABI fact — they are
-/// the canonical `@convention(c)`-compatible primitives under Swift's
-/// C interop rules, and pointers to them MUST NOT be flagged (#34).
-///
-/// The match is by exact spelling against the closed set, never a
-/// prefix or substring test — a type merely named like a primitive
-/// (`Int128`, a project-local `Int32Wrapper`) is not itself one of
-/// these spellings and remains subject to the rule.
 private func platformConventionCRepresentabilityIsStdlibPrimitive(
     _ type: TypeSyntax
 )
@@ -164,13 +119,6 @@ private let platformConventionCRepresentabilityStdlibPrimitiveNames: Swift.Set<S
     "UnsafeRawPointer", "UnsafeMutableRawPointer", "OpaquePointer",
 ]
 
-/// True when `type` is a `MemberTypeSyntax` rooted at a recognized
-/// C-interop module (`Darwin`, `Glibc`, `Musl`, `Bionic`, `Android`,
-/// `WASILibc`, `WinSDK`, `ucrt`, `CRT` — the same module set
-/// `canimport conditional` treats as genuine C-library availability).
-/// A bare identifier (no qualifier at all) is never a C-interop
-/// reference — it's exactly the documented "Swift-defined struct"
-/// case this rule exists to catch.
 private func platformConventionCRepresentabilityIsCInteropReference(
     _ type: TypeSyntax
 )

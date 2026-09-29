@@ -1,21 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 internal import Cardinal
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 2b finalization (2026-05-10) — one type declaration per file.
-///
-/// Citation: `[API-IMPL-005]` (code-surface skill).
 extension Lint.Rule {
     public static let `single type per file` = Lint.Rule(
         id: "single type per file",
@@ -41,8 +27,6 @@ extension Lint.Rule {
             ),
         ],
         observe: Lint.Rule.measured { source, severity in
-            // Scope-exclusion per Decision 2: skip files whose path has a
-            // segment named `Tests`, `Experiments`, or `Examples`.
             let path = source.file.filePath
             for excluded in ["Tests", "Experiments", "Examples"] {
                 if path == excluded
@@ -85,17 +69,6 @@ internal final class StructureSingleTypePerFileVisitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    // #28 defect 4: the hand-rolled `currentDepth` counter bumped for
-    // struct/class/enum/actor/protocol but never for a function-like
-    // container, so a type declared inside a function body was counted
-    // at depth 0 — a second top-level type, with a prescribed fix
-    // ("move to its own file") that cannot apply to it. Replaced with
-    // the structural ancestor walk `structureIsFileSignificant(_:)`
-    // (`Lint.Rule.Structure.Shared.swift`), the extension-transparent
-    // sibling of `Lint.Syntax.Scope.isTopLevel(_:)` — enumerating
-    // container kinds is what produced this defect (and the identical
-    // one in #21 blocker 3's `compound platform namespace root`); the
-    // ancestor walk does not have a "kind I forgot" failure mode.
     private func handleTypeDecl(_ node: some SyntaxProtocol, at position: AbsolutePosition) {
         guard structureIsFileSignificant(node) else { return }
         topLevelCount += .one
@@ -141,14 +114,6 @@ internal final class StructureSingleTypePerFileVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    // `#if` / `#elseif` / `#else` clauses are mutually exclusive at
-    // compile time — the common cross-platform-conditional shape
-    // declares the SAME logical top-level type once per branch (e.g.
-    // a `#if os(Linux) struct Foo {} #else struct Foo {} #endif`
-    // pair). The source-accurate view retains every branch, so the
-    // default traversal would count each branch's declaration
-    // separately and false-positive on platform-conditional code.
-    // Walk only the first clause; skip the rest entirely.
     override func visit(_ node: IfConfigDeclSyntax) -> SyntaxVisitorContinueKind {
         if let firstClause = node.clauses.first {
             walk(firstClause)

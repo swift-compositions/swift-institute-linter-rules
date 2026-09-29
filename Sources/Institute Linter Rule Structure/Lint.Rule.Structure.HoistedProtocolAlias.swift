@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — declaring-module conformance for a
-/// hoisted-protocol typealias pattern MUST use the hoisted name, not
-/// the typealias path (self-referential conformance cycle).
-///
-/// Citation: `[API-IMPL-009]` (code-surface skill — hoisted protocol
-/// with nested typealias).
 extension Lint.Rule {
     public static let `hoisted protocol alias` = Lint.Rule(
         id: "hoisted protocol alias",

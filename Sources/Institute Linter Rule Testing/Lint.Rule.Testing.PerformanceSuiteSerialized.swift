@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Performance suites MUST carry the `.serialized` trait.
-/// Citation: `[SWIFT-TEST-004]`.
 extension Lint.Rule {
     public static let `performance suite serialized` = Lint.Rule(
         id: "performance suite serialized",
@@ -77,11 +64,6 @@ internal final class TestingPerformanceSuiteSerializedVisitor: SyntaxVisitor {
         return nil
     }
 
-    /// Structural check for the `.serialized` trait argument (#24 nit:
-    /// replaces a `.contains(".serialized")` textual scan of the whole
-    /// attribute's description, which also matches inside an unrelated
-    /// interior comment or string). Looks for a bare `.serialized`
-    /// member-access argument specifically.
     private func mentionsSerialized(_ attribute: AttributeSyntax) -> Swift.Bool {
         guard case .argumentList(let arguments) = attribute.arguments else { return false }
         for argument in arguments {
@@ -94,12 +76,6 @@ internal final class TestingPerformanceSuiteSerializedVisitor: SyntaxVisitor {
         return false
     }
 
-    /// A type with no explicit `@Suite` is still a suite under Swift
-    /// Testing if its body declares at least one `@Test`-attributed
-    /// function — an IMPLICIT suite, and exactly the shape that
-    /// previously lacked the `.serialized` trait invisibly, since the
-    /// rule required an explicit `@Suite` attribute to even look (#24
-    /// defect 2).
     private func hasTestFunction(_ members: MemberBlockItemListSyntax) -> Swift.Bool {
         for member in members {
             guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }

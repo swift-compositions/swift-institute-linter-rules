@@ -1,22 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 4 (mechanization-program) — public enum whose cases enumerate
-/// platforms (POSIX / Windows, or UTF8 / UTF16) is the dead-case anti-
-/// pattern in disguise.
-///
-/// Citation: `[PATTERN-056]` (implementation skill, the patterns note).
 extension Lint.Rule {
   public static let `dead case per platform` = Lint.Rule(
     id: "dead case per platform",
@@ -72,14 +56,6 @@ internal let platformDeadCasePerPlatformPlatformPairs: [Swift.Set<Swift.String>]
   ["macos", "windows"],
 ]
 
-/// A subset test (#21 defect 4), not exact-set equality: `{ case posix,
-/// windows, unknown }` still enumerates the POSIX/Windows platform split
-/// even with an extra non-platform case, and exact equality evaded it.
-/// Accepted consequence, recorded deliberately: a genuinely open
-/// platform-identity enum (`enum OperatingSystem { case linux, darwin,
-/// windows, freebsd, android }`) now fires too — that is the shape this
-/// rule exists for, it is `.warning`, and the author has a suppression
-/// directive.
 internal func platformDeadCasePerPlatformMatchesPlatformPair(_ cases: [Swift.String]) -> Swift.Bool
 {
   let lower = Swift.Set(cases.map { $0.lowercased() })

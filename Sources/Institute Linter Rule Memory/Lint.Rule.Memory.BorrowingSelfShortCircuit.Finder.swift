@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 internal import SwiftSyntax
 
 internal final class MemoryBorrowingSelfShortCircuitFinder: SyntaxVisitor {
@@ -21,7 +10,6 @@ internal final class MemoryBorrowingSelfShortCircuitFinder: SyntaxVisitor {
     }
 
     override func visit(_ node: SequenceExprSyntax) -> SyntaxVisitorContinueKind {
-        // Collect short-circuit operator positions in this sequence.
         var shortCircuitPositions: [AbsolutePosition] = []
         for element in node.elements {
             guard let op = element.as(BinaryOperatorExprSyntax.self) else { continue }
@@ -30,12 +18,6 @@ internal final class MemoryBorrowingSelfShortCircuitFinder: SyntaxVisitor {
             }
         }
         guard !shortCircuitPositions.isEmpty else { return .visitChildren }
-        // Check whether any non-operator element in the sequence roots
-        // to a borrowing-Self parameter. The rule's documented
-        // recommendation is to use local `let` bindings (e.g.,
-        // `let lhsCopy = copy lhs`) and short-circuit on those — that
-        // shape should not fire. Only fire if the short-circuit
-        // operands directly reference the borrowed self.
         var anyOperandIsBorrowingSelf = false
         for element in node.elements {
             if element.is(BinaryOperatorExprSyntax.self) { continue }
@@ -92,14 +74,6 @@ internal final class MemoryBorrowingSelfShortCircuitFinder: SyntaxVisitor {
             }
             return false
         }
-        // #25 nit: renamed from `paren` — an InfixOperatorExprSyntax is not
-        // a parenthesized expression; the name was a copy/paste artifact.
-        // (Also #25 nit: this branch, like the SequenceExprSyntax branch
-        // above, is unreachable in practice — SwiftParser never nests a
-        // SequenceExprSyntax or InfixOperatorExprSyntax as an element of
-        // another SequenceExprSyntax; both arrive pre-folded or as leaves.
-        // Left in place as defensive/future-proofing, not removed, since
-        // that predicate change is out of this pass's scope.)
         if let infix = node.as(InfixOperatorExprSyntax.self) {
             return rootIdentifierIsBorrowingSelf(infix.leftOperand)
                 || rootIdentifierIsBorrowingSelf(infix.rightOperand)
@@ -108,7 +82,6 @@ internal final class MemoryBorrowingSelfShortCircuitFinder: SyntaxVisitor {
     }
 
     override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-        // Closures are their own scope — skip.
         return .skipChildren
     }
 }

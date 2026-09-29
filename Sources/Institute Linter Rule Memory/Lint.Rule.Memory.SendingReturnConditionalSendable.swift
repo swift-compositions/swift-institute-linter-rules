@@ -1,60 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Prohibits a `sending`-typed return position on a public/package
-/// member of a generic type whose Sendability is `@unchecked` and
-/// conditional on one of its own generic parameters
-/// (`extension State: @unchecked Sendable where Base: Sendable {}`).
-///
-/// Adjudication: `swift-molecules/swift-property#7`
-/// (recommendation, 2026-07-30) — `Property.Consume.State`'s
-/// `@unchecked Sendable where Base: Sendable` conformance is sound only
-/// as the conjunction of three facts, one of which cannot be expressed
-/// as a test: adding `sending` to a public member's return type
-/// mentioning `Base` is SOURCE-COMPATIBLE (no fixture breaks) yet
-/// converts a sound surface into a fully undiagnosed data race. Region
-/// isolation re-merges a PLAIN return with `self`'s region at the call
-/// site; a `sending`-typed return instead hands out a value
-/// disconnected from `self` while the guarded type stays reachable
-/// from the original region — exactly the race the lock exists to
-/// prevent. `-typecheck` cannot observe the difference (both spellings
-/// compile); this rule mechanizes the prohibition the test suite
-/// cannot express.
-///
-/// AST shape: within one file, an extension declares
-/// `SomeType: @unchecked Sendable where G: Sendable` for some generic
-/// parameter `G` of `SomeType`. Any public/package function or
-/// subscript on `SomeType` (declared on the primary type or in any
-/// extension, including ones with no access modifier of their own
-/// inside a `public`/`open extension`) whose return type carries the
-/// `sending` specifier AND mentions `G` (bare, optional-wrapped,
-/// array-wrapped, or as a generic argument) is flagged at the return
-/// type's position.
-///
-/// Scope is intentionally narrow (exactly the adjudicated shape) —
-/// `@unchecked` is the load-bearing signal that separates "the
-/// compiler already verifies this" (plain conditional `Sendable`) from
-/// "a human asserted this, and `sending` at a return site can quietly
-/// invalidate the assertion" (unchecked). A plain, non-`@unchecked`
-/// `Sendable where G: Sendable` conformance is unconditionally checked
-/// by the compiler at every member and is out of scope.
-///
-/// ADVISORY at introduction, per the standing graduation discipline
-/// (issue #11) — promote to `.error` only after fleet validation finds
-/// no false positives.
 extension Lint.Rule {
-    /// Flags a `sending`-typed return on a public/package member of a type whose `@unchecked Sendable` conformance is conditional on the mentioned generic parameter ([swift-property#7]).
     public static let `sending return conditional sendable state` = Lint.Rule(
         id: "sending return conditional sendable state",
         default: .warning,
@@ -108,23 +55,10 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
     let converter: SourceLocationConverter
     private var matches: [Diagnostic.Record] = []
 
-    /// Nesting path of the physically-enclosing type declarations,
-    /// dot-joined. An `ExtensionDeclSyntax`'s extended-type path is
-    /// pushed here too (its own components, independent of physical
-    /// nesting) so that members declared inside an extension resolve to
-    /// the same qualified path as the primary declaration.
     private var enclosingPath: [Swift.String] = []
-    /// How many path components each currently-open `ExtensionDeclSyntax`
-    /// pushed, so `visitPost` pops the right count.
     private var extensionPushCounts: [Swift.Int] = []
 
-    /// Generic parameter names declared by each qualified type path's
-    /// PRIMARY declaration.
     private var genericParamsByPath: [Swift.String: Swift.Set<Swift.String>] = [:]
-    /// Generic parameter names gated by an `@unchecked Sendable where
-    /// G: Sendable` extension, per qualified type path. Populated
-    /// regardless of file order relative to the members that mention
-    /// them; resolved after the walk completes.
     private var gatedParamsByPath: [Swift.String: Swift.Set<Swift.String>] = [:]
 
     private struct Candidate {
@@ -142,8 +76,6 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
     }
 
     private var currentPath: Swift.String { enclosingPath.joined(separator: ".") }
-
-    // MARK: - Type-decl nesting (primary declarations)
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         enclosingPath.append(Lint.Syntax.Identifier.unescaped(node.name.text))
@@ -172,8 +104,6 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
     }
     override func visitPost(_: ActorDeclSyntax) { _ = enclosingPath.popLast() }
 
-    // MARK: - Extensions: extended-type path + conditional-unchecked-Sendable gate
-
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         let pathComponents =
             sendingConditionalQualifiedPathComponents(node.extendedType) ?? ["<unknown>"]
@@ -192,8 +122,6 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
         let count = extensionPushCounts.removeLast()
         enclosingPath.removeLast(count)
     }
-
-    // MARK: - Members
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         guard sendingConditionalIsPublicOrPackageEffective(Syntax(node), modifiers: node.modifiers)
@@ -227,10 +155,6 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
         )
     }
 
-    /// Cross-references collected candidates against the (possibly
-    /// later-in-file) conditional-Sendable gate for their type path, and
-    /// emits a diagnostic per candidate whose mentioned names intersect
-    /// the gated set.
     internal func resolvedMatches() -> [Diagnostic.Record] {
         for candidate in candidates {
             guard let gated = gatedParamsByPath[candidate.path], !gated.isEmpty else { continue }
@@ -254,8 +178,6 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
     }
 }
 
-// MARK: - Free helpers
-
 private func sendingConditionalGenericParamNames(
     _ clause: GenericParameterClauseSyntax?
 )
@@ -269,13 +191,6 @@ private func sendingConditionalGenericParamNames(
     return names
 }
 
-/// Builds the extended type's qualified path as individual components
-/// (`["Property", "Consume", "State"]` for `extension
-/// Property.Consume.State`), ignoring any generic-argument clause —
-/// the extension's OWN generic parameters (introduced via a trailing
-/// `<...>` on `ExtensionDeclSyntax`, not on the extended type) are not
-/// modeled here; this rule only needs the dotted nesting path to match
-/// members declared in the same extension or the primary declaration.
 private func sendingConditionalQualifiedPathComponents(_ type: TypeSyntax) -> [Swift.String]? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return [Lint.Syntax.Identifier.unescaped(identifier.name.text)]
@@ -290,9 +205,6 @@ private func sendingConditionalQualifiedPathComponents(_ type: TypeSyntax) -> [S
     return nil
 }
 
-/// True if `clause` inherits `@unchecked Sendable` — an
-/// `AttributedTypeSyntax` whose `attributes` contains `unchecked` and
-/// whose base type's leaf is `Sendable` (optionally `Swift`-qualified).
 private func sendingConditionalHasUncheckedSendable(
     _ clause: InheritanceClauseSyntax?
 )
@@ -322,9 +234,6 @@ private func sendingConditionalIsSendableLeaf(_ type: TypeSyntax) -> Swift.Bool 
     return false
 }
 
-/// Returns the set of generic-parameter names bound by a
-/// `ConformanceRequirementSyntax` of shape `<Param>: Sendable` (or
-/// `Swift.Sendable`) in `clause`.
 private func sendingConditionalGatedGenericParamNames(
     _ clause: GenericWhereClauseSyntax?
 )
@@ -380,11 +289,6 @@ private func sendingConditionalHasSendingSpecifier(_ type: AttributedTypeSyntax)
     return false
 }
 
-/// Collects every bare identifier name mentioned anywhere in `type`
-/// (optional, array, dictionary, tuple, function, some/any, generic
-/// arguments, and the base of a member-type path) — used to test
-/// whether a `sending`-attributed return type mentions a gated generic
-/// parameter, wherever in the type shape it appears.
 private func sendingConditionalMentionedIdentifierNames(
     _ type: TypeSyntax
 )

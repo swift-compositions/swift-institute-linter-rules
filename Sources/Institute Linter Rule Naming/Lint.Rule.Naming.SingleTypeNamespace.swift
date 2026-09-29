@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Caseless-enum namespaces containing exactly one nested type are
-/// variant labels, not namespaces. Citation: `[API-NAME-001a]`.
 extension Lint.Rule {
     public static let `single type namespace` = Lint.Rule(
         id: "single type namespace",
@@ -58,13 +45,6 @@ private let namingSingleTypeNamespaceMessage: Swift.String =
     + "{ ... } }`."
 
 internal final class NamingSingleTypeNamespaceVisitor: SyntaxVisitor {
-    /// Per-member classification for the single-type-namespace check.
-    /// Nested inside the visitor because the enum is class-private —
-    /// the file-level `private enum SingleTypeMemberCategory` shape
-    /// tripped [API-NAME-001] (compound type name). The nested shape's
-    /// path is `NamingSingleTypeNamespaceVisitor.Category`, where
-    /// `Category` is single-word and not compound; the outer visitor
-    /// name is exempt per [RULE-EXEMPT-7] (syntax-visitor-subclass).
     private enum Category {
         case enumCase
         case typeDecl

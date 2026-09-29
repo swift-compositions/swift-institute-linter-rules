@@ -1,39 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — operator overloads with `borrowing
-/// Self` parameters MUST NOT use `&&` / `||` short-circuit operators in
-/// their body. Swift 6.3 rejects chained property access across the
-/// short-circuit boundary as "borrowed value escapes its borrow scope".
-///
-/// Citation: `[IMPL-094]` (implementation skill — chained property
-/// access on `borrowing Self` parameters).
-///
-/// The Swift 6.3 compiler's borrow analysis treats chained property
-/// reads across `||` / `&&` as separate borrow scopes that cannot
-/// share the initial borrow. The institute alternatives are:
-///   1. Tuple comparison — `(lhs.a, lhs.b) < (rhs.a, rhs.b)` —
-///      collapses the reads into one borrow.
-///   2. Local `let` bindings — `let la = lhs.a; let lb = lhs.b; …` —
-///      materializes the needed values before the short-circuit.
-///
-/// AST shape: walk operator `FunctionDeclSyntax` (name token kind
-/// `.binaryOperator`) whose parameter list contains a `borrowing Self`
-/// parameter. If the body contains a binary operator expression using
-/// `&&` or `||`, flag the operator position. The rule is compiler-
-/// enforced, not stylistic; the diagnostic surfaces the violation at
-/// authoring time rather than after the compile error.
 extension Lint.Rule {
     public static let `borrowing self short circuit` = Lint.Rule(
         id: "borrowing self short circuit",
@@ -120,14 +87,9 @@ internal final class MemoryBorrowingSelfShortCircuitVisitor: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        // Operator detection: name token kind is .binaryOperator.
         guard node.name.tokenKind == .binaryOperator(node.name.text) else {
             return .visitChildren
         }
-        // Collect names of `borrowing Self` parameters (typically
-        // `lhs` / `rhs`). Operand-identifier tracing uses this set
-        // to determine whether a short-circuit references the
-        // borrowed self directly or only via local copies.
         var borrowingSelfNames: Swift.Set<Swift.String> = []
         for parameter in node.signature.parameterClause.parameters {
             if memoryBorrowingSelfShortCircuitIsBorrowingSelf(parameter) {
@@ -136,8 +98,6 @@ internal final class MemoryBorrowingSelfShortCircuitVisitor: SyntaxVisitor {
             }
         }
         guard !borrowingSelfNames.isEmpty else { return .visitChildren }
-        // Walk body for && / || operators whose operands root to a
-        // borrowing-Self parameter.
         guard let body = node.body else { return .visitChildren }
         let finder = MemoryBorrowingSelfShortCircuitFinder(
             viewMode: .sourceAccurate,

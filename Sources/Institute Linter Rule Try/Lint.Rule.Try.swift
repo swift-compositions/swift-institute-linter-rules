@@ -1,34 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-// swiftlint:disable no_try_optional no_existential_throws
-// REASON: this rule's own doc comment and diagnostic message must literally cite the
-// `try?` pattern it detects, and (in the untyped-callee carve-out) the
-// `do throws(any Error)` dead end it names — self-referential fixture shape
-// (rule-exemptions skill); the regex-based no_try_optional and
-// no_existential_throws rules cannot distinguish prose citation from live code.
-/// `try?` swallows typed errors.
-///
-/// `try?` converts a thrown error into a `nil` Optional, erasing both the
-/// error type and the error instance. The institute convention prefers
-/// typed throws (`throws(E)`) so the error path remains explicit and
-/// recoverable. Past failure mode: `try? input.advance()` swallowed
-/// `EAGAIN` causing the Linux hot-spin in the IO Notification.wait()
-/// site (see `feedback_prefer_typed_throws_over_try_optional`).
-///
-/// AST shape: `TryExprSyntax` whose `questionOrExclamationMark.tokenKind`
-/// is `.postfixQuestionMark`.
 extension Lint.Rule {
     public static let `try optional` = Lint.Rule(
         id: "try optional",
@@ -82,7 +54,6 @@ internal let tryOptionalMessage: Swift.String =
     + "`// swift-linter:disable:next try optional` with a "
     + "`// REASON:` naming the untyped callee — that case is the author's to judge, "
     + "because a per-file rule can prove a callee typed but never untyped."
-// swiftlint:enable no_try_optional no_existential_throws
 
 internal final class TryOptionalVisitor: SyntaxVisitor {
     let source: Source.File

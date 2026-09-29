@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Callback APIs MUST express outcomes as `() throws(E) -> T` thunk
-/// parameters, not as `Result<T, E>` values. Citation: `[IMPL-092]`.
 extension Lint.Rule {
     public static let `callback result over throws thunk` = Lint.Rule(
         id: "callback result over throws thunk",
@@ -63,8 +50,6 @@ private func resultCallbackTokenPosition(in type: TypeSyntax) -> AbsolutePositio
         current = iuo.wrappedType
     }
     while let attributed = current.as(AttributedTypeSyntax.self) { current = attributed.baseType }
-    // Require exactly two generic arguments (`Value`, `Failure`) so a
-    // project-local non-generic `Result` type cannot fire (#19 smaller item 6).
     if let identifier = current.as(IdentifierTypeSyntax.self),
         identifier.name.text == "Result",
         identifier.genericArgumentClause?.arguments.count == 2
@@ -79,8 +64,6 @@ private func resultCallbackTokenPosition(in type: TypeSyntax) -> AbsolutePositio
     {
         return member.name.positionAfterSkippingLeadingTrivia
     }
-    // Recurse into container shapes that can hide a `Result` leak:
-    // `[Result<T, E>]`, `(Result<T, E>, Int)`, `[String: Result<T, E>]`.
     if let array = current.as(ArrayTypeSyntax.self) {
         return resultCallbackTokenPosition(in: array.element)
     }

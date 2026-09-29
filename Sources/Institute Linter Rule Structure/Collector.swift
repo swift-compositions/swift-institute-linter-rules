@@ -1,7 +1,6 @@
 internal import Lint
 internal import SwiftSyntax
 
-/// Collects top-level extensions and primary nominal declarations.
 internal final class Collector: SyntaxVisitor {
   var primaryTypes: [Primary] = []
   var topLevelExtensions: [ExtensionDeclSyntax] = []

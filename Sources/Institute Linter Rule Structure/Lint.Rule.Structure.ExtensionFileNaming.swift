@@ -1,94 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Extension-only files name their base type, optionally plus a type
-/// discriminator: `Array.Dynamic+Cursor.Protocol.swift` (non-standard-
-/// library conformance addition — standard-library conformances such
-/// as `Sendable` stay in `Array.Dynamic.swift` itself),
-/// `Array.Dynamic where Element Comparable.swift` (constraint-
-/// discriminated extension), `Algebra.Group+Algebra.Magma.swift`
-/// (conversion initializer owned by its input domain), or plain
-/// `Swift.Collection.swift` (member-only extensions of a type declared
-/// elsewhere — the type's own file in this module).
-///
-/// Citation: `[API-IMPL-007]`. Adjudicated on
-/// swift-institute-linter-rules#6 (ruling D2, 2026-07-30); implemented
-/// per swift-institute-linter-rules#9. Revised 2026-09-16: the
-/// free-text `+<Topic>` member-group shape is withdrawn — `+` names a
-/// type (a conformance or a conversion owner), never a grouping word,
-/// so a filename's `+` segment is always resolvable to a declaration.
-/// Member-only extensions live in the extended type's own file.
-///
-/// The rule's surface is a source file under `Sources/` whose
-/// top-level declarations are exclusively `extension` declarations
-/// (zero primary nominal types — `[API-IMPL-006]`'s surface,
-/// including its cascade suppression, is excluded here). For each
-/// such file:
-///
-/// 1. Every extension must extend the same dotted base-type path;
-///    otherwise the rule fires once — a mixed-base extension file has
-///    no lawful name.
-/// 1a. Else, if EVERY extension adds only standard-library
-///    conformances (`extension Custom: Sendable {}`,
-///    `extension Custom: Hashable { … }`), the file has no lawful
-///    name at all: standard-library conformances stay in the type's
-///    own file, `Custom.swift`, as extensions directly under the type
-///    declaration. The rule fires once with a relocation message.
-///    Standard-library conformances never count as conformances for
-///    step 2 — `<Base>+<Conformance>` is reserved for protocols
-///    outside the standard library. The set is
-///    `structureStdlibProtocolNames` (`Lint.Rule.Structure.Shared.swift`).
-/// 2. Else, if any extension adds a (non-standard-library)
-///    conformance, the required basename is
-///    `<Base>+<Conformance>.swift`, naming one of the added
-///    conformances (matching ANY added conformance satisfies the rule
-///    — a conditional conformance restated on a conditional extension,
-///    `extension T: P where …`, still classifies here, not under 3).
-/// 3. Else, if any extension carries a `where` clause, the required
-///    basename is the `<Base> where <discriminator>.swift` shape: the
-///    segment after ` where ` must be non-empty and the basename must
-///    begin with `<Base> where `. The discriminator's exact text is
-///    repository-owned and not further constrained.
-/// 4. Else (member-only extensions), the basename is either
-///    `<Base>.swift` — the extended type's own file, which an
-///    extension-only file can be only when the type is declared
-///    elsewhere (another module, the standard library, or a macro
-///    expansion); a type declared in this module already owns
-///    `<Base>.swift`, so its member-only extensions move into that
-///    file. A generic specialisation keeps its arguments:
-///    `extension Binding<Reminder>` lives in `Binding<Reminder>.swift`,
-///    `extension StoreOf<Feature>` in `StoreOf<Feature>.swift` — the
-///    basename may equal the extended type's verbatim spelling, since
-///    the stripped `Binding.swift` would conflate every specialisation
-///    and a generic typealias admits no `where` spelling at all —
-///    or `<Owner>+<Base>.swift` for a conversion initializer
-///    owned by its input domain. The latter is accepted only when an
-///    initializer parameter has the exact dotted `<Owner>` type path.
-///    This preserves names such as `Algebra.Group+Algebra.Magma.swift`
-///    for `extension Algebra.Magma { init(_: Algebra.Group<Element>) }`.
-///    A free-text `<Base>+<Topic>.swift` is not a shape.
-///
-/// The rule fires when the basename does not satisfy the classified
-/// shape.
-///
-/// Excluded from the surface: files with any top-level primary
-/// nominal type (`[API-IMPL-006]`'s surface); `Tests`, `Experiments`,
-/// and `Examples` path scope.
-///
-/// The diagnostic is located at the file's first extension
-/// declaration. The canonical fix is a rename to the classified
-/// shape; no source edit.
 extension Lint.Rule {
   public static let `extension file naming` = Lint.Rule(
     id: "extension file naming",
@@ -133,10 +45,6 @@ extension Lint.Rule {
     ],
     observe: Lint.Rule.measured { source, severity in
       let path = source.file.filePath
-      // The rule's stated surface is "a source file under `Sources/`"
-      // (doc comment above); the predicate previously only excluded
-      // Tests/Experiments/Examples, leaving Benchmarks/, Plugins/,
-      // Snippets/, and the package root in scope by accident.
       guard path.hasPrefix("Sources/") || path.contains("/Sources/") else {
         return []
       }
@@ -178,8 +86,6 @@ private func structureExtensionFileNamingFindings(
   let collector = StructureExtensionFileNamingCollector()
   collector.walk(tree)
 
-  // Excluded from the surface — [API-IMPL-006]'s surface (any
-  // top-level primary nominal type present).
   guard !collector.hasPrimaryType else { return [] }
   guard let first = collector.extensions.first else { return [] }
 
@@ -201,15 +107,6 @@ private func structureExtensionFileNamingFindings(
     ]
   }
 
-  // Mixed-base detection: every extension's extended-type must resolve to
-  // the same base key. `structureDottedName` returns
-  // nil for anything that isn't an identifier/member/metatype type (sugar
-  // and tuple forms — `[Int]`, `Int?`, …); fall back to the type's own
-  // trimmed text so those extensions still contribute a distinguishing
-  // key instead of being silently dropped from the set (which could let
-  // a genuinely mixed-base file pass `bases.count == 1` undetected, or —
-  // when it was the FIRST extension that fell through — exempt the
-  // entire file even though the remaining extensions are misnamed).
   let bases = Swift.Set(
     collector.extensions.map { structureExtensionFileNamingBaseKey($0.extendedType) }
   )
@@ -220,11 +117,6 @@ private func structureExtensionFileNamingFindings(
     )
   }
 
-  // Standard-library conformances have no extension-file shape: they
-  // live in the type's own file. A file consisting solely of them
-  // fires the relocation message, and they are dropped from the
-  // conformance classification below so a `Custom+Sendable.swift`
-  // never passes as a lawful `<Base>+<Conformance>` name.
   if collector.extensions.allSatisfy(structureIsStdlibOnlyConformanceExtension) {
     return record(
       structureExtensionFileNamingStdlibConformanceMessage(basename: basename, base: base)
@@ -243,12 +135,6 @@ private func structureExtensionFileNamingFindings(
     let conformancePrefix = "\(base)+"
     if basename.hasPrefix(conformancePrefix) {
       let candidate = Swift.String(basename.dropFirst(conformancePrefix.count))
-      // Accept the leaf component (and any dotted suffix) of a
-      // module-qualified conformance spelling, not just the verbatim
-      // fully-qualified path — `extension Array.Dynamic: Swift.Sequence`
-      // names its conformance `Swift.Sequence`, and the canonical
-      // `Array.Dynamic+Sequence.swift` must not be rejected in favor of
-      // `Array.Dynamic+Swift.Sequence.swift`, a name no repository uses.
       if conformances.contains(where: {
         structureExtensionFileNamingConformanceMatches(
           candidate: candidate,
@@ -275,10 +161,6 @@ private func structureExtensionFileNamingFindings(
     return record(structureExtensionFileNamingWhereMessage(basename: basename, base: base))
   }
 
-  // Member-only: the type's own file `<Base>` — or the extended
-  // type's verbatim spelling, so a generic specialisation keeps its
-  // arguments (`Binding<Reminder>.swift`) — or a conversion
-  // initializer owned by its input domain `<Owner>+<Base>`.
   if basename == base {
     return []
   }
@@ -371,11 +253,6 @@ private func structureExtensionFileNamingIsConversionOwned(
   return false
 }
 
-/// Walks top-level statements only, collecting every top-level
-/// `extension` declaration and noting whether the file also declares
-/// any top-level primary nominal type (`[API-IMPL-006]`'s surface,
-/// including a type nested via a top-level extension shell — the same
-/// predicate `single type per file` and `file name nested path` use).
 private final class StructureExtensionFileNamingCollector: SyntaxVisitor {
   var extensions: [ExtensionDeclSyntax] = []
   var hasPrimaryType: Swift.Bool = false
@@ -401,22 +278,10 @@ private final class StructureExtensionFileNamingCollector: SyntaxVisitor {
   }
 }
 
-/// Resolves an extended-type to a base key for mixed-base detection: the
-/// dotted path when resolvable, or the type's own trimmed source text
-/// otherwise (sugar / tuple / other forms `structureDottedName`
-/// doesn't resolve). Every extension MUST contribute a key — silently
-/// dropping unresolvable ones (via `compactMap`) can hide a genuinely
-/// mixed-base file, or exempt the whole file when it was the first
-/// extension whose extended type fell through.
 private func structureExtensionFileNamingBaseKey(_ type: TypeSyntax) -> Swift.String {
   structureDottedName(of: type) ?? type.trimmedDescription
 }
 
-/// Returns true if `candidate` (the basename tail after `<Base>+`) names
-/// `conformance` — either verbatim, or as the leaf component (or any
-/// dotted suffix) of a module-qualified conformance spelling. A
-/// conformance recorded as `Swift.Sequence` must accept the basename tail
-/// `Sequence`, not just `Swift.Sequence`.
 private func structureExtensionFileNamingConformanceMatches(
   candidate: Swift.String,
   conformance: Swift.String

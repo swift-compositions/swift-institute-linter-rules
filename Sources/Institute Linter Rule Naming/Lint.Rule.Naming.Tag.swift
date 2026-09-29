@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Phantom-type marker types named with `Tag` suffix — use concept names
-/// directly. Citation: `feedback_no_tag_suffix`.
 extension Lint.Rule {
     public static let `tag suffix` = Lint.Rule(
         id: "tag suffix",

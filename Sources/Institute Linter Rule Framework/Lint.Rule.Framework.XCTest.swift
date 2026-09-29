@@ -1,20 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Institute tests MUST use Swift Testing (not XCTest).
-/// Citation: `[TEST-001]`. The rule also defends `[PRIM-FOUND-001]` /
-/// `[ARCH-LAYER-007]` because XCTest pulls Foundation transitively.
 extension Lint.Rule {
     public static let `xctest import` = Lint.Rule(
         id: "xctest import",
@@ -95,9 +81,6 @@ internal final class XCTestImportVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns true if `pathText` is `XCTest` or `XCTest.*`.
-/// Submodule imports are also caught — any path whose first component
-/// is `XCTest` pulls in the framework and counts as a violation.
 private func xctestImportIsXCTestModule(_ pathText: Swift.String) -> Swift.Bool {
     let firstComponent = pathText.split(separator: ".").first.map(Swift.String.init) ?? pathText
     return firstComponent == "XCTest"

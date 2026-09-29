@@ -1,32 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// A new enum case is handled explicitly; `@unknown default` is not
-/// added.
-///
-/// The compile-time signal is the asset: source-additive at the type
-/// level is not source-compatible at the switch level, and `@unknown
-/// default` trades the missed-case error for a runtime fallthrough.
-/// This convention runs against widely published external guidance, so
-/// the construct is added in good faith by contributors who have not
-/// read the house convention.
-///
-/// The rule fires on each `@unknown default` clause in a `switch`. The
-/// canonical fix is explicit case handling: enumerate the cases the
-/// `switch` must decide and let the compiler flag additions.
-///
-/// Citation: `swift-institute-linter-rules#4`.
 extension Lint.Rule {
     public static let `unknown default` = Lint.Rule(
         id: "unknown default",
@@ -83,11 +57,6 @@ internal final class IdiomUnknownDefaultVisitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    /// A bare `_` in a case-item pattern position parses as either
-    /// `WildcardPatternSyntax` or an `ExpressionPatternSyntax` wrapping a
-    /// `DiscardAssignmentExprSyntax` — expression/pattern grammar is
-    /// ambiguous at parse time, so both shapes occur depending on
-    /// context. Recognize both.
     private func isWildcard(_ pattern: PatternSyntax) -> Swift.Bool {
         if pattern.is(WildcardPatternSyntax.self) { return true }
         if let expressionPattern = pattern.as(ExpressionPatternSyntax.self) {
@@ -96,9 +65,6 @@ internal final class IdiomUnknownDefaultVisitor: SyntaxVisitor {
         return false
     }
 
-    /// `@unknown case _:` is the same `[IDIOM-...]` runtime-fallthrough
-    /// shape as `@unknown default:` — it is only spelled as a wildcard
-    /// case rather than the `default` keyword. Recognize both.
     private func isDefaultLikeLabel(_ label: SwitchCaseSyntax.Label) -> Swift.Bool {
         if case .default = label { return true }
         if case .case(let caseLabel) = label {

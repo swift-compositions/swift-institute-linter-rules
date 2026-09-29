@@ -1,60 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Manifest naming grammar (swift-institute-linter-rules#65, principal
-/// directive 2026-08-09): the SwiftPM manifest's own declared names
-/// follow the ratified Nest.Name grammar.
-///
-/// The rule's surface is a package manifest (`Package.swift`, including
-/// versioned `Package@swift-*.swift` variants and nested test
-/// manifests). Three predicates, one rule:
-///
-/// 1. **Package slug**: the top-level `Package(name:)` string must be a
-///    kebab-case slug — `[a-z0-9]+(-[a-z0-9]+)*` (e.g.
-///    `swift-institute-linter-rules`, `institute-application`, and the
-///    nested test manifest's `testing`).
-/// 2. **Product/target names**: the `name:` string of every product
-///    factory (`.library`, `.executable`, `.plugin`) and target factory
-///    (`.target`, `.testTarget`, `.executableTarget`, `.macro`,
-///    `.plugin`, and — per the C-shim naming ruling, #65 principal
-///    ruling 2026-08-10 — `.systemLibrary`) declared by THIS package
-///    must be a spaced Nest.Name
-///    form: space-separated words, none of which is a concatenated
-///    compound by the shared compound-word predicate
-///    (`namingWordIsCompound`, the [API-NAME-001] owner — brand tokens
-///    such as `GitHub` and spec forms are exempt there). Concatenated
-///    forms (`InstituteArchitectureCLI`) are violations; the spaced
-///    form (`Institute Architecture CLI`) and legitimately single-word
-///    names (the executable `institute`) are not.
-/// 3. **Declared-path correspondence** (the manifest half of the
-///    Nest.Name directory ruling of 2026-08-06): when a target factory
-///    carries an explicit `path:` string literal, and that path's last
-///    segment differs from the declared target name ONLY by spacing
-///    (segment == name with its spaces removed, or vice versa), the
-///    concatenated side is a violation — a concatenated directory under
-///    a spaced target, or a spaced directory under a concatenated
-///    target. A path whose last segment differs in substance (the
-///    settled `Tests/Support` convention for test-support targets) is
-///    out of this predicate's reach and deliberately silent — recorded
-///    residue, not compliance.
-///
-/// NOT policed (by predicate, not exemption): dependency references —
-/// `.product(name:package:)` names third-party products and
-/// `.package(url:)` names third-party packages; their spellings are the
-/// upstream owner's. Only names this manifest declares are in scope.
-///
-/// Citation: `swift-institute-linter-rules#65`; Goal #94.
 extension Lint.Rule {
     public static let `manifest naming grammar` = Lint.Rule(
         id: "manifest naming grammar",
@@ -96,8 +42,6 @@ extension Lint.Rule {
     )
 }
 
-/// Returns true when `name` is a kebab-case package slug:
-/// `[a-z0-9]+(-[a-z0-9]+)*`.
 internal func namingManifestIsKebabSlug(_ name: Swift.String) -> Swift.Bool {
     guard !name.isEmpty else { return false }
     var previousWasHyphen = true  // leading hyphen is invalid
@@ -114,9 +58,6 @@ internal func namingManifestIsKebabSlug(_ name: Swift.String) -> Swift.Bool {
     return !previousWasHyphen  // trailing hyphen is invalid
 }
 
-/// Returns the space-separated words of `name` that are concatenated
-/// compounds by the shared predicate. Empty when `name` is a
-/// well-formed spaced Nest.Name form (or a single non-compound word).
 internal func namingManifestCompoundWords(in name: Swift.String) -> [Swift.String] {
     name.split(separator: " ").map(Swift.String.init).filter(namingWordIsCompound)
 }
@@ -151,21 +92,11 @@ internal func namingManifestGrammarPathMessage(
         + "declared spaced target name"
 }
 
-/// The product- and target-declaring manifest factory members whose
-/// `name:` argument this rule inspects. `.product` is deliberately
-/// absent: it references a dependency's product, which the upstream
-/// owner names. `.systemLibrary` is present per the C-shim naming
-/// ruling (#65, principal 2026-08-10): system-library targets take the
-/// same spaced grammar as every other target; note that a single
-/// lowercase word (`imagemagick`) is silent here by the grammar's own
-/// single-word rule — the `* Shims` shape half of that ruling is the
-/// validator family's predicate, not this rule's.
 private let namingManifestDeclaringFactories: Swift.Set<Swift.String> = [
     "library", "executable", "target", "testTarget", "executableTarget", "macro", "plugin",
     "systemLibrary",
 ]
 
-/// The subset of factories that declare targets (and may carry `path:`).
 private let namingManifestTargetFactories: Swift.Set<Swift.String> = [
     "target", "testTarget", "executableTarget", "macro", "plugin", "systemLibrary",
 ]
@@ -183,8 +114,6 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    /// Resolves an argument expression to a single-segment string
-    /// literal's text, or nil for anything computed.
     private func literalText(_ expression: ExprSyntax) -> (Swift.String, AbsolutePosition)? {
         guard let literal = expression.as(StringLiteralExprSyntax.self),
             literal.segments.count == 1,
@@ -194,7 +123,6 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        // Top-level `Package(name:)` — the kebab-slug predicate.
         if let reference = node.calledExpression.as(DeclReferenceExprSyntax.self),
             reference.baseName.text == "Package"
         {
@@ -206,7 +134,6 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
             }
             return .visitChildren
         }
-        // Product/target factories — the spaced-name and path predicates.
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
             namingManifestDeclaringFactories.contains(member.declName.baseName.text)
         else { return .visitChildren }

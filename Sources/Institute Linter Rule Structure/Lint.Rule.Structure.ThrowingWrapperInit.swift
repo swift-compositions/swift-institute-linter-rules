@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 4 (mechanization-program) — throwing wrapper `init` whose body
-/// is `try base.init(...)` and nothing else MUST also validate the
-/// wrapper's stricter invariant.
-///
-/// Citation: `[PATTERN-020]` (implementation skill, the patterns note —
-/// throwing init on wrapper MUST NOT validate only base invariant).
 extension Lint.Rule {
     public static let `throwing wrapper init` = Lint.Rule(
         id: "throwing wrapper init",
@@ -65,20 +48,6 @@ internal let structureThrowingWrapperInitMessage: Swift.String =
     + "after the base-init call, or rewrite the init to validate the wrapper "
     + "invariant directly."
 
-/// Stdlib primitive types whose extensions are NOT institute wrappers
-/// adding stricter invariants — the rule's "wrapper specializes
-/// stricter invariant than its base" premise is structurally inverted
-/// when the init's enclosing type is one of these.
-///
-/// An `extension Int` init that accepts an institute Tagged type as a
-/// parameter and forwards via `try Int(stripped)` is the LAX type
-/// being constructed from a STRICTER source — the body's validation
-/// (overflow / range check) is exactly what's needed; there is no
-/// "wrapper invariant" to additionally enforce. Firing the rule here
-/// inverts the premise.
-///
-/// Curated allowlist; adding entries requires verifying the type has
-/// no additional invariants beyond the body of the throwing init.
 @usableFromInline
 internal let structureThrowingWrapperInitLaxTypeAllowlist: Swift.Set<Swift.String> = [
     "Int", "Int8", "Int16", "Int32", "Int64",
@@ -109,23 +78,7 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         let statements = body.statements
         guard statements.count == 1 else { return .visitChildren }
         guard let only = statements.first?.item else { return .visitChildren }
-        // The predicate targets specifically a *forward to the base
-        // type's own initializer* (`try base.init(...)` / bare
-        // `try Base(...)`, per the doc and message) — not merely "any
-        // single `try` statement". A single-`try` body calling something
-        // else (`try someOtherOperation()`, `try validate(x)`, an
-        // `init(from:) throws` that forwards through a non-constructor
-        // decoder API) is not the base-init-forward shape the doc and
-        // message describe, and is not itself evidence that the
-        // wrapper's stricter invariant goes unvalidated.
         guard isBaseInitializerTryForward(Syntax(only)) else { return .visitChildren }
-        // Skip when the init's enclosing type is a stdlib lax primitive
-        // (Int, UInt, Float, etc.). The rule's "wrapper specializes
-        // stricter invariant than its base" premise inverts when the
-        // enclosing type IS the lax type and the parameter is the
-        // stricter institute type — the body's validation (overflow /
-        // range check from `try Int(stripped)`) is exactly what's
-        // needed; there is no wrapper invariant to additionally enforce.
         if isInsideExtensionOnLaxType(Syntax(node)) {
             return .visitChildren
         }
@@ -162,9 +115,6 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
                 }
                 return false
             }
-            // Once we cross a type-decl boundary that ISN'T an extension
-            // (struct / class / enum / actor / protocol), the rule's
-            // wrapper premise applies and the allowlist doesn't cover.
             if candidate.is(StructDeclSyntax.self)
                 || candidate.is(ClassDeclSyntax.self)
                 || candidate.is(EnumDeclSyntax.self)
@@ -178,20 +128,7 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         return false
     }
 
-    /// Extracts the `TryExprSyntax` from a single-statement body's item,
-    /// whether it's the item directly, wrapped as an `ExprSyntax`, a
-    /// `let`/`var` binding's initializer (`let base = try Base(raw)`),
-    /// or (pre-operator-folding) one element of an unfolded
-    /// `SequenceExprSyntax`. The variable-declaration case closes the
-    /// asymmetry where `self.x = try Base(...)` fired but the equally
-    /// unvalidated `let base = try Base(raw)` did not.
     private func extractTryExpr(_ syntax: Syntax) -> TryExprSyntax? {
-        // #28 nit 1: casting `Syntax` → `ExprSyntax` → `TryExprSyntax` is
-        // unreachable once `Syntax` → `TryExprSyntax` (above) has already been
-        // tried — `as(_:)` does not change the underlying node kind, so the
-        // second cast can only re-match what the first already caught. Unlike
-        // the pack's genuinely defensive dual-shape branches (which guard a
-        // folded-vs-unfolded difference that CAN occur), this guards nothing.
         if let tryExpr = syntax.as(TryExprSyntax.self) {
             return tryExpr
         }
@@ -213,30 +150,7 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         return nil
     }
 
-    /// True if `syntax` is a top-level `try` statement whose (possibly
-    /// assignment-wrapped) expression is a call to the base type's own
-    /// initializer — `try self.init(...)`, `try Type.init(...)`, bare
-    /// `try Type(...)`, or one of those forms on the right-hand side of
-    /// an assignment (`try self.base = Base(raw)` / `self.base = try
-    /// Base(raw)`). A `try` expression calling anything else (a method,
-    /// a free function, a decoder API) is not the base-init-forward
-    /// shape the doc and message describe.
     private func isBaseInitializerTryForward(_ syntax: Syntax) -> Swift.Bool {
-        // Raw (pre-operator-folding) assignment sequence: exactly three
-        // elements with `=` in the middle. SwiftParser's raw grammar
-        // attaches a prefix `try` to only the immediately following
-        // primary/postfix expression, so `try` can land on EITHER side
-        // depending on where it's written in source: `self.base = try
-        // Base(raw)` wraps the RHS constructor call directly; `try
-        // self.base = Base(raw)` instead wraps the bare LHS, leaving the
-        // RHS unwrapped. Both spellings put the assignment under `try`
-        // (Swift accepts either); what this rule cares about — whether
-        // the RHS is a constructor call — doesn't depend on which side
-        // the keyword landed on, so both are checked directly here
-        // rather than through `extractTryExpr`, which (grabbing "the
-        // first `TryExprSyntax` element") previously returned the bare
-        // LHS's narrow `.expression` for the `try LHS = RHS` spelling and
-        // lost the RHS entirely.
         if let sequence = syntax.as(SequenceExprSyntax.self) {
             let elements = Array(sequence.elements)
             if elements.count == 3, elements[1].is(AssignmentExprSyntax.self) {
@@ -257,13 +171,6 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         return isConstructorCall(inner)
     }
 
-    /// True if `expr` (after peeling one layer of parens) is a
-    /// `FunctionCallExprSyntax` whose callee resolves to an
-    /// initializer: `self.init(...)` / `Type.init(...)`
-    /// (`MemberAccessExprSyntax` with `declName == "init"`), or a bare
-    /// call to an upper-camel-case identifier (`Type(...)`) — the
-    /// house convention for a constructor call, as distinct from a
-    /// lowercase method/free-function call.
     private func isConstructorCall(_ expr: ExprSyntax) -> Swift.Bool {
         var current = expr
         if let tuple = current.as(TupleExprSyntax.self),

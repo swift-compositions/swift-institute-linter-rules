@@ -1,37 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 4 (mechanization-program) — `struct: @unchecked Sendable`
-/// wrapping a class stored property is the anti-pattern.
-///
-/// Class-ness is resolved structurally: every `ClassDeclSyntax` declared
-/// anywhere in the file is collected in a pre-pass (bare name and the
-/// dotted path from its enclosing type/extension chain), plus a small
-/// allowlist of known-imported class types
-/// (`memoryStructSendableClassMemberKnownClassNames`). A class imported
-/// from another module and absent from that allowlist is not detected —
-/// a real per-file limit, and the allowlist is the intended extension
-/// point.
-///
-/// The predicate cannot tell whether the wrapped class is itself
-/// `Sendable`, so the message prescribes both remedies: drop
-/// `@unchecked` if the class is `Sendable`; otherwise replace the class
-/// storage with a value type or move the mutable state behind an actor
-/// or a `Mutex`.
-///
-/// Citation: `[IMPL-076]` (implementation skill, the concurrency note — no
-/// @unchecked Sendable on struct-wrapping-class).
 extension Lint.Rule {
   public static let `sendable struct with class member` = Lint.Rule(
     id: "sendable struct with class member",
@@ -85,10 +54,6 @@ internal let memoryStructSendableClassMemberKnownClassNames: Swift.Set<Swift.Str
   "NSObject", "Thread", "DispatchQueue", "AnyObject",
 ]
 
-/// Collects every `ClassDeclSyntax` name declared anywhere in the file,
-/// both bare and as a dotted path from its enclosing type/extension
-/// chain, so `memoryStructSendableClassMemberIsClassType` can resolve
-/// same-file class storage structurally.
 internal final class MemoryStructSendableClassMemberClassCollector: SyntaxVisitor {
   var names: Swift.Set<Swift.String> = []
 
@@ -166,11 +131,6 @@ internal func memoryStructSendableClassMemberIsComputed(_ node: VariableDeclSynt
       case .accessors(let list):
         for accessor in list {
           switch accessor.accessorSpecifier.tokenKind {
-          // #25 nit: accessor-granularity — a _read/_modify coroutine
-          // accessor, an unsafeAddress(-Mutable) accessor, or a
-          // willSet/didSet observer all mean this is not a plain
-          // stored class-typed reference either; each is its own
-          // custom-behavior signal alongside get/set.
           case .keyword(.get), .keyword(.set),
             .keyword(._read), .keyword(._modify),
             .keyword(.unsafeAddress), .keyword(.unsafeMutableAddress),

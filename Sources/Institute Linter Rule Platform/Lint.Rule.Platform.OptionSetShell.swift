@@ -1,24 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — `OptionSet` types MUST follow the
-/// shell + values pattern: type body declares only `rawValue` and the
-/// canonical `init(rawValue:)`. Platform-specific static constants go
-/// in extensions.
-///
-/// Citation: `[PLAT-ARCH-013]` (platform skill — shell + values
-/// OptionSet pattern).
 extension Lint.Rule {
   public static let `optionset shell pattern` = Lint.Rule(
     id: "optionset shell pattern",
@@ -98,10 +80,6 @@ internal func platformOptionSetShellIsStaticDecl(_ modifiers: DeclModifierListSy
   return false
 }
 
-/// Returns true when a binding's initializer expression is a call to
-/// `Self(rawValue: …)`, `<TypeName>(rawValue: …)`, or `.init(rawValue: …)`
-/// — the three spellings authors use for the canonical platform-constant
-/// shape (#21 defect 11; previously only `Self(rawValue:)` was recognized).
 internal func platformOptionSetShellIsSelfRawValueInit(
   _ initializer: InitializerClauseSyntax?,
   typeName: Swift.String
@@ -113,13 +91,11 @@ internal func platformOptionSetShellIsSelfRawValueInit(
   let hasRawValueLabel = call.arguments.contains { $0.label?.text == "rawValue" }
   guard hasRawValueLabel else { return false }
   if let callee = call.calledExpression.as(DeclReferenceExprSyntax.self) {
-    // `Self(rawValue:)` or `Options(rawValue:)`.
     return callee.baseName.text == "Self" || callee.baseName.text == typeName
   }
   if let member = call.calledExpression.as(MemberAccessExprSyntax.self),
     member.declName.baseName.text == "init"
   {
-    // `.init(rawValue:)` (no base) or `Self.init(rawValue:)` / `Options.init(rawValue:)`.
     guard let base = member.base else { return true }
     if let baseRef = base.as(DeclReferenceExprSyntax.self) {
       return baseRef.baseName.text == "Self" || baseRef.baseName.text == typeName

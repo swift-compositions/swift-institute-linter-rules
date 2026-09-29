@@ -1,24 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 internal import Lint
 internal import SwiftSyntax
 
-/// Removes a duplicate display-name argument without changing the declaration
-/// token that defines the test or suite's identity.
-///
-/// A differing display name is deliberately left alone. Replacing the
-/// declaration token would rename the declaration and can affect references,
-/// test filters, `#function`, and snapshot keys. The finding remains with its
-/// rename-required disposition for reviewed or compiler-aware application.
 internal func testingDisplayNameStringFixed(
     _ source: borrowing Lint.Source.Parsed
 ) -> Swift.String? {
@@ -28,12 +10,9 @@ internal func testingDisplayNameStringFixed(
     return rewritten.description
 }
 
-/// Rewrites only declaration-local duplicate-display shapes.
 internal final class TestingDisplayNameStringRewriter: SyntaxRewriter {
     var changed: Swift.Bool = false
 
-    /// Returns the declaration attributes with every binding-preserving display
-    /// string removed, or the original list when no attribute is fixable.
     private func fixed(
         name: TokenSyntax,
         attributes: AttributeListSyntax
@@ -48,11 +27,6 @@ internal final class TestingDisplayNameStringRewriter: SyntaxRewriter {
         return AttributeListSyntax(elements)
     }
 
-    /// Removes the leading display argument when it duplicates `name` exactly.
-    ///
-    /// The leading-position guard mirrors the Testing macro contract. A later
-    /// unlabelled string is not a display-name position the rewriter can prove,
-    /// even if malformed source made the detector reach it.
     private func fixed(name: TokenSyntax, attribute: AttributeSyntax) -> AttributeSyntax? {
         let attributeName = attribute.attributeName.trimmedDescription
         guard
@@ -76,8 +50,6 @@ internal final class TestingDisplayNameStringRewriter: SyntaxRewriter {
         return removingLeadingArgument(argument, remaining: remaining, from: attribute)
     }
 
-    /// Drops an attribute's now-empty parentheses while carrying all authored
-    /// trivia and the declaration-separating trivia onto the unchanged name.
     private func removingOnlyArgument(
         _ argument: LabeledExprSyntax,
         from attribute: AttributeSyntax
@@ -109,8 +81,6 @@ internal final class TestingDisplayNameStringRewriter: SyntaxRewriter {
             .with(\.rightParen, nil)
     }
 
-    /// Removes the display argument and its comma while keeping the layout and
-    /// comments that lead into the first retained trait or `arguments:` value.
     private func removingLeadingArgument(
         _ argument: LabeledExprSyntax,
         remaining: [LabeledExprSyntax],
@@ -151,8 +121,6 @@ internal final class TestingDisplayNameStringRewriter: SyntaxRewriter {
     }
 }
 
-/// Keeps comments and other authored trivia while discarding delimiter-only
-/// whitespace that existed solely to surround the removed argument.
 private func testingDisplayNameAuthoredTrivia(_ trivia: Trivia) -> Trivia {
     for piece in trivia {
         switch piece {
@@ -167,9 +135,6 @@ private func testingDisplayNameAuthoredTrivia(_ trivia: Trivia) -> Trivia {
     return []
 }
 
-/// Keeps trivia that carries a comment or a line break into the retained
-/// argument. A lone separating space is rebuilt canonically as no space after
-/// `(`, yielding `@Suite(.serialized)` rather than `@Suite( .serialized)`.
 private func testingDisplayNameLayoutTrivia(_ trivia: Trivia) -> Trivia {
     for piece in trivia {
         switch piece {

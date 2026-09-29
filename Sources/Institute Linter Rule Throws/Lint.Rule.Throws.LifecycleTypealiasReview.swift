@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Typealiasing per-primitive `Error` to a shared `*.Lifecycle.Error`
-/// requires case-coverage review. Citation: `[API-ERR-008]`.
 extension Lint.Rule {
     public static let `lifecycle typealias review` = Lint.Rule(
         id: "lifecycle typealias review",

@@ -1,14 +1,3 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 internal import SwiftSyntax
 
 internal final class ThrowsRethrowsTryFinder: SyntaxVisitor {
@@ -18,12 +7,6 @@ internal final class ThrowsRethrowsTryFinder: SyntaxVisitor {
         guard node.questionOrExclamationMark == nil else {
             return .visitChildren
         }
-        // Admit `try` inside `do { ... } catch { ... }` whose catch
-        // materializes the error (the [IMPL-109] Result-shim
-        // remediation): the closure remains non-throwing by
-        // construction, so the rule's own prescribed fix shape MUST
-        // NOT re-fire. Helper lives in `Lint.Rule.Throws.ClosureAnnotation.swift`
-        // (API-ERR-004) and stops the walk at the closure boundary.
         if throwsClosureTryIsInsideMaterializingDoCatch(Syntax(node)) {
             return .visitChildren
         }

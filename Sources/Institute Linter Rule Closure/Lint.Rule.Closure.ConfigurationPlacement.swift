@@ -1,27 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Configuration-bearing parameters MUST sit at the first OR last
-/// non-closure position of a signature. Citation: `[API-IMPL-014]`.
-///
-/// Configuration-bearing parameters — a type whose name ends in
-/// `Options`, `Configuration`, or `Context` — fall into two semantic
-/// roles: PRIMARY input (operation's identity is the configuration → first),
-/// or MODIFIER (operation tunes via configuration → last in the
-/// non-closure portion). Middle placement is forbidden because SE-0286
-/// forward-scan can't match a trailing closure when configuration sits
-/// between domain parameters, and it hides the configuration's role.
 extension Lint.Rule {
     public static let `configuration before content` = Lint.Rule(
         id: "configuration before content",
@@ -74,14 +53,6 @@ internal let configurationSuffixes: Swift.Set<Swift.String> = [
     "Context",
 ]
 
-/// Returns true when the parameter's type name ENDS IN one of the
-/// configuration suffixes (after stripping optionals and attributes)
-/// — `RenderOptions`, `ParseConfiguration`, `RequestContext` all
-/// match; a type merely containing a suffix mid-name does not (#24
-/// defect 4: the code previously tested exact equality against the
-/// constant's name, contradicting both the constant's name
-/// (`configurationSuffixes`) and its doc, and missing the common
-/// suffixed shapes).
 internal func isConfigurationType(_ type: TypeSyntax) -> Swift.Bool {
     let current = closureStrippingWrapperTypes(type)
     if let identifier = current.as(IdentifierTypeSyntax.self) {

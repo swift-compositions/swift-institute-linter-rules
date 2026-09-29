@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Double-underscore hoisted errors in typed-throws positions.
-/// Citation: `[API-ERR-007]`.
 extension Lint.Rule {
     public static let `hoisted error in public throws` = Lint.Rule(
         id: "hoisted error in public throws",
@@ -57,10 +44,6 @@ internal let throwsHoistedErrorMessage: Swift.String =
     + "hoisting workaround. Suppress the rule locally where an older "
     + "toolchain still makes the workaround strictly necessary."
 
-/// `hoistedLeafIdentifier(of:)` has exactly one caller, `checkThrowsClause`,
-/// which passes a `ThrowsClauseSyntax.type` — a `throws(...)` clause type is
-/// a bare or member-qualified identifier; no optional/attributed sugar is
-/// expressible there (#19 smaller item 4).
 private func hoistedLeafIdentifier(of type: TypeSyntax) -> Swift.String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) { return identifier.name.text }
     if let member = type.as(MemberTypeSyntax.self) { return member.name.text }

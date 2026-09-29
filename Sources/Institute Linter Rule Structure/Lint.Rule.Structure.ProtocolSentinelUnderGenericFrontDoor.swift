@@ -1,66 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Flags a `` `Protocol` ``-sentinel member nested (via `extension
-/// <Carrier> { … }`) under a carrier type that a public GENERIC
-/// top-level `typealias` fronts — the shape ruled unsupported by
-/// `swift-institute/.github#122` (disposition c, 2026-07-30):
-/// member-type lookup through an unbound-generic-alias base never
-/// resolves the nested member on any toolchain
-/// (`swift-institute/Issues#81`), so `FrontDoor<T>.Protocol` ships a
-/// public surface with no way to spell it.
-///
-/// Three historical instances existed (`Set`, `Array`, and `Tree`
-/// primitives, each pairing a public `typealias Name<T> = __Name<T>`
-/// front door with a nested `` `Protocol` `` alias declared in an
-/// extension of the underscored `__Name`); doctrine (W6 of the ruling)
-/// records the retirement and the exclusion going forward. This rule
-/// mechanizes W7: detect the SHAPE — a generic front-door typealias
-/// plus a same-carrier extension nesting the sentinel — not the three
-/// retired names.
-///
-/// AST shape (both pieces must appear in the SAME file — this engine
-/// has no whole-package member index, so cross-file front-door /
-/// extension pairs are outside what a per-file syntax rule can
-/// correlate; the common authoring shape keeps both in one file, and
-/// this is the mechanically checkable subset):
-///
-/// 1. A `public`/`open` `typealias Name<T, …> = Carrier<T, …>` — the
-///    typealias's OWN generic parameter clause is what makes it a
-///    front door (not merely an alias for a concrete type).
-/// 2. An `extension Carrier { … }` (the RHS's base identifier, NOT
-///    the front-door alias's own name) declaring a nested type member
-///    (`typealias`/`struct`/`enum`/`class`/`protocol`) named the
-///    `Protocol` sentinel — bare `Protocol` or backtick-escaped
-///    `` `Protocol` `` (both spellings signal the hoisted-protocol
-///    pattern per [API-IMPL-009] / [PKG-NAME-001]).
-///
-/// Reference NON-firing shape (`swift-storage`,
-/// `Store` vs `Storage<Allocation>`): `Store` is a bare, non-generic
-/// enum namespace with its own directly-nested `` `Protocol` ``
-/// member — there is no separate generic front-door typealias
-/// pointing AT `Store`, so member lookup on `Store.\`Protocol\``
-/// resolves normally and this rule does not fire. `Storage<Allocation>`
-/// is a real generic struct (not a typealias target) that deliberately
-/// carries NO nested `Protocol` sentinel at all — Allocation-independent
-/// capability surfaces are hoisted to non-generic homes instead,
-/// exactly to avoid this failure mode.
-///
-/// ADVISORY at introduction, per the standing graduation discipline
-/// (issue #11) — promote to `.error` only after fleet validation.
 extension Lint.Rule {
-    /// Flags a `` `Protocol` `` sentinel nested under a carrier fronted by a public generic top-level typealias — member lookup through the alias never resolves it ([swift-institute/.github#122], disposition c).
     public static let `protocol sentinel under generic front door` = Lint.Rule(
         id: "protocol sentinel under generic front door",
         default: .warning,
@@ -118,9 +59,6 @@ internal final class StructureProtocolSentinelUnderGenericFrontDoorVisitor: Synt
     let converter: SourceLocationConverter
     private var matches: [Diagnostic.Record] = []
 
-    /// Carrier leaf name (the RHS base identifier) -> true once a public
-    /// generic front-door typealias targeting it is found anywhere in
-    /// the file.
     private var frontDoorCarrierNames: Swift.Set<Swift.String> = []
 
     private struct Candidate {
@@ -156,9 +94,6 @@ internal final class StructureProtocolSentinelUnderGenericFrontDoorVisitor: Synt
         return .visitChildren
     }
 
-    /// Cross-references collected `` `Protocol` ``-sentinel candidates
-    /// against the (possibly later-in-file) set of generic front-door
-    /// carrier names.
     internal func resolvedMatches() -> [Diagnostic.Record] {
         for candidate in candidates {
             guard frontDoorCarrierNames.contains(candidate.carrierName) else { continue }
@@ -181,8 +116,6 @@ internal final class StructureProtocolSentinelUnderGenericFrontDoorVisitor: Synt
     }
 }
 
-// MARK: - Free helpers
-
 private func psgfdHasPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift.Bool {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
@@ -193,10 +126,6 @@ private func psgfdHasPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift.
     return false
 }
 
-/// The leaf identifier name of `type`'s base — unwraps a
-/// `MemberTypeSyntax`'s trailing segment or an `IdentifierTypeSyntax`,
-/// ignoring any generic-argument clause. `nil` for shapes with no
-/// single resolvable identifier (tuples, function types, etc.).
 private func psgfdLeafIdentifierName(_ type: TypeSyntax) -> Swift.String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text)
@@ -207,9 +136,6 @@ private func psgfdLeafIdentifierName(_ type: TypeSyntax) -> Swift.String? {
     return nil
 }
 
-/// If `decl` is a nested type-like member (`typealias`/`struct`/
-/// `enum`/`class`/`protocol`) named the `Protocol` sentinel, returns
-/// its name token's position; otherwise `nil`.
 private func psgfdProtocolSentinelPosition(_ decl: DeclSyntax) -> AbsolutePosition? {
     if let typealiasDecl = decl.as(TypeAliasDeclSyntax.self),
         structureIsProtocolSentinelName(typealiasDecl.name.text)

@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Nested `Error` types in typed-throws positions use their full owner path.
-///
-/// A bare `throws(Error)` is valid Swift, but it hides the error's ownership
-/// from the signature itself. The canonical spelling keeps that context local:
-/// `throws(Algebra.Field<Element>.Error)`. This applies equally to declaration
-/// signatures, closure function types, closure signatures, and `do throws`.
 extension Lint.Rule {
     public static let `fully qualified error in typed throws` = Lint.Rule(
         id: "fully qualified error in typed throws",

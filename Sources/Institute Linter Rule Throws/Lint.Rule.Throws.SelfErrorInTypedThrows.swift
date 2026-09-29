@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `throws(Self.Error)` resolves only inside a protocol declaration with an
-/// `associatedtype Error` requirement. A bare protocol lacking that
-/// requirement leaves `Self.Error` unresolved — the fix is to declare
-/// `associatedtype Error: Swift.Error`. Struct, class, enum, actor, and
-/// extension contexts are exempt: `Self.Error` there resolves to the
-/// concrete type's own nested `Error` member. Citation: `[API-ERR-002]`.
 extension Lint.Rule {
     public static let `typed throws cannot use self error` = Lint.Rule(
         id: "typed throws cannot use self error",
@@ -107,13 +90,6 @@ internal final class ThrowsSelfErrorInTypedThrowsVisitor: SyntaxVisitor {
         return true
     }
 
-    /// Returns true iff `throws(Self.Error)` at this node is invalid per
-    /// institute convention. Concrete-type contexts (`struct`/`class`/`enum`/
-    /// `actor` bodies, and extensions on concrete types) resolve `Self.Error`
-    /// to the nested error member and are exempt. Protocol declarations are
-    /// flagged unless they declare `associatedtype Error`. Extensions are not
-    /// flagged here — distinguishing a protocol extension from a concrete-type
-    /// extension requires symbol resolution the linter does not have.
     private func shouldFlag(_ node: Syntax) -> Swift.Bool {
         var current: Syntax? = node.parent
         while let parent = current {

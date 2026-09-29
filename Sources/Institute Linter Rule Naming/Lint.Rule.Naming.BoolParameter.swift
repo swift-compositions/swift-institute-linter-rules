@@ -1,28 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 1 (mechanization-program) — Bool parameter in public-API signature.
-///
-/// Citation: `[API-IMPL-003]` (code-surface skill — Enum Over Boolean).
-///
-/// Use enums instead of boolean flags when state can expand. The
-/// mechanical signal: a parameter of type `Bool` (or `Swift.Bool`) on
-/// a `public` / `open` function or initializer is the lowest-friction
-/// indication of the anti-pattern. Boolean parameters in public APIs
-/// are particularly painful because they (a) read as call-site
-/// noise (`open(create: true, truncate: true, …)`) and (b) cannot
-/// extend to a third state without an API break.
 extension Lint.Rule {
     public static let `bool public parameter` = Lint.Rule(
         id: "bool public parameter",
@@ -72,12 +50,6 @@ private let namingBoolParameterMessage: Swift.String =
     + "named-options structs (the rule's own prescribed remedy) are "
     + "exempt per the #16 Option C ledger, Entry II.3."
 
-// Public-or-open-effective check moved to `Naming.hasPublicOrOpenEffective`
-// (Lint.Rule.Naming.Shared.swift) — shared with `int public parameter` and
-// documented as a cross-pack fix in issue #22.
-
-/// Strips optionals + attributed type wrappers and asks: is the
-/// underlying type an identifier `Bool` or `Swift.Bool`?
 private func namingBoolParameterIsBoolType(_ type: TypeSyntax) -> Bool {
     var current = type
     while let optional = current.as(OptionalTypeSyntax.self) {
@@ -89,7 +61,6 @@ private func namingBoolParameterIsBoolType(_ type: TypeSyntax) -> Bool {
     while let attributed = current.as(AttributedTypeSyntax.self) {
         current = attributed.baseType
     }
-    // Also unwrap single-element parenthesised forms (`(Bool)`).
     while let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1 {
         current = tuple.elements.first!.type
     }
@@ -97,7 +68,6 @@ private func namingBoolParameterIsBoolType(_ type: TypeSyntax) -> Bool {
         return identifier.name.text == "Bool"
     }
     if let member = current.as(MemberTypeSyntax.self) {
-        // `Swift.Bool`: base is `Swift`, name is `Bool`.
         if member.name.text == "Bool",
             let baseIdentifier = member.baseType.as(IdentifierTypeSyntax.self),
             baseIdentifier.name.text == "Swift"
@@ -125,11 +95,6 @@ internal final class NamingBoolParameterVisitor: SyntaxVisitor {
         guard Naming.hasPublicOrOpenEffective(Syntax(node), modifiers: node.modifiers) else {
             return .visitChildren
         }
-        // Exempt result-builder protocol methods inside an `@resultBuilder`
-        // type — `buildExpression(_ expression: Bool)`,
-        // `buildPartialBlock(first: Bool)`, etc. take `Bool` because the
-        // builder accumulates Bool; the signature is dictated by the
-        // builder protocol, not by an [API-IMPL-003] flag choice.
         if Naming.Build.methods.contains(node.name.text),
             Naming.isInsideExtensionPattern(Syntax(node))
         {
@@ -143,12 +108,6 @@ internal final class NamingBoolParameterVisitor: SyntaxVisitor {
         guard Naming.hasPublicOrOpenEffective(Syntax(node), modifiers: node.modifiers) else {
             return .visitChildren
         }
-        // Conversion-init exemption: `init(_ x: Bool)` is the Swift-native
-        // type-conversion shape (parallel to `init(_ x: Float)` for
-        // numeric coercion). The first name is the wildcard `_` and
-        // there's exactly one parameter — the call site reads as
-        // `Int(true)`, not as a flag. The rule's intent is flag-style
-        // public-API parameters, not type conversions.
         let parameters = node.signature.parameterClause.parameters
         if parameters.count == 1,
             let only = parameters.first,
@@ -157,22 +116,6 @@ internal final class NamingBoolParameterVisitor: SyntaxVisitor {
         {
             return .visitChildren
         }
-        // Memberwise-init exemption (#16 Option C ledger, Entry II.3 DECISION
-        // 2026-07-23), two demonstrated false-positive shapes:
-        //
-        // (a) Wire-schema types: a `Codable`/`Decodable`/`Encodable` conformer
-        //     whose Bool stored property mirrors the remote provider's JSON
-        //     schema (e.g. Mailgun `Recipient.activated`, GitHub REST
-        //     `Invitation.expired`). The Bool is dictated by the wire
-        //     contract; an enum remedy would misrepresent it.
-        // (b) `Options` named-options structs: the memberwise init of the
-        //     named-options struct is the rule's own prescribed remedy
-        //     (e.g. `Kernel.File.Copy.Options(overwrite:copyAttributes:)`);
-        //     firing on it prescribes recursion into itself.
-        //
-        // Both exempt ONLY Bool parameters the init assigns memberwise
-        // (`self.<param> = <param>`); a behavioral Bool that feeds logic in
-        // the same init still fires.
         let wireSchema = namingBoolParameterHasWireSchemaConformance(Syntax(node))
         let optionsStruct = namingBoolParameterEnclosingTypeName(Syntax(node)) == "Options"
         for parameter in parameters {
@@ -217,10 +160,6 @@ internal final class NamingBoolParameterVisitor: SyntaxVisitor {
     }
 }
 
-/// True when the nearest enclosing conformance context of `node` names a
-/// wire-schema protocol (`Codable`, `Decodable`, `Encodable`). Uses the
-/// pack's `Naming.conformances` walker, which also recovers same-file
-/// cross-decl conformances (sibling `extension X: Decodable`).
 private func namingBoolParameterHasWireSchemaConformance(_ node: Syntax) -> Bool {
     let wireSchemaLeaves: Swift.Set<Swift.String> = ["Codable", "Decodable", "Encodable"]
     for leaf in Naming.conformances(node) where wireSchemaLeaves.contains(leaf) {
@@ -229,8 +168,6 @@ private func namingBoolParameterHasWireSchemaConformance(_ node: Syntax) -> Bool
     return false
 }
 
-/// The name of the nearest enclosing nominal type declaration of `node`,
-/// or `nil` at file scope / directly inside an extension.
 private func namingBoolParameterEnclosingTypeName(_ node: Syntax) -> Swift.String? {
     var current: Syntax? = node.parent
     while let candidate = current {
@@ -239,8 +176,6 @@ private func namingBoolParameterEnclosingTypeName(_ node: Syntax) -> Swift.Strin
         if let decl = candidate.as(EnumDeclSyntax.self) { return decl.name.text }
         if let decl = candidate.as(ActorDeclSyntax.self) { return decl.name.text }
         if let ext = candidate.as(ExtensionDeclSyntax.self) {
-            // `extension Kernel.File.Copy.Options { public init(...) }` — the
-            // extended type's leaf is the enclosing nominal name.
             let path = ext.extendedType.trimmedDescription
             if let leaf = path.split(separator: ".").last { return Swift.String(leaf) }
             return path
@@ -250,10 +185,6 @@ private func namingBoolParameterEnclosingTypeName(_ node: Syntax) -> Swift.Strin
     return nil
 }
 
-/// True when `body` contains a top-level memberwise assignment
-/// `self.<parameter> = <parameter>` for the given internal parameter name.
-/// Both the unfolded `SequenceExprSyntax` and folded
-/// `InfixOperatorExprSyntax` spellings are recognised.
 private func namingBoolParameterAssignsSelf(
     _ body: CodeBlockSyntax?,
     parameter name: Swift.String

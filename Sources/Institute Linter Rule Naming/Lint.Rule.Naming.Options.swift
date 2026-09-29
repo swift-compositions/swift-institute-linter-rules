@@ -1,18 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `OptionSet` type with a `Flags` suffix — the institute uses `.Options`.
 extension Lint.Rule {
     public static let `property named flags` = Lint.Rule(
         id: "property named flags",
@@ -69,8 +57,6 @@ internal final class NamingOptionsVisitor: SyntaxVisitor {
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         let name = node.name.text
-        // Bare `Flags` is the exact C-speak this rule targets — `struct Flags:
-        // OptionSet` is not exempt merely because it lacks a further prefix.
         guard name.hasSuffix("Flags") else { return .visitChildren }
         guard let inheritance = node.inheritanceClause,
             namingOptionsConformsToOptionSet(inheritance)

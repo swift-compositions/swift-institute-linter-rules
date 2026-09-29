@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — platform System targets MUST extend
-/// the `System` namespace directly, NOT nest under
-/// `{Platform}.System`.
-///
-/// Citation: `[PLAT-ARCH-026]` (platform skill — platform System
-/// extends System directly).
 extension Lint.Rule {
     public static let `system subdomain` = Lint.Rule(
         id: "system subdomain",
@@ -64,9 +47,6 @@ internal let platformSystemSubdomainMessage: Swift.String =
     + "published per [PLAT-ARCH-027]; the variant `@_exported` re-"
     + "export carries the namespace without that publication step."
 
-/// Walks a (possibly multi-segment) `MemberTypeSyntax` chain down to its
-/// root identifier, e.g. `Darwin.Kernel.System` → `Darwin`, so a deeply
-/// qualified extension is still recognised (#21 defect 10).
 private func platformSystemSubdomainRootIdentifier(_ type: TypeSyntax) -> Swift.String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return identifier.name.text
@@ -141,10 +121,6 @@ internal final class PlatformSystemSubdomainVisitor: SyntaxVisitor {
     }
     override func visitPost(_: ExtensionDeclSyntax) { nameStack.removeLast() }
 
-    /// Shared by every nominal-type visit (#21 defect 10): the stack
-    /// machinery below exists solely to serve this check, and previously
-    /// only the `EnumDeclSyntax` visit called it, leaving `struct` /
-    /// `class` / `actor` `System` nested types entirely unchecked.
     private func checkSystemName(_ name: TokenSyntax) {
         guard name.text == "System" else { return }
         guard let last = nameStack.last,

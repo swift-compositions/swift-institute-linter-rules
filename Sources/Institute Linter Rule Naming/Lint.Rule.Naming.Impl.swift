@@ -1,20 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave-1 — local variable bound as `impl` (or `_impl`).
-///
-/// Citation: `feedback_no_impl_abbreviation`.
 extension Lint.Rule {
     public static let `variable named impl` = Lint.Rule(
         id: "variable named impl",

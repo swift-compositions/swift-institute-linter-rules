@@ -31,9 +31,6 @@ internal final class MemoryErrorNoncopyableVisitor: SyntaxVisitor {
                 while let attributed = current.as(AttributedTypeSyntax.self) {
                     current = attributed.baseType
                 }
-                // Base-blind fix (#25 defect 5 point 3): a `MemberTypeSyntax`
-                // leaf named `Error` must be rooted at the bare `Swift` module,
-                // or a nested non-stdlib `Module.Error` false-positives.
                 if let identifier = current.as(IdentifierTypeSyntax.self),
                     identifier.name.text == "Error"
                 {
@@ -68,8 +65,6 @@ internal final class MemoryErrorNoncopyableVisitor: SyntaxVisitor {
 
     private func check(name: TokenSyntax, inheritanceClause: InheritanceClauseSyntax?) {
         guard conformsToError(name: name, inheritanceClause: inheritanceClause) else { return }
-        // `~Copyable` can only be suppressed on the primary declaration's
-        // own clause — an extension cannot re-suppress a conformance.
         guard let inheritanceClause, suppressesCopyable(inheritanceClause) else { return }
         let location = converter.location(for: name.positionAfterSkippingLeadingTrivia)
         matches.append(
@@ -100,8 +95,6 @@ internal final class MemoryErrorNoncopyableVisitor: SyntaxVisitor {
         return .visitChildren
     }
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        // `protocol Failure: Error, ~Copyable {}` is the same [MEM-COPY-002]
-        // violation in the same single-clause shape (#25 defect 5).
         check(name: node.name, inheritanceClause: node.inheritanceClause)
         return .visitChildren
     }

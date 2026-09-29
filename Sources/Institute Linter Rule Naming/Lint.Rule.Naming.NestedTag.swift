@@ -1,22 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Empty `Tag` sub-types nested inside another type — the surrounding
-/// namespace MUST play the phantom role directly. Citation:
-/// `[API-NAME-010a]`. Sibling of `Lint.Rule.Naming.Tag` per
-/// `[API-NAME-010]`, which catches the suffix-form (`OrderTag`); this
-/// rule catches the nested-sub-name form (`Order.Tag`).
 extension Lint.Rule {
     public static let `nested tag` = Lint.Rule(
         id: "nested tag",
@@ -106,10 +90,6 @@ internal final class NamingNestedTagVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns true when `node` is nested inside a type-decl or extension
-/// context — walks up the parent chain looking for any enclosing
-/// `StructDeclSyntax` / `ClassDeclSyntax` / `EnumDeclSyntax` /
-/// `ActorDeclSyntax` / `ExtensionDeclSyntax`.
 private func nestedTagIsNested(_ node: Syntax) -> Swift.Bool {
     var current: Syntax? = node.parent
     while let candidate = current {

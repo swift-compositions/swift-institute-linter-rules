@@ -1,22 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — wrapper types whose `_backing` /
-/// `_wrapped` / `_underlying` property is non-private signal an
-/// incomplete-wrapper violation.
-///
-/// Citation: `[API-IMPL-011]` (code-surface skill — wrapper completeness).
 extension Lint.Rule {
     public static let `wrapper backing exposed` = Lint.Rule(
         id: "wrapper backing exposed",
@@ -74,11 +58,6 @@ internal func structureWrapperBackingExposedHasPrivateOrFilePrivate(
     for modifier in modifiers {
         switch modifier.name.tokenKind {
         case .keyword(.private), .keyword(.fileprivate):
-            // `private(set)` / `fileprivate(set)` narrows only the SETTER;
-            // the getter remains at the declaration's (often internal or
-            // public) access level — exactly the reach-through
-            // (`wrapper._backing.run { … }`) this rule exists to prevent.
-            // Only a bare `private`/`fileprivate` with no detail exempts.
             if modifier.detail == nil {
                 return true
             }
@@ -136,11 +115,6 @@ internal final class StructureWrapperBackingExposedVisitor: SyntaxVisitor {
     }
     override func visitPost(_: ActorDeclSyntax) { typeDepth -= 1 }
 
-    // #28 defect 5: previously only struct/class/actor bumped
-    // `typeDepth`, so a backing property declared in an `enum` body or
-    // in an `extension` (`extension Lane { public var _backing … }` —
-    // the common authoring site under one-type-per-file) was never
-    // flagged.
     override func visit(_: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         typeDepth += 1
         return .visitChildren

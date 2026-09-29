@@ -1,56 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Foundation-free string scanning at L1 / L2 MUST default to the UTF-8
-/// byte view, not `unicodeScalars`. Citation: `[IMPL-089]`.
-///
-/// #24 defect 7 scoping: "Foundation-free" is the rule's own stated
-/// scope, and it is mechanically checkable the same way
-/// `Lint.Rule.Foundation.Import` checks it — by whether the file
-/// imports a Foundation-family module. A file that imports Foundation
-/// (or `FoundationEssentials`/`FoundationNetworking`/`FoundationXML`)
-/// is not attempting Foundation-free scanning in the first place, so
-/// `.unicodeScalars` there is not the harm this rule exists to catch;
-/// such files are exempt. Full receiver-type resolution (distinguishing
-/// a `String`'s `.unicodeScalars` from an unrelated type's
-/// same-named member) is NOT implemented — a syntax-only rule has no
-/// type checker, and that limitation is unchanged by this scoping
-/// pass. A false positive on a non-`String` receiver is suppressible
-/// with this engine's own `// swift-linter:disable:next string utf8 scanning`
-/// directive (not a SwiftLint directive — the wrong tool for this
-/// engine).
-///
-/// ## Spec-mandated scalar algorithms — ruled disposition
-///
-/// Ruled 2026-08-01 (swift-institute/.github#90 comment 5150641576 item 1,
-/// sourced from the batch-1 backlog, comment 5150595934): a specification
-/// whose algorithm is DEFINED over Unicode scalars / code points rather
-/// than bytes — the confirmed instance is RFC 3492 Punycode, whose
-/// encoding is specified in code points — is **accept-as-warning**, NOT a
-/// predicate exemption.
-///
-/// Rationale: no stable syntactic property distinguishes a spec-mandated
-/// scalar algorithm from an ordinary `.unicodeScalars` misuse. "This file
-/// implements RFC 3492" is semantic knowledge, not syntax; the Foundation-
-/// import gate above works precisely because an `import` IS syntax, and
-/// there is no equivalent token here. Widening the predicate on a
-/// filename, a module name, or a comment would be a path/name exemption in
-/// disguise, and the engine already ships the correct instrument: a
-/// per-site `// swift-linter:disable:next string utf8 scanning` with a
-/// `// REASON:` continuation naming the specification section. The
-/// justification is then reviewable at the site that needs it, which a
-/// blanket predicate exemption would not be.
 extension Lint.Rule {
     public static let `string utf8 scanning` = Lint.Rule(
         id: "string utf8 scanning",
@@ -108,10 +58,6 @@ internal let idiomStringUTF8ScanningMessage: Swift.String =
     + "`// swift-linter:disable:next string utf8 scanning` and `// REASON:` "
     + "continuation naming the specification section."
 
-/// The Foundation module family — mirrors
-/// `Lint.Rule.Foundation.Import`'s `foundationModuleFamily`, kept as a
-/// local, independent copy: this rule pack has no dependency on the
-/// Foundation rule pack's module.
 private let idiomFoundationModuleFamily: Swift.Set<Swift.String> = [
     "Foundation",
     "FoundationEssentials",
@@ -119,10 +65,6 @@ private let idiomFoundationModuleFamily: Swift.Set<Swift.String> = [
     "FoundationXML",
 ]
 
-/// Returns true if `tree` contains a top-level `import` of a
-/// Foundation-family module (a submodule import such as
-/// `Foundation.NSURL` also counts — its first path component is the
-/// family member).
 internal func idiomFileImportsFoundation(_ tree: SourceFileSyntax) -> Swift.Bool {
     for statement in tree.statements {
         guard let importDecl = statement.item.as(ImportDeclSyntax.self) else { continue }

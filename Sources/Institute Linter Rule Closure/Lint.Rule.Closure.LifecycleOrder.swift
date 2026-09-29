@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Multi-closure signatures MUST order closures by lifecycle:
-/// setup → body → completion / teardown. Citation: `[API-IMPL-013]`.
 extension Lint.Rule {
   public static let `lifecycle order` = Lint.Rule(
     id: "lifecycle order",
@@ -123,13 +110,6 @@ internal final class ClosureLifecycleOrderVisitor: SyntaxVisitor {
     )
   }
 
-  /// Walks the closure-typed parameters in declaration order, tracking
-  /// every earlier-tier parameter still "pending" (not yet confirmed
-  /// in-order). When a parameter of tier `t` is reached, every pending
-  /// parameter of a *later* tier than `t` is now confirmed out of
-  /// order — it appeared before something that must precede it — and
-  /// is flagged at its own position. `other`-tier parameters carry no
-  /// lifecycle signal and don't participate.
   private func checkParameters(_ parameters: FunctionParameterListSyntax) {
     var pending: [Tier: [AbsolutePosition]] = [:]
     for parameter in parameters {

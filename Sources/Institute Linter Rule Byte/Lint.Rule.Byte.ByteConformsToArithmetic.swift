@@ -1,26 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `Byte` MUST NOT gain stdlib arithmetic conformances. Per
-/// the byte-arithmetic conformance note v1.0.0 RECOMMENDATION ζ (2026-05-19),
-/// `Byte` carries byte-domain identity, NOT arithmetic identity. The
-/// arithmetic surface (`+`, `-`, `*`, `/`, increment, `BinaryInteger`,
-/// `Numeric`, `AdditiveArithmetic`, `Strideable`, `SignedInteger`,
-/// `UnsignedInteger`, `FixedWidthInteger`) lives on `UInt8` only.
-/// Arithmetic-domain byte storage MUST stay `UInt8` per the W2
-/// discrimination rubric (the L2/L3 byte-typing gap plan note).
-/// Citation: `[API-BYTE-002]`.
 extension Lint.Rule {
     public static let `byte conforms to arithmetic protocol` = Lint.Rule(
         id: "byte conforms to arithmetic protocol",
@@ -68,10 +48,6 @@ internal let byteConformsToArithmeticMessage: Swift.String =
     + "kind-tag / opaque byte, retype storage to `Byte` and remove the "
     + "arithmetic conformance."
 
-/// Stdlib arithmetic protocols whose conformance on `Byte` is forbidden.
-/// Matched against the inherited-type leaf-name (with backticks stripped);
-/// tolerates `Swift.AdditiveArithmetic`-style module qualification by
-/// inspecting the trailing identifier.
 private let byteArithmeticProtocolNames: Swift.Set<Swift.String> = [
     "AdditiveArithmetic",
     "Numeric",
@@ -106,10 +82,6 @@ internal final class ByteConformsToArithmeticVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    // `Byte` is a real struct declaration — a conformance can be adopted
-    // directly on the primary declaration (`public struct Byte:
-    // AdditiveArithmetic { … }`), not only via a later `extension`. The
-    // `ExtensionDeclSyntax` visitor above is blind to this shape.
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         guard let inheritance = node.inheritanceClause else { return .visitChildren }
         guard Lint.Syntax.Identifier.unescaped(node.name.text) == "Byte" else {
@@ -140,11 +112,6 @@ internal final class ByteConformsToArithmeticVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns true when `type` is `Byte` (with optional `Byte.Byte`
-/// module qualification). The qualified form requires the base to
-/// actually be `Byte` — an arbitrary consumer namespace that
-/// happens to nest an unrelated type named `Byte` (e.g.
-/// `RFC_1234.Byte`) must not match.
 internal func extensionIsOnByte(_ type: TypeSyntax) -> Swift.Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "Byte"
@@ -159,8 +126,6 @@ internal func extensionIsOnByte(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-/// Returns the leaf name when `type` matches a stdlib arithmetic protocol
-/// in `byteArithmeticProtocolNames`. Tolerates `Swift.<X>` qualification.
 private func arithmeticProtocolLeafName(_ type: TypeSyntax) -> Swift.String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         let leaf = Lint.Syntax.Identifier.unescaped(identifier.name.text)

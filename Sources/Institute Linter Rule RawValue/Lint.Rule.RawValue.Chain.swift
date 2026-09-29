@@ -1,37 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// R3 — chained `.rawValue.X` member access.
-///
-/// Subsumes the regex pair `chained_rawvalue_access_anti_pattern` +
-/// `chained_rawvalue_access_paren_evasion`. The AST predicate is a
-/// `MemberAccessExprSyntax` whose base, after peeling parenthesized
-/// wrappers, is itself a `MemberAccessExprSyntax` whose member name is
-/// `rawValue`.
-///
-/// Paren-wrap evasion `(x.rawValue).foo()` collapses into the same
-/// predicate: `TupleExprSyntax` wrapping a single expression is
-/// semantically transparent, so peeling it yields the same
-/// `MemberAccessExprSyntax(base: x, name: rawValue)` shape.
-///
-/// References:
-/// - the cardinal/ordinal/vector enforcement design note
-///   §"R3. `.rawValue.` chains"
-/// - the SwiftSyntax-based custom-linter investigation note
-///   §"Q2 — Evasion-class closure matrix" (paren-wrap row)
 extension Lint.Rule {
-  /// Flags chained `.rawValue.member` access, including the paren-wrapped `(x.rawValue).member` form, which escapes the typed system ([CONV-016]).
   public static let `chained rawvalue access` = Lint.Rule(
     id: "chained rawvalue access",
     default: .warning,
@@ -56,10 +26,6 @@ extension Lint.Rule {
       ),
     ],
     observe: Lint.Rule.measured { source, severity in
-      // §A brand-owner recognizer: same-package `.rawValue.<member>`
-      // chains on the owner's brand are legitimate-by-construction.
-      // Retires the per-package `.excluding(rules:)` stopgap
-      // ([LINT-EXCLUDE-*]).
       if Lint.Brand.owned(Lint.Brand.vocabulary, in: source) { return [] }
       let visitor = RawValueChainVisitor(
         source: source.file,
@@ -121,11 +87,6 @@ internal final class RawValueChainVisitor: SyntaxVisitor {
     return .visitChildren
   }
 
-  /// Peels syntactic wrappers that are semantically transparent for this
-  /// predicate's purposes: parenthesization (`(x.rawValue)`), optional
-  /// chaining (`x.rawValue?`), and force unwrap (`x.rawValue!`). Each is
-  /// a one-character evasion that would otherwise reopen the hole the
-  /// paren-peel closed.
   private static func peelParens(_ expr: ExprSyntax) -> ExprSyntax {
     var current = expr
     while true {

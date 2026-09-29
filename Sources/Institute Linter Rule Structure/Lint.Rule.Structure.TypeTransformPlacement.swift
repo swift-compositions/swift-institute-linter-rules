@@ -1,22 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 4 (mechanization-program) — type-transformation methods belong
-/// in initializers or static methods on the target type, not as
-/// instance methods on the source.
-///
-/// Citation: `[PATTERN-012]` (implementation skill, the patterns note).
 extension Lint.Rule {
     public static let `type transform placement` = Lint.Rule(
         id: "type transform placement",
@@ -85,8 +69,6 @@ internal func structureTypeTransformPlacementReturnTypeLeafName(_ type: TypeSynt
     if let optional = type.as(OptionalTypeSyntax.self) {
         return structureTypeTransformPlacementReturnTypeLeafName(optional.wrappedType)
     }
-    // #28 nit 5: `-> Foo!` and `-> any Foo` were missed, mirroring the
-    // existing `OptionalTypeSyntax` arm.
     if let iuo = type.as(ImplicitlyUnwrappedOptionalTypeSyntax.self) {
         return structureTypeTransformPlacementReturnTypeLeafName(iuo.wrappedType)
     }
@@ -158,9 +140,6 @@ internal final class StructureTypeTransformPlacementVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    // #28 defect 6: a protocol requirement has no body to relocate, so this
-    // rule's prescribed fix cannot apply to it — a false positive with an
-    // inapplicable remedy, not a coverage gap.
     override func visit(_: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
     }

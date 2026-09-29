@@ -1,24 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Performance-suite `@Test` functions MUST carry the `.timed()` trait — OR the
-/// enclosing suite/function carries the `[BENCH-003]` executable-variant citation
-/// in its leading trivia (the sanctioned instrument for L1-isolated trees whose
-/// dependency closure cannot reach the `.timed()` stack: measurement lives in a
-/// nested `Benchmarks/` executable; in-test Performance suites are then
-/// load-scale GATES, exempt when citing the variant).
-/// Citation: `[BENCH-003]`.
 extension Lint.Rule {
     public static let `benchmark timed required` = Lint.Rule(
         id: "benchmark timed required",
@@ -45,13 +27,6 @@ internal let testingBenchmarkTimedRequiredMessage: Swift.String =
     + "Benchmarks/ package and mark this suite with a `[BENCH-003]` variant "
     + "citation comment to exempt it."
 
-/// Structural check for the `.timed(...)` trait argument (#24 nit:
-/// replaces a `.contains(".timed")` textual scan of the whole
-/// attribute's description, which also matches inside an unrelated
-/// interior comment or string, or a differently-named trait that
-/// merely contains the substring). `.timed` is always invoked with
-/// parens per its own documented shape, so the argument must be a
-/// call whose called expression is the bare `.timed` member access.
 internal func testingBenchmarkAttributeMentionsTimed(_ attribute: AttributeSyntax) -> Swift.Bool {
     guard case .argumentList(let arguments) = attribute.arguments else { return false }
     for argument in arguments {
@@ -120,8 +95,6 @@ internal final class TestingBenchmarkTimedRequiredVisitor: SyntaxVisitor {
         }
     }
 
-    /// The executable-variant citation carve ([BENCH-003], rule-exemptions
-    /// citation-comment shape): `[BENCH-003]` in the decl's leading trivia.
     private func citesVariant(_ trivia: Trivia) -> Swift.Bool {
         for piece in trivia {
             switch piece {

@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 4 (mechanization-program) — platform-specific packages MUST
-/// extend the shared `Kernel` namespace rather than declaring compound
-/// platform-prefix root types.
-///
-/// Citation: `[PLAT-ARCH-003]` (platform skill — namespace extension
-/// pattern).
 extension Lint.Rule {
     public static let `compound platform namespace root` = Lint.Rule(
         id: "compound platform namespace root",
@@ -67,9 +50,6 @@ internal let platformNamespaceRootKernelKeywords: [Swift.String] = [
 ]
 
 internal func platformNamespaceRootIsCompoundPlatformName(_ name: Swift.String) -> Swift.Bool {
-    // The pack's single platform-identity vocabulary (`platformPlatformTokens`
-    // in `Lint.Rule.Platform.Shared.swift`) — closes the `AndroidKernel` /
-    // `WASIKernel` / `FreeBSDKernel` gap named in #21 blocker 3.
     for prefix in platformPlatformTokens {
         guard name.hasPrefix(prefix) else { continue }
         let suffix = String(name.dropFirst(prefix.count))
@@ -103,12 +83,6 @@ internal final class PlatformNamespaceRootVisitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    // #21 blocker 3: the hand-rolled `depth` counter enumerated container
-    // kinds by hand, which is what produced both halves of the defect
-    // (`ActorDeclSyntax` missing, function-local types false-positiving).
-    // Replaced with the structural ancestor walk `Lint.Syntax.Scope.isTopLevel`.
-    // `IfConfigDeclSyntax` is deliberately not a stopper there, so a type
-    // under a file-scope `#if os(Linux)` is still judged top-level.
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         if Lint.Syntax.Scope.isTopLevel(node) { flagIfCompound(node.name) }
         return .visitChildren

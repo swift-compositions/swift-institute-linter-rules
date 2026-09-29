@@ -1,24 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-// swiftlint:disable no_existential_throws
-// REASON: this rule's own doc comments, diagnostic message, and citation-carve-out
-// prose must literally cite `throws(any Error)` — self-referential fixture shape
-// (rule-exemptions skill); the regex-based no_existential_throws rule cannot
-// distinguish prose citation from live code. Re-enabled after the visitor class.
-/// `throws(any Error)` boxes the error existentially — semantically
-/// identical to untyped `throws`. Citation: `feedback_no_existential_throws`.
 extension Lint.Rule {
   public static let `existential throws` = Lint.Rule(
     id: "existential throws",
@@ -62,15 +44,6 @@ internal let throwsExistentialMessage: Swift.String =
   + "the error as an existential — semantically identical to untyped `throws`. "
   + "Use a concrete error type or make the container generic over the error type."
 
-/// Stdlib-protocol witnesses whose untyped-throws signature is dictated
-/// by the protocol requirement itself — the conformer cannot narrow the
-/// throws set because downstream stdlib calls propagate `any Error`.
-/// Citation key required at write time.
-///
-/// Gated on conformance context: the function name must match an entry
-/// AND the enclosing extension's inheritance clause must name the
-/// corresponding stdlib protocol. Outside that context, the same
-/// signature has no structural justification and still fires.
 @usableFromInline
 internal let throwsExistentialStdlibProtocolWitnessCitations:
   [Swift.String: (witness: Swift.String, protocols: [Swift.String])] = [
@@ -100,27 +73,9 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
   override func visit(_ node: ThrowsClauseSyntax) -> SyntaxVisitorContinueKind {
     guard let typed = node.type else { return .visitChildren }
     guard isAnyError(typed) else { return .visitChildren }
-    // Exempt per [RULE-EXEMPT-2] (protocol-witness-citation-dict):
-    // walk up to the enclosing function / init decl, build the
-    // witness-key string, and check whether it matches a known
-    // stdlib-protocol untyped-throws requirement AND the enclosing
-    // extension conforms to the corresponding stdlib protocol. The
-    // protocol IS the gate — the typed-throws constraint is
-    // structurally inexpressible. Tuple-valued dict form lets one
-    // witness key satisfy multiple protocols (Decodable, Codable).
-    // Skill: the rule-exemptions skill.
     if isStdlibProtocolWitnessThrows(Syntax(node)) {
       return .visitChildren
     }
-    // Carve-out: enclosing function/init body invokes the
-    // swift-testing `#require(_:)` macro. The macro's expansion is
-    // `try Testing.__check(...).__required()` which throws
-    // `any Error`; the enclosing function MUST be `throws(any Error)`
-    // (or untyped `throws`) to propagate. No concrete public error
-    // type is exposed by swift-testing for the `throws(E)` form;
-    // the existential is structurally required by the macro contract.
-    // See `throwsBodyContainsRequireMacro` for full rationale and
-    // citation.
     if isInsideRequireMacroFunction(Syntax(node)) {
       return .visitChildren
     }
@@ -141,19 +96,6 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
     return .visitChildren
   }
 
-  /// Returns true if the throws clause is on a function / init /
-  /// accessor whose body invokes swift-testing's `#require(_:)` macro.
-  /// The `#require` macro's expansion (`try Testing.__check(...).__required()`)
-  /// throws `any Error` by macro contract — swift-testing exposes no
-  /// concrete public error type for the throws clause. The enclosing
-  /// function is structurally forced to `throws(any Error)` or untyped
-  /// `throws` to propagate; the existential is mandated by the macro
-  /// contract, not chosen by the author.
-  ///
-  /// Citation: feedback_no_existential_throws (rule's primary statement);
-  /// 2026-05-21 binary lint remediation — dead-end documented
-  /// in HANDOFF.md (typed-throws form `throws(ExpectationFailedError)`
-  /// doesn't compile against swift-testing's public surface).
   private func isInsideRequireMacroFunction(_ node: Syntax) -> Swift.Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
@@ -187,14 +129,6 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
   }
 
   private func isStdlibProtocolWitnessThrows(_ node: Syntax) -> Swift.Bool {
-    // Walk up to the enclosing function or initializer decl, guarding both
-    // branches with `witnessKey == nil` (#19 defect 2, item 1) so an OUTER
-    // declaration cannot overwrite an INNER one's key — e.g. an outer
-    // `init(from:)` must not clobber an inner `func helper()`'s key.
-    // Accumulate every enclosing declaration's inheritance-clause leaf names
-    // (item 3) rather than stopping at the innermost extension, so
-    // conformance declared on the nominal TYPE itself (not just an
-    // extension) is seen — matching `ThrowsUntypedVisitor`'s behavior.
     var current: Syntax? = node.parent
     var witnessKey: Swift.String?
     var witnessSignature: FunctionSignatureSyntax?
@@ -223,9 +157,6 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
       current = candidate.parent
     }
     guard let key = witnessKey, let signature = witnessSignature else { return false }
-    // Signature-position restriction (item 2): a `throws(any Error)` inside
-    // the witness BODY is not exempt — only the enclosing member's own
-    // signature is conformance-forced.
     guard
       node.position >= signature.position,
       node.endPosition <= signature.endPosition
@@ -234,9 +165,6 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
     for protocolName in entry.protocols where inheritedTypeSuffixes.contains(protocolName) {
       return true
     }
-    // Bare-extension fallback keyed off the witness key, not the protocol
-    // list — the `// MARK: - Codable` pattern where the conformance is
-    // declared in a separate extension/file from the witness.
     switch key {
     case "init(from:)":
       return throwsIsCanonicalWitnessSignature(
@@ -293,7 +221,3 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
   }
 }
 
-// swiftlint:enable no_existential_throws
-
-/// Walks a function body looking for any `#require(_:)` macro invocation.
-/// Used by `Lint.Rule.Throws.Existential`'s `#require` carve-out.

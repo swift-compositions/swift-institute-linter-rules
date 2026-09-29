@@ -1,19 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `do { throw … } catch { … }` blocks MUST use the typed-throws
-/// specifier. Citation: `[IMPL-075]`.
 extension Lint.Rule {
     public static let `do throws for typed catch with throw` = Lint.Rule(
         id: "do throws for typed catch with throw",

@@ -1,23 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Closure parameters trail the signature. Citation: `[API-IMPL-012]`.
-///
-/// All closure parameters MUST occupy the final positions of a function
-/// or initializer signature. A non-closure parameter MUST NOT appear
-/// after a closure parameter. Typed-throws thunks per `[IMPL-092]` —
-/// `() throws(E) -> T` — count as closures for this rule.
 extension Lint.Rule {
     public static let `parameter position` = Lint.Rule(
         id: "parameter position",
@@ -62,9 +45,6 @@ internal let closureParameterPositionMessage: Swift.String =
     + "non-closure parameters before all closure parameters; typed-throws thunks "
     + "(`() throws(E) -> T`) count as closures per [IMPL-092]."
 
-/// Shared closure-shape helper used by every rule in the Closure pack.
-/// Returns true when the type position resolves to a function type,
-/// after stripping optional / IUO / attribute / paren wrappers.
 internal func isClosureType(_ type: TypeSyntax) -> Swift.Bool {
     var current = closureStrippingWrapperTypes(type)
     while let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1 {

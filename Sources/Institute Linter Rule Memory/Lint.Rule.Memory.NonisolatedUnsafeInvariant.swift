@@ -1,36 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 Thread 7 (2026-05-11) — `nonisolated(unsafe)` declarations
-/// MUST carry an adjacent `// SAFETY: ...` or `// WHY: ...` invariant
-/// comment that cites the encapsulation guarantee in prose.
-///
-/// Citation: `[MEM-SAFE-025a]` (memory-safety skill, the safety-isolation note).
-///
-/// Replaces `Lint.Rule.Memory.NonisolatedUnsafeSafe` (the original
-/// `[MEM-SAFE-025]` rule, SUPERSEDED 2026-05-11 by the
-/// invariant-comment + `@safe`-forbidden split per
-/// the MEM-SAFE-025 reconciliation note).
-///
-/// The comment MUST be immediately adjacent to the declaration: a
-/// blank line between the comment and the `nonisolated(unsafe)` token
-/// breaks adjacency and the rule fires. First-line-prefix convention:
-/// multi-line blocks may carry `// SAFETY:` or `// WHY:` on only the
-/// FIRST line of the block with continuation comments below; the
-/// prefix on any line of the contiguous comment block is sufficient
-/// to assert the invariant. Intervening `// swift-linter:disable:next ...`
-/// directives are walked through.
 extension Lint.Rule {
     public static let `nonisolated unsafe without invariant` = Lint.Rule(
         id: "nonisolated unsafe without invariant",
@@ -94,7 +64,6 @@ internal final class MemoryNonisolatedUnsafeInvariantVisitor: SyntaxVisitor {
         for modifier in modifiers {
             if modifier.name.tokenKind == .keyword(.nonisolated) {
                 if let detail = modifier.detail {
-                    // detail is `(unsafe)` — match by trimmed text.
                     if detail.detail.text == "unsafe" {
                         return true
                     }
@@ -104,10 +73,6 @@ internal final class MemoryNonisolatedUnsafeInvariantVisitor: SyntaxVisitor {
         return false
     }
 
-    /// Returns `true` if the variable declaration's leading trivia
-    /// contains an adjacent `// SAFETY:` or `// WHY:` line. See
-    /// `memoryTriviaHasAdjacentComment(_:matching:)` in Shared.swift for
-    /// the walk's semantics.
     private func hasAdjacentInvariantComment(_ trivia: Trivia) -> Bool {
         memoryTriviaHasAdjacentComment(trivia) { body in
             body.hasPrefix("SAFETY:") || body.hasPrefix("WHY:")
@@ -118,10 +83,6 @@ internal final class MemoryNonisolatedUnsafeInvariantVisitor: SyntaxVisitor {
         guard hasNonisolatedUnsafe(node.modifiers) else {
             return .visitChildren
         }
-        // The relevant leading trivia is the one on the first token
-        // of the declaration. For a variable decl that's the first
-        // attribute or modifier — `node.leadingTrivia` resolves to
-        // that.
         let trivia = node.leadingTrivia
         if hasAdjacentInvariantComment(trivia) {
             return .visitChildren

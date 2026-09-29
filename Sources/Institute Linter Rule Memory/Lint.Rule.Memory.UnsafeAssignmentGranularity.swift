@@ -1,24 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — assignment to unsafe storage MUST
-/// wrap the entire assignment expression in `unsafe (…)`; placing the
-/// `unsafe` keyword on the RHS alone leaves the destination
-/// unacknowledged.
-///
-/// Citation: `[PATTERN-005b]` / `[MEM-SAFE-002]` (platform skill, memory-
-/// safety skill — expression granularity of unsafe).
 extension Lint.Rule {
   public static let `unsafe assignment granularity` = Lint.Rule(
     id: "unsafe assignment granularity",
@@ -65,12 +47,6 @@ internal let memoryUnsafeAssignmentGranularityMessage: Swift.String =
   + "expression: `unsafe (<lvalue> = <expr>)`. Each unsafe operation "
   + "requires its own `unsafe` acknowledgment; expression granularity."
 
-/// Returns true when `lhs` itself contains an unsafe access — a `.pointee`
-/// store, a pointer subscript, or an already `unsafe`-marked
-/// sub-expression. Under SE-0458 an assignment whose destination is safe
-/// storage (`count = unsafe pointer.pointee`) is already fully covered by
-/// the RHS's own `unsafe` acknowledgment; only an unsafe *destination*
-/// widens the region that needs covering.
 internal func memoryUnsafeAssignmentGranularityLHSIsUnsafeDestination(
   _ lhs: ExprSyntax
 ) -> Swift.Bool {

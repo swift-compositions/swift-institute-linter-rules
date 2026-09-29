@@ -1,35 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Conformers to `Binary.Serializable` / `Binary.Parseable` with a
-/// `rawValue: UInt8` storage property surface a per-site discrimination
-/// decision per the W2 discrimination rubric
-/// (the L2/L3 byte-typing gap plan note § Wave 2). Two patterns:
-///
-/// 1. *Byte-domain* — rawValue is pure bit-field / kind-tag / opaque-byte
-///    (no arithmetic). RETYPE storage to `Byte`.
-/// 2. *Arithmetic-domain* — rawValue participates in arithmetic
-///    (`- 1`, `* 4`, modular roll-over). KEEP storage as `UInt8`; bridge
-///    via `.underlying` at the conformance boundary; the witness signature
-///    still retypes to `Buffer.Element == Byte`.
-///
-/// The rule fires whenever the pattern surfaces; per-site disposition is
-/// the writer's. AST cannot mechanically detect arithmetic usage on
-/// `rawValue` (cross-function-body analysis). Each finding is a review
-/// prompt — classify the rawValue's domain per the rubric, then apply
-/// the matching pattern.
-/// Citation: `[API-BYTE-004]`.
 extension Lint.Rule {
     public static let `binary serializable rawvalue uint8` = Lint.Rule(
         id: "binary serializable rawvalue uint8",
@@ -81,14 +52,6 @@ internal final class ByteBinarySerializableRawValueUInt8Visitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    /// Set of nominal-type QUALIFIED paths (e.g. `RFC_791.Flags`, not the
-    /// bare leaf `Flags`) whose declaration carries a `Binary.Serializable`
-    /// (or sibling) conformance on the type-decl header, or whose
-    /// extension names that conformance. Populated in pass 1; queried in
-    /// pass 2. Keying on the qualified path (not the bare leaf) avoids
-    /// attributing one type's conformance to an unrelated same-leaf type
-    /// declared elsewhere in the file (e.g. `RFC_791.Flags` vs. an
-    /// unrelated `Wire.Flags`).
     private var conformingTypePaths: Swift.Set<Swift.String> = []
     private var typesWithRawValueUInt8: [(path: Swift.String, position: AbsolutePosition)] = []
     private var enclosingPath: [Swift.String] = []
@@ -118,8 +81,6 @@ internal final class ByteBinarySerializableRawValueUInt8Visitor: SyntaxVisitor {
     }
     override func visitPost(_: EnumDeclSyntax) { _ = enclosingPath.popLast() }
 
-    // Conformers are not restricted to struct/enum — `final class` and
-    // `actor` conformers to `Binary.Serializable` are equally in scope.
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         enclosingPath.append(Lint.Syntax.Identifier.unescaped(node.name.text))
         recordTypeDecl(inheritance: node.inheritanceClause)
@@ -141,10 +102,6 @@ internal final class ByteBinarySerializableRawValueUInt8Visitor: SyntaxVisitor {
             inheritanceContainsSerializableLikeProtocol(inheritance),
             let typeName = byteExtensionExtendedLeafName(node.extendedType)
         {
-            // An extension's extended-type path is independent of lexical
-            // nesting (`extension RFC_791.Flags { ... }` names its full path
-            // directly), so use the extended type's own qualified spelling
-            // rather than the visitor's current lexical `enclosingPath`.
             conformingTypePaths.insert(typeName)
         }
         return .visitChildren
@@ -197,7 +154,6 @@ internal final class ByteBinarySerializableRawValueUInt8Visitor: SyntaxVisitor {
     }
 }
 
-/// Returns true when a type annotation reads as `UInt8` or `Swift.UInt8`.
 internal func byteTypeAnnotationIsUInt8(_ type: TypeSyntax) -> Swift.Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "UInt8"
@@ -213,8 +169,6 @@ internal func byteTypeAnnotationIsUInt8(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-/// Returns true when the inheritance clause names a Binary serializable-
-/// family protocol (`Binary.Serializable`, `Binary.Parseable`).
 internal func inheritanceContainsSerializableLikeProtocol(
     _ clause: InheritanceClauseSyntax
 )
@@ -241,8 +195,6 @@ internal func byteTypeIsSerializableLike(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-/// Returns the leaf component of an extension's extended type — e.g.,
-/// `RFC_791.TypeOfService` → `"TypeOfService"`; bare `Foo` → `"Foo"`.
 internal func byteExtensionExtendedLeafName(_ type: TypeSyntax) -> Swift.String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text)

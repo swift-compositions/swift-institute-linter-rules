@@ -1,15 +1,8 @@
 internal import SwiftSyntax
 
 internal final class PlatformSwiftQualificationRewriter: SyntaxRewriter {
-    /// Whether any qualification was applied.
-    ///
-    /// Tracked rather than compared after the fact: a rewriter that reported
-    /// change by diffing its own output against its input would call a
-    /// round-trip formatting difference a fix.
     var changed: Swift.Bool = false
 
-    /// The shadowed-protocol names this file declares itself, which the
-    /// rewriter must not retarget.
     private let declared: Swift.Set<Swift.String>
 
     init(declared: Swift.Set<Swift.String>) {
@@ -18,9 +11,6 @@ internal final class PlatformSwiftQualificationRewriter: SyntaxRewriter {
     }
 
     private func qualify(_ type: TypeSyntax, at node: Syntax) -> TypeSyntax? {
-        // Exempt per [RULE-EXEMPT-6] (stdlib-shadow): inside an extension on a
-        // stdlib type the qualified form is structurally inexpressible, so
-        // writing it would turn a warning into a compile error.
         guard !platformSwiftQualificationIsInsideStdlibExtension(node) else { return nil }
         guard let qualified = platformSwiftQualificationQualified(type, declared: declared) else {
             return nil

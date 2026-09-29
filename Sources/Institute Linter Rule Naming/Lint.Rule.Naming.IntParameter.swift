@@ -1,21 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 1 (mechanization-program) — `Int` parameter or return type in
-/// public-API signatures.
-///
-/// Citation: `[IMPL-010]` (implementation skill — Push Int to the Edge).
 extension Lint.Rule {
   public static let `int public parameter` = Lint.Rule(
     id: "int public parameter",
@@ -41,10 +26,6 @@ extension Lint.Rule {
       ),
     ],
     observe: Lint.Rule.measured { source, severity in
-      // §A brand-owner recognizer: a brand owner's own `Int`-parameter
-      // integration overloads bridge the brand to the stdlib boundary and
-      // are legitimate-by-construction. Retires the per-package
-      // `.excluding(rules:)` stopgap ([LINT-EXCLUDE-*]).
       if Lint.Brand.owned(Lint.Brand.vocabulary, in: source) { return [] }
       let visitor = NamingIntParameterVisitor(
         source: source.file,
@@ -71,12 +52,6 @@ private let namingIntParameterMessageReturn: Swift.String =
   + "(`Cardinal`, `Count<T>`, `Offset<T>`) so consumers see typed "
   + "intent rather than a raw machine integer."
 
-// Public-or-open-effective check moved to `Naming.hasPublicOrOpenEffective`
-// (Lint.Rule.Naming.Shared.swift) — shared with `bool public parameter` and
-// documented as a cross-pack fix in issue #22.
-
-/// Strips optionals + attributed type wrappers and asks: is the
-/// underlying type the bare `Int` or `Swift.Int`?
 private func namingIntParameterIsBareInt(_ type: TypeSyntax) -> Bool {
   var current = type
   while let optional = current.as(OptionalTypeSyntax.self) {
@@ -122,17 +97,12 @@ internal final class NamingIntParameterVisitor: SyntaxVisitor {
     guard Naming.hasPublicOrOpenEffective(Syntax(node), modifiers: node.modifiers) else {
       return .visitChildren
     }
-    // Exempt result-builder protocol methods inside an `@resultBuilder`
-    // type — `buildExpression`, `buildPartialBlock`, etc. take and
-    // return whatever scalar the builder accumulates (often `Int`),
-    // and the signature is dictated by the builder protocol.
     if Naming.Build.methods.contains(node.name.text),
       Naming.isInsideExtensionPattern(Syntax(node))
     {
       return .visitChildren
     }
     checkParameters(node.signature.parameterClause.parameters)
-    // Return type.
     if let returnClause = node.signature.returnClause,
       namingIntParameterIsBareInt(returnClause.type)
     {

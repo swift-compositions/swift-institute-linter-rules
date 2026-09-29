@@ -29,7 +29,6 @@ internal final class MemoryStructSendableClassMemberVisitor: SyntaxVisitor {
             guard let variable = member.decl.as(VariableDeclSyntax.self) else {
                 continue
             }
-            // Stored properties only.
             if memoryStructSendableClassMemberIsComputed(variable) {
                 continue
             }

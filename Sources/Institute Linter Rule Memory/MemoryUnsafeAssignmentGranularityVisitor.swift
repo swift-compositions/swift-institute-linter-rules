@@ -19,11 +19,6 @@ internal final class MemoryUnsafeAssignmentGranularityVisitor: SyntaxVisitor {
     for index in elements.indices.dropLast() where index > elements.indices.startIndex {
       guard elements[index].is(AssignmentExprSyntax.self) else { continue }
       let lhs = elements[index - 1]
-      // If the destination itself is already top-level `unsafe`-wrapped
-      // (`unsafe pointer.pointee = unsafe other.pointee`), its unsafe
-      // access is separately acknowledged by its own `unsafe` keyword —
-      // expression granularity is satisfied on both sides independently,
-      // nothing is left uncovered.
       guard !lhs.is(UnsafeExprSyntax.self) else { continue }
       guard memoryUnsafeAssignmentGranularityLHSIsUnsafeDestination(lhs) else { continue }
       let rhs = elements[index + 1]

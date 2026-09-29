@@ -1,35 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Top-level `@Suite struct X` declarations MUST contain all three
-/// canonical sub-suites as nested `@Suite struct` members:
-/// `Unit`, `` `Edge Case` ``, `Integration`. Citation: `[TEST-005]`.
-///
-/// Performance benchmarking is OUT of the test-framework scope — the
-/// institute performs performance work in separate benchmark packages
-/// per the `benchmark` skill. The `Performance` sub-suite that earlier
-/// versions of this rule required is therefore vestigial and was
-/// dropped 2026-05-15. A `Performance` sub-suite may still exist and
-/// passes the rule (3 required + arbitrary extras is fine), but it's
-/// no longer required.
-///
-/// A `@Suite struct` declared directly inside a top-level `extension`
-/// (the house suite idiom, e.g. `extension Lint.Rule { @Suite struct
-/// \`X Tests\` { ... } }`) IS in scope — the extension is the
-/// declaration site, not a reopening of an unrelated namespace. Only a
-/// `@Suite struct` nested inside another nominal type (struct, class,
-/// enum, actor) is out of scope; that nesting is genuine, not idiomatic.
 extension Lint.Rule {
     public static let `suite categories` = Lint.Rule(
         id: "suite categories",
@@ -127,16 +98,6 @@ internal final class FrameworkSuiteCategoriesVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns true if `attrs` contains a `@Suite` attribute (with or without
-/// trait arguments), bare or qualified (`@Testing.Suite`).
-///
-/// Suffix-based, matching the `.Suite`-suffix handling this package's other
-/// predicates already use (`Lint.Rule.Structure.MinimalTypeBody`'s
-/// extension-pattern-attribute check, `Lint.Rule.Throws.Untyped`'s leaf
-/// match) — see swift-compositions/swift-institute-linter-rules#45. A bare
-/// name that merely ENDS IN "Suite" without the separating dot (`@BarSuite`)
-/// does not match: `"BarSuite".hasSuffix(".Suite")` is false because there
-/// is no dot before the suffix.
 internal func suiteCategoriesHasSuiteAttribute(_ attrs: AttributeListSyntax) -> Swift.Bool {
     for attr in attrs {
         guard case .attribute(let a) = attr else { continue }
@@ -148,16 +109,6 @@ internal func suiteCategoriesHasSuiteAttribute(_ attrs: AttributeListSyntax) -> 
     return false
 }
 
-/// Returns true if `node` is declared at source-file scope, treating
-/// `ExtensionDeclSyntax` ancestors as transparent.
-///
-/// The house suite idiom declares every suite as
-/// `extension Lint.Rule { @Suite struct \`X Tests\` { … } }` — the
-/// extension *is* the declaration site, not an unrelated namespace being
-/// extended. An `ExtensionDeclSyntax` ancestor is therefore skipped
-/// rather than disqualifying; any other struct/class/enum/actor
-/// ancestor still disqualifies (a suite nested inside another type is
-/// genuinely nested, not top-level).
 internal func suiteCategoriesIsTopLevel(_ node: Syntax) -> Swift.Bool {
     var current = node.parent
     while let parent = current {
@@ -181,16 +132,12 @@ private let suiteCategoriesCanonical: [Swift.String] = [
     "Unit", "`Edge Case`", "Integration",
 ]
 
-/// Returns the list of canonical category names that are NOT declared as
-/// nested `@Suite struct` members within `memberBlock`. Names are
-/// returned in canonical order.
 internal func suiteCategoriesMissingFromBody(_ memberBlock: MemberBlockSyntax) -> [Swift.String] {
     var declared = Set<Swift.String>()
     for member in memberBlock.members {
         guard let structDecl = member.decl.as(StructDeclSyntax.self) else { continue }
         guard suiteCategoriesHasSuiteAttribute(structDecl.attributes) else { continue }
         let raw = structDecl.name.text
-        // Backticked identifiers carry the backticks in `.text`; normalize.
         let stripped = Lint.Syntax.Identifier.unescaped(raw)
         switch stripped {
         case "Unit": declared.insert("Unit")

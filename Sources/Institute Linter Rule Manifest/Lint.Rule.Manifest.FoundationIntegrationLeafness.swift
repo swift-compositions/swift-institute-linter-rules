@@ -1,57 +1,7 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// A target whose name ends in `Foundation Integration` MUST be a
-/// leaf: declared as a `.library` or `.executable` product of its own,
-/// and depended on by no other target.
-///
-/// The architecture doctrine's Foundation-freedom exception has three
-/// conditions: the target must (a) be named `* Foundation
-/// Integration`, (b) be a leaf product of its own, and (c) have no
-/// core target depend on it directly or transitively. The companion
-/// Tier 2 SwiftLint carve-out (`swift-molecules/.github@498f76a`)
-/// checks only (a) — a source-path regex exclusion has no view of
-/// `Package.swift`'s target graph, so it cannot see (b) or (c). This
-/// rule mechanizes what the manifest CAN prove: (b) directly (is
-/// there a dedicated `.library` or `.executable` product?), and one edge
-/// of (c) (does
-/// any OTHER target list it in `dependencies:`?) — the manifest states
-/// direct edges; a fully transitive closure would additionally need
-/// this package's dependencies' own manifests, out of scope for a
-/// single-file rule.
-///
-/// Manifest-local `String` name accessors and `Target.Dependency`
-/// accessors are resolved through their typed extension owners. This
-/// includes a static name followed by a shorthand instance accessor
-/// (for example, `.module.tests` backed by `self + " Tests"`). Other
-/// computed name/dependency shapes remain unmeasured.
-///
-/// Reference sanctioned shape:
-/// `swift-molecules/swift-structured-queries`'s
-/// `Structured Queries Foundation Integration` — declared
-/// as its own `.library` product, and appears in no other target's
-/// `dependencies:` array (it may depend outward on the core target;
-/// only INCOMING edges are checked).
-///
-/// Citation: `swift-molecules/swift-structured-queries#2`
-/// (coordinator ruling, 2026-07-30) — companion to the Tier 2
-/// amendment; filed as `swift-institute-linter-rules#31`.
-///
-/// ADVISORY at introduction, per the standing graduation discipline
-/// (issue #11) — promote to `.error` only after fleet validation.
 extension Lint.Rule {
-  /// Flags a `* Foundation Integration` target that is not its own leaf product, or that another target depends on ([swift-structured-queries#2]).
   public static let `foundation integration leaf target` = Lint.Rule(
     id: "foundation integration leaf target",
     default: .warning,
@@ -146,9 +96,6 @@ private let manifestFoundationIntegrationLeafnessMessage: Swift.String =
   + "`dependencies:` still lists it (per "
   + "swift-structured-queries#2)."
 
-/// The target-declaring manifest factory members this rule inspects
-/// for both the FI-suffixed target's own declaration and every other
-/// target's `dependencies:` array.
 private let manifestFoundationIntegrationTargetFactories: Swift.Set<Swift.String> = [
   "target", "testTarget", "executableTarget", "macro", "plugin",
 ]
@@ -167,17 +114,8 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
   }
   private var foundationIntegrationTargets: [FoundationIntegrationTarget] = []
 
-  /// Depender target name -> set of local target/product names it
-  /// references in its own `dependencies:` array (bare string,
-  /// `.target(name:)`, or `.byName(name:)` spellings only — a
-  /// `.product(name:package:)` reference names an EXTERNAL package's
-  /// product and can never alias a local target name).
   private var dependencyEdgesByDepender: [Swift.String: Swift.Set<Swift.String>] = [:]
 
-  /// Each admitted product's `targets:` array, verbatim (order and duplicates
-  /// preserved) — used to test for an exact single-element match. Foundation
-  /// Integration is a target boundary, not a library-only boundary: a command
-  /// entrypoint may lawfully be the target's sole executable product.
   private var leafProductTargetLists: [[Swift.String]] = []
   var unhandledSourceShape: Swift.String?
   private var stringStaticAccessorBodies: [Swift.String: ExprSyntax] = [:]
@@ -225,18 +163,6 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
     return .visitChildren
   }
 
-  /// True when `node` sits inside some enclosing `dependencies:`
-  /// labeled array — i.e. it is a dependency REFERENCE spelling
-  /// (`.target(name: "X")` / `.byName(name: "X")` inside another
-  /// target's `dependencies:` list), not a target DECLARATION.
-  ///
-  /// Both spellings share the same factory-method name (`.target`),
-  /// so the generic `FunctionCallExprSyntax` walk visits both; without
-  /// this guard, a target referenced via the dot-target dependency
-  /// spelling (`dependencies: [.target(name: "X Foundation
-  /// Integration")]`) was ALSO recorded as a second, independent
-  /// declaration of that target, double-counting it in
-  /// `foundationIntegrationTargets` and doubling the finding.
   private func isNestedInsideDependenciesArgument(_ node: Syntax) -> Swift.Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
@@ -317,8 +243,6 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
     dependencyEdgesByDepender[name, default: []].formUnion(referenced)
   }
 
-  /// Cross-references collected FI-suffixed targets against the
-  /// (possibly later-in-file) product/dependency data.
   internal func resolvedMatches() -> [Diagnostic.Record] {
     for target in foundationIntegrationTargets {
       let isLeafProduct = leafProductTargetLists.contains { $0 == [target.name] }

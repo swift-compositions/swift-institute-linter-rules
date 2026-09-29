@@ -1,35 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `for (i, _) in <expr>.enumerated()` followed by `<expr>[i]` silently
-/// breaks semantics on custom Collections whose Index is not a 0-based
-/// offset. Citation: `[PATTERN-058]`.
-///
-/// Demoted to `.warning` under `Lint.Rule.Bundle.institute`'s
-/// severity-tier policy (2026-07-30): the receiver comparison was
-/// textual (trimmed `base.description` equality), which failed
-/// the policy's structural-predicate criterion for `.error` outright —
-/// `self.buffer` and `buffer` compared as different receivers, and any
-/// interior trivia broke the match.
-///
-/// #24 defect 10: the comparison is now structural
-/// (`idiomNormalizedReceiverPath(_:)` resolves an identifier / member-
-/// access chain to a dotted path and elides a leading `self.`), which
-/// satisfies policy clause (a). Promotion to `.error` still needs
-/// clauses (b) (both-direction exemption fixtures) and (c) (non-zero
-/// adjudicated fleet evidence) — this stays `.warning` until that
-/// evidence exists.
 extension Lint.Rule {
     public static let `enumerated with subscript` = Lint.Rule(
         id: "enumerated with subscript",
@@ -84,28 +55,17 @@ internal func idiomLoopIndexName(_ pattern: PatternSyntax) -> Swift.String? {
     return first.identifier.text
 }
 
-/// Resolves `expression` to a normalized dotted receiver path
-/// (`self.buffer` and `buffer` both resolve to `"buffer"`) by walking
-/// an identifier / member-access chain. Returns `nil` for any other
-/// expression shape. #24 defect 10: replaces the previous
-/// `description`-based textual comparison, which treated `self.buffer`
-/// and `buffer` as different receivers and broke on any interior
-/// trivia.
 internal func idiomNormalizedReceiverPath(_ expression: ExprSyntax) -> Swift.String? {
     if let reference = expression.as(DeclReferenceExprSyntax.self) {
         return reference.baseName.text
     }
     if let member = expression.as(MemberAccessExprSyntax.self) {
         guard let base = member.base else {
-            // A leading-dot member access (`.buffer`) has no resolvable
-            // base from this AST-only vantage point.
             return nil
         }
         if let baseReference = base.as(DeclReferenceExprSyntax.self),
             baseReference.baseName.text == "self"
         {
-            // A leading `self.` is elidable: `self.buffer` and `buffer`
-            // name the same receiver.
             return member.declName.baseName.text
         }
         guard let basePath = idiomNormalizedReceiverPath(base) else { return nil }

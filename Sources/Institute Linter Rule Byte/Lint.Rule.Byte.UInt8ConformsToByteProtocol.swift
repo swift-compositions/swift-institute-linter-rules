@@ -1,24 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `UInt8` MUST NOT conform to `Byte.\`Protocol\``. The stdlib arithmetic
-/// carrier and the institute byte-domain twin are sibling-form, not
-/// refinement-form (per the byte-protocol capability-marker note v1.1.0
-/// RECOMMENDATION). Adding the conformance dissolves the separation,
-/// shadows `<` / `==` / `hash`, broadens the API surface, and pollutes
-/// `Tagged<_, UInt8>` composition.
-/// Citation: `[API-BYTE-001]`.
 extension Lint.Rule {
     public static let `uint8 conforms to byte protocol` = Lint.Rule(
         id: "uint8 conforms to byte protocol",
@@ -103,10 +85,6 @@ internal final class ByteUInt8ConformsToByteProtocolVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns true when `type` is `UInt8` or `Swift.UInt8`. `internal`, not
-/// `private`: shared with `Lint.Rule.Byte.UInt8AsciiExtension.swift` in the
-/// same target — the visibility, not a real target boundary, was the
-/// obstacle to reuse (#23 nit 3).
 internal func extensionIsOnUInt8(_ type: TypeSyntax) -> Swift.Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "UInt8"
@@ -122,9 +100,6 @@ internal func extensionIsOnUInt8(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-/// Returns true when any inherited type matches `Byte.\`Protocol\`` —
-/// `Byte.Byte.\`Protocol\`` variants tolerated by inspecting
-/// trailing two path segments.
 private func inheritanceContainsByteProtocol(_ clause: InheritanceClauseSyntax) -> Swift.Bool {
     for inherited in clause.inheritedTypes {
         if byteTypeIsByteProtocol(inherited.type) {

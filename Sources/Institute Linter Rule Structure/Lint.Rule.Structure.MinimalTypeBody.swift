@@ -1,22 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Wave 3 (mechanization-program) — type declarations MUST contain only
-/// stored properties, the canonical initializer, and (for class /
-/// ~Copyable types) `deinit`. All other members MUST be in extensions.
-///
-/// Citation: `[API-IMPL-008]` (code-surface skill — minimal type body).
 extension Lint.Rule {
   public static let `minimal type body` = Lint.Rule(
     id: "minimal type body",
@@ -139,10 +123,6 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
   }
 
   private func checkMembers(_ block: MemberBlockSyntax) {
-    // #28 defect 2: enumerating `block.members` by hand drops every
-    // `#if`-guarded member. `Lint.Syntax.Conditional.members(_:)` splices
-    // each clause's members in recursively so a platform-conditional
-    // member is checked exactly as an unguarded one would be.
     for member in Lint.Syntax.Conditional.members(block) {
       let decl = member.decl
       if let variable = decl.as(VariableDeclSyntax.self) {
@@ -162,14 +142,6 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
         continue
       }
       if let typealiasDecl = decl.as(TypeAliasDeclSyntax.self) {
-        // Exempt per [RULE-EXEMPT-5] (Protocol-sentinel): a
-        // `typealias \`Protocol\` = _FooProtocol` is the
-        // hoisted-protocol pattern per [API-IMPL-009], where
-        // the typealias IS intended to live in the type's
-        // namespace (the docs literally show it inside the
-        // type body). Forcing extraction yields empty-body +
-        // extension-with-one-typealias for zero semantic gain.
-        // Helper lives in `Lint.Rule.Structure.Shared.swift`.
         let aliasName = typealiasDecl.name.text
         if structureIsProtocolSentinelName(aliasName) {
           continue
@@ -224,16 +196,6 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
     if structureMinimalTypeBodyHasExtensionPatternAttribute(node.attributes) {
       return .visitChildren
     }
-    // Exempt per [RULE-EXEMPT-7] (syntax-visitor-subclass): a
-    // `final class XVisitor: SyntaxVisitor` (or other SwiftSyntax
-    // visitor-family member) has its member shape dictated by the
-    // base class's open visit hooks (`override func visit(_:)`,
-    // `visitPost`). The overrides are protocol-shaped members per
-    // the SwiftSyntax visitor contract — moving them to an
-    // extension yields stored-properties + extension-of-overrides
-    // for zero semantic gain. Helper lives in
-    // `Lint.Rule.Structure.Shared.swift`. See
-    // the rule-exemptions skill.
     if structureExtendsSyntaxVisitor(node.inheritanceClause) {
       return .visitChildren
     }
@@ -258,47 +220,12 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
   }
 }
 
-/// Implements [RULE-EXEMPT-4] (extension-pattern attribute) for the
-/// MinimalTypeBody rule. Types marked `@resultBuilder` or `@Suite`
-/// have their member shape dictated by an external informal-protocol
-/// contract — SE-0289 for `@resultBuilder` (static builder methods)
-/// and swift-testing for `@Suite` (nested `@Suite` substructures per
-/// the extension-pattern). The attribute IS the spec; forcing
-/// extraction yields empty-body + extension-with-only-witnesses for
-/// zero semantic gain.
-///
-/// Revised 2026-09-16: every attached macro exempts its type. A
-/// macro-expanded body (`@Table`, `@Selection`, `@Reducer`,
-/// `@Observable`, …) is shaped by the macro's contract, and the
-/// members the macro reads — nested `State`/`Action`, computed
-/// columns, the `Columns` selection — must sit in the body for the
-/// expansion to see them. Syntax cannot tell a macro from any other
-/// custom attribute, so the predicate is: an attribute whose leaf
-/// name is capitalised and is not a known non-macro capitalised
-/// attribute (`@MainActor`, the `@NS…`/`@UI…`/`@IB…`/`@GK…` families).
-/// A user-declared global actor is the one capitalised non-macro this
-/// admits; a type body under a custom global actor is rare enough that
-/// the false exemption is accepted over a false finding on every macro.
-///
-/// Pack-local duplicate of `namingHasExtensionPatternAttribute` in
-/// `Lint.Rule.Naming.Shared.swift` — the two packs are independently
-/// consumable library products, so the contract is copied rather
-/// than shared; semantics match. See the rule-exemptions skill.
-///
-/// Hoisted from a private method on `StructureMinimalTypeBodyVisitor` to a
-/// free function (#43) so `Lint.Rule.Structure.MinimalTypeBody.Fix.swift`
-/// can share the exact same exemption the detector uses — the fix must
-/// never act where the finding does not fire.
 internal func structureMinimalTypeBodyHasExtensionPatternAttribute(
   _ attributes: AttributeListSyntax
 ) -> Swift.Bool {
   for attribute in attributes {
     guard let attr = attribute.as(AttributeSyntax.self) else { continue }
     let name = attr.attributeName.trimmedDescription
-    // #28 defect 7.4: accept the qualified spelling
-    // (`@Testing.Suite`) too, matching `Shared.swift`'s handling —
-    // the bare-name-only comparison previously dropped the
-    // [RULE-EXEMPT-4] exemption for it.
     if name == "resultBuilder" || name.hasSuffix(".resultBuilder") {
       return true
     }
@@ -310,10 +237,6 @@ internal func structureMinimalTypeBodyHasExtensionPatternAttribute(
   return false
 }
 
-/// Capitalised attributes the compiler or Apple frameworks define that
-/// are not macros: the global actor `@MainActor` and the Objective-C
-/// bridging families. Everything else capitalised is taken to be an
-/// attached macro (see `structureMinimalTypeBodyHasExtensionPatternAttribute`).
 internal let structureMinimalTypeBodyNonMacroCapitalisedAttributes: Swift.Set<Swift.String> = [
   "MainActor",
   "NSCopying", "NSManaged", "NSApplicationMain",

@@ -1,27 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `let x = expr; return x` exposes mechanism over intent.
-/// Citation: `[IMPL-EXPR-001]`.
-///
-/// Exemption, by design: `let x: T = expr; return x` (an EXPLICIT type
-/// annotation on the binding) is not flagged. An explicit annotation is
-/// itself the kind of domain/intent signal the message's own carve-out
-/// names — it constrains or documents `expr`'s type at the binding
-/// site, which inlining into `return expr` would either lose or
-/// require re-stating awkwardly at the return. Only an un-annotated
-/// binding is in scope.
 extension Lint.Rule {
   public static let `intermediate binding then return` = Lint.Rule(
     id: "intermediate binding then return",

@@ -1,30 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `extension UInt8` MUST NOT declare members under the `.ascii` namespace
-/// (static var ascii, static func ascii(...), nested type `UInt8.ASCII`,
-/// etc.). The `UInt8+ASCII.swift` wrapper is being phased out in Wave 4
-/// of the broader L2/L3 byte-typing arc; consumers MUST route through
-/// `ASCII.Code` (the canonical typed substrate per
-/// the byte-protocol capability-marker note v1.1.0 and
-/// the byte-arithmetic conformance note v1.0.0).
-///
-/// Detection covers two shapes:
-/// - `extension UInt8 { static var ascii ... }` (or `static func ascii`)
-/// - `extension UInt8.ASCII { ... }` (extending the ASCII subspace on UInt8)
-///
-/// Citation: `[API-BYTE-005]`.
 extension Lint.Rule {
     public static let `uint8 ascii extension` = Lint.Rule(
         id: "uint8 ascii extension",
@@ -114,7 +90,6 @@ internal final class ByteUInt8AsciiExtensionVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns true when `type` is `UInt8.ASCII` (or `Swift.UInt8.ASCII`).
 private func extensionExtendsUInt8DotASCII(_ type: TypeSyntax) -> Swift.Bool {
     guard let memberType = type.as(MemberTypeSyntax.self) else { return false }
     let trailing = Lint.Syntax.Identifier.unescaped(memberType.name.text)
@@ -133,12 +108,6 @@ private func extensionExtendsUInt8DotASCII(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-/// Returns true when the extension on `UInt8` declares any member under
-/// the `.ascii` name (static var, static func, or nested type/typealias
-/// named `ASCII`).
-///
-/// Visibility is not consulted: the rule is about namespace SHAPE, not
-/// access level — a non-`public static var ascii` still counts (#23 nit 5).
 private func memberBlockDeclaresAsciiNamespaceMember(_ block: MemberBlockSyntax) -> Swift.Bool {
     for member in block.members {
         if let variable = member.decl.as(VariableDeclSyntax.self) {
@@ -177,7 +146,6 @@ private func memberBlockDeclaresAsciiNamespaceMember(_ block: MemberBlockSyntax)
             }
         }
         if let alias = member.decl.as(TypeAliasDeclSyntax.self) {
-            // `typealias ASCII = …` — the idiomatic namespace-adoption spelling.
             if Lint.Syntax.Identifier.unescaped(alias.name.text) == "ASCII" {
                 return true
             }
@@ -186,7 +154,3 @@ private func memberBlockDeclaresAsciiNamespaceMember(_ block: MemberBlockSyntax)
     return false
 }
 
-// `extensionIsOnUInt8` is now `internal` in
-// `Lint.Rule.Byte.UInt8ConformsToByteProtocol.swift` (same target) and
-// reused directly — the duplicated copy that lived here is deleted
-// (#23 nit 3).

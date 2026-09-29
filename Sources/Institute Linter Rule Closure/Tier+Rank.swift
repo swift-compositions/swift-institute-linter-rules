@@ -1,6 +1,4 @@
 extension Tier {
-    /// Position in the documented order. Lower sorts earlier.
-    /// `other` has no position in the order and must not be compared.
     var rank: Swift.Int {
         switch self {
         case .setup: return 0

@@ -1,31 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Leaf conformers to `Parsing` / `Serializing` /
-/// `Coding` MUST declare `public typealias Body = Never`
-/// explicitly. Without it, witness-table emission for generic
-/// conformers fails at link time with `Undefined symbols ... protocol
-/// witness for body.getter`. Citation: `[API-IMPL-020]`.
-///
-/// Detection is file-scope per conforming type, not per member block:
-/// the conformance, the `body` property, and the `Body = Never`
-/// typealias may each live in a different declaration site for the
-/// same type — a nominal declaration plus one or more extensions in
-/// the same file, matching this repository's own one-type-per-file
-/// plus split-extension authoring convention. A type is flagged only
-/// if NONE of its sites in the file supply `body` or the typealias,
-/// at the position of its first conformance-declaring site.
 extension Lint.Rule {
     public static let `leaf body typealias missing` = Lint.Rule(
         id: "leaf body typealias missing",
@@ -80,10 +55,6 @@ internal final class ConformanceLeafBodyTypealiasVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    /// The first conformance-declaring site per type key (first
-    /// extension/nominal decl in the file whose inheritance clause names
-    /// a leaf-body protocol). Only this position is used if the
-    /// aggregate verdict for the type fires.
     private var conformanceSite: [Swift.String: AbsolutePosition] = [:]
     private var typesWithBodyProperty: Swift.Set<Swift.String> = []
     private var typesWithBodyNeverTypealias: Swift.Set<Swift.String> = []
@@ -164,10 +135,6 @@ internal final class ConformanceLeafBodyTypealiasVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    /// Emits one finding per type key that conforms to a leaf-body
-    /// protocol somewhere in the file and supplies neither `body` nor
-    /// `Body = Never` anywhere in the file. Must be called after `walk`
-    /// completes — the verdict is file-scope, not per-declaration-site.
     func finalizeMatches() {
         for (key, position) in conformanceSite.sorted(by: {
             $0.value.utf8Offset < $1.value.utf8Offset
@@ -197,11 +164,6 @@ internal final class ConformanceLeafBodyTypealiasVisitor: SyntaxVisitor {
     }
 }
 
-/// Returns the trailing name component of `type` — the identifier a
-/// nominal declaration's own `name` would carry for the same type,
-/// regardless of leading qualification (`Binary.LEB128.Unsigned` and a
-/// bare `Unsigned` both key to `"Unsigned"`). Used to correlate a
-/// type's own declaration with its extensions within one file.
 private func conformanceLeafBodyTypeKey(_ type: TypeSyntax) -> Swift.String {
     if let member = type.as(MemberTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(member.name.text)
@@ -212,20 +174,12 @@ private func conformanceLeafBodyTypeKey(_ type: TypeSyntax) -> Swift.String {
     return type.trimmedDescription
 }
 
-/// The protocols whose conformance triggers the leaf-body-typealias
-/// requirement, matched against the last segment of an inherited
-/// type's name.
 private let leafBodyProtocolNames: Swift.Set<Swift.String> = ["Parsing", "Serializing", "Coding"]
 
-/// Returns true when any inherited type in `clause` names one of the
-/// leaf-body protocols. Matching tolerates leading module qualification
-/// (e.g., `Parser.Parsing`) by inspecting only the last segment.
 private func inheritanceContainsLeafBodyProtocol(_ clause: InheritanceClauseSyntax) -> Swift.Bool {
     clause.inheritedTypes.contains { typeMatchesLeafBodyProtocol($0.type) }
 }
 
-/// Returns true when `type`'s last name segment (after stripping
-/// backticks) is one of `leafBodyProtocolNames`.
 private func typeMatchesLeafBodyProtocol(_ type: TypeSyntax) -> Swift.Bool {
     let name: Swift.String? =
         if let identifier = type.as(IdentifierTypeSyntax.self) {
@@ -238,11 +192,6 @@ private func typeMatchesLeafBodyProtocol(_ type: TypeSyntax) -> Swift.Bool {
     return name.map(leafBodyProtocolNames.contains) ?? false
 }
 
-/// Returns true if `block` declares any binding named `body`.
-/// Detection covers stored and computed forms; a `body` binding signals
-/// the conformer delegates parsing/serialization to a sub-Parser/
-/// Serializer body rather than implementing `parse(_:)` /
-/// `serialize(_:)` directly.
 private func memberBlockHasBodyProperty(_ block: MemberBlockSyntax) -> Swift.Bool {
     for member in block.members {
         guard let variable = member.decl.as(VariableDeclSyntax.self) else { continue }
@@ -256,9 +205,6 @@ private func memberBlockHasBodyProperty(_ block: MemberBlockSyntax) -> Swift.Boo
     return false
 }
 
-/// Returns true if `block` declares `typealias Body = Never` (or
-/// `Swift.Never`). Backticked variants on either side of `=` are
-/// tolerated.
 private func memberBlockHasBodyNeverTypealias(_ block: MemberBlockSyntax) -> Swift.Bool {
     for member in block.members {
         guard let typealiasDecl = member.decl.as(TypeAliasDeclSyntax.self) else { continue }

@@ -1,25 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// `@Suite` types MUST occupy a `<Domain>.Test` subdomain.
-/// Citation: `[SWIFT-TEST-002]`.
-///
-/// Relocated from `swift-linter-rules` (universal tier) to
-/// `swift-institute-linter-rules` (institute tier) 2026-05-15: the rule's
-/// `[SWIFT-TEST-002]` citation makes it institute-specific by construction
-/// — the `extension Foo { @Suite struct Test {} }` shape is the institute's
-/// test-organization convention, not a universal Swift convention.
 extension Lint.Rule {
     public static let `compound suite name` = Lint.Rule(
         id: "compound suite name",

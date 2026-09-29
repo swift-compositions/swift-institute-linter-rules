@@ -1,64 +1,8 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftOperators
 internal import SwiftSyntax
 
-/// R1 — `<expr>.count - 1` and its semantically-equivalent rewrites.
-///
-/// Subsumes the regex pair `cardinal_count_minus_one_anti_pattern` +
-/// `cardinal_count_minus_one_evasion`. After operator folding the four
-/// surface-text variants collapse to two AST predicates:
-///
-/// 1. **Subtraction with literal `1`** — an `InfixOperatorExprSyntax`
-///    whose operator is `-`, whose right operand is the integer literal
-///    `1`, and whose left operand contains a member-access expression
-///    of shape `<expr>.count` (`MemberAccessExprSyntax` with
-///    `declName.baseName.text == "count"`). Catches member-access
-///    `seq.count - 1`, paren-wrapped `(seq.count) - 1`, cast-outside
-///    `Double(seq.count) - 1`, and operand-reorder `seq.count - i - 1`
-///    (left-associativity makes the outer `- 1` binary-bind to a left
-///    subtree that contains `seq.count`).
-///
-/// 2. **Algebraic-flip via comparison** — an `InfixOperatorExprSyntax`
-///    whose operator is one of `<`, `<=`, `==`, `!=`, `>=`, `>`, where
-///    one side has the shape `<expr> + 1` (commutative) and the other
-///    side contains a member-access expression `<expr>.count`. Catches
-///    `i + 1 < seq.count`, `1 + i < seq.count`, `seq.count == i + 1`, etc.
-///
-/// Bare-identifier `count` in scope (loop variable, local binding
-/// `let count = ...`, function parameter named `count`) is intentionally
-/// out-of-scope: the [INFRA-200] typed-cardinal rationale concerns
-/// Collection-shaped `count`, and member-access form is the access
-/// pattern for `Collection.count`. Bare-token analysis cannot
-/// distinguish a Collection.count escape from an in-scope local that
-/// happens to share the name.
-///
-/// Operand-reorder `(seq.count - i - 1)` — uncatchable by regex — is
-/// caught by predicate 1: left-associativity parses the subexpression
-/// as `((seq.count - i) - 1)`, whose outer `-` has RHS `1` and LHS
-/// `seq.count - i` (which contains the member-access `seq.count`).
-///
-/// Comments-as-code is a non-issue at the AST level: comments are
-/// `Trivia`, not part of the expression grammar; the visitor never
-/// reaches them.
-///
-/// References:
-/// - the cardinal/ordinal/vector enforcement design note
-///   §"R1. `count - 1` and family"
-/// - the SwiftSyntax-based custom-linter investigation note
-///   §"Q3 — Deferred AST-rule unblocking matrix"
 extension Lint.Rule {
-    /// Flags `<expr>.count - 1` and its semantic equivalents (paren-wrap, cast-outside, algebraic-flip, operand-reorder), which indicate an untyped `count: Int` ([INFRA-200]).
     public static let `count minus one` = Lint.Rule(
         id: "count minus one",
         default: .warning,
@@ -190,25 +134,6 @@ internal final class CardinalCountVisitor: SyntaxVisitor {
         return isLiteralOne(infix.leftOperand) || isLiteralOne(infix.rightOperand)
     }
 
-    /// The algebraic-flip arm's `<index> + 1` operand: a `+ 1` shape whose
-    /// OTHER (non-literal) operand is not itself count-derived.
-    ///
-    /// Predicate 2 exists to catch an INDEX compared against a count
-    /// (`i + 1 < seq.count` is `i < seq.count - 1` rewritten). When both
-    /// sides are cardinalities — `a.count == b.count + 1` — nothing is
-    /// being indexed: that is a comparison of two counts, the canonical
-    /// shape of a test assertion about collection size, and it compiles
-    /// unchanged under a typed `Cardinal` (`Cardinal` supports `+ .one`
-    /// and `==`). [INFRA-200]'s "the typed form would not compile" test
-    /// therefore does not hold, so the finding was a false positive.
-    ///
-    /// Confirmed instance: swift-institute/.github#90 comment 5150641576
-    /// item 1(b) — `#expect(secure.middleware.count == plain.middleware.count + 1)`,
-    /// 2 findings in one package.
-    ///
-    /// Real index arithmetic is unaffected: `array[count - 1]` and every
-    /// other predicate-1 subtraction shape never reaches this function, and
-    /// `i + 1 < seq.count` still fires because `i` is not count-derived.
     static func isIndexPlusOne(_ expr: ExprSyntax) -> Bool {
         guard let infix = expr.as(InfixOperatorExprSyntax.self),
             let binOp = infix.operator.as(BinaryOperatorExprSyntax.self),
@@ -223,21 +148,6 @@ internal final class CardinalCountVisitor: SyntaxVisitor {
         return false
     }
 
-    /// Returns true when `expr`, after peeling the specific wrapper
-    /// shapes the doc's evasion matrix names (parens, and a single-
-    /// unlabeled-argument cast call like `Double(...)`), IS itself a
-    /// `.count` member access, or a `-` subtraction chain whose
-    /// (recursively unwrapped) left operand resolves the same way.
-    ///
-    /// This intentionally does NOT search arbitrarily deep into an
-    /// unrelated subtree: `grid[rows.count].height - 1` must not fire
-    /// merely because `.count` appears somewhere inside the left
-    /// operand — the `- 1` here applies to `.height`, not `.count`. The
-    /// doc's own operand-reorder example, `seq.count - i - 1`, parses as
-    /// `(seq.count - i) - 1`; recursing one `-` level into the left
-    /// operand (and no further) is exactly the shape that example
-    /// requires, without over-matching subscript/property chains that
-    /// merely contain a `.count` somewhere.
     static func isCountDerivedExpression(_ expr: ExprSyntax) -> Bool {
         let unwrapped = peelCountWrappers(expr)
         if let member = unwrapped.as(MemberAccessExprSyntax.self),
@@ -254,10 +164,6 @@ internal final class CardinalCountVisitor: SyntaxVisitor {
         return false
     }
 
-    /// Peels parenthesization and a single-unlabeled-argument call
-    /// (the cast-outside shape, `Double(seq.count)`) — the two wrapper
-    /// forms the doc's evasion matrix names as semantically transparent
-    /// for this predicate.
     static func peelCountWrappers(_ expr: ExprSyntax) -> ExprSyntax {
         var current = expr
         while true {

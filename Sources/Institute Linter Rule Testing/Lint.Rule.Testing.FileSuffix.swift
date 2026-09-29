@@ -1,40 +1,6 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-institute-linter-rules open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp and the swift-institute-linter-rules project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// ===----------------------------------------------------------------------===//
-
 public import Lint
 internal import SwiftSyntax
 
-/// Test suite files are named `<Subject> Tests.swift` — a space before
-/// `Tests` (for example, `Array.Dynamic Tests.swift`, never
-/// `Array.DynamicTests.swift`).
-///
-/// Citation: `[TEST-009]`.
-///
-/// The rule's surface is a source file under a test target whose
-/// declarations contain at least one `@Suite`-attributed type or at
-/// least one `@Test`-attributed function. The rule fires when the
-/// file's basename does not end in ` Tests` (exactly one space,
-/// capital T) before `.swift`.
-///
-/// Excluded from the surface by predicate, not exemption: test-target
-/// files with no `@Suite` or `@Test` declarations — helpers, fixtures,
-/// and support files carry no required suffix. (Known accepted false
-/// negative: a suite file whose attributes are hidden behind
-/// conditional compilation inactive on the scanning platform is not
-/// detected.) Non-test targets are out of scope entirely.
-///
-/// The diagnostic is located at the file's first `@Suite` type or
-/// `@Test` function. The canonical fix is a rename: insert the space
-/// before `Tests`, or, for a basename ending in neither form, append
-/// ` Tests` to the subject name. No source edit.
 extension Lint.Rule {
     public static let `test file suffix` = Lint.Rule(
         id: "test file suffix",
@@ -63,10 +29,6 @@ extension Lint.Rule {
             let filePath = source.file.filePath
             let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
             guard components.contains("Tests") else { return [] }
-            // Exempt any path carrying a hidden path component (dot-prefixed
-            // directory, e.g. `.build/`) — deliberately also matches a `..`
-            // relative-path segment, since that's dot-prefixed too and is
-            // never itself a real target directory name.
             guard !components.contains(where: { $0.hasPrefix(".") }) else { return [] }
             guard
                 let filename = components.last,
@@ -75,10 +37,6 @@ extension Lint.Rule {
                 return []
             }
             let basename = Swift.String(filename.dropLast(".swift".count))
-            // #24 defect 8: `hasSuffix(" Tests")` alone also accepts
-            // `Foo  Tests.swift` (two spaces), since "  Tests" itself ends
-            // in " Tests". Require exactly one space immediately before
-            // `Tests`.
             let hasExactlyOneSpaceBeforeTests =
                 basename.hasSuffix(" Tests") && !basename.hasSuffix("  Tests")
             guard !hasExactlyOneSpaceBeforeTests else { return [] }
@@ -103,18 +61,12 @@ extension Lint.Rule {
     )
 }
 
-/// Builds the `[TEST-009]` diagnostic message for a nonconforming
-/// basename, naming the canonical rename.
 @usableFromInline
 internal func testingFileSuffixMessage(basename: Swift.String) -> Swift.String {
     "[test file suffix] [TEST-009]: test file '\(basename).swift' must end in "
         + "' Tests.swift'; rename to '\(testingFileSuffixRename(basename: basename)).swift'"
 }
 
-/// Computes the canonical conforming basename for a nonconforming one:
-/// insert the space before a joined `Tests` suffix, or append ` Tests`
-/// to a subject name ending in neither form. Trailing-whitespace
-/// variance around the suffix is normalized by the rename.
 @usableFromInline
 internal func testingFileSuffixRename(basename: Swift.String) -> Swift.String {
     func trimmed(_ string: Swift.Substring) -> Swift.Substring {
@@ -129,8 +81,6 @@ internal func testingFileSuffixRename(basename: Swift.String) -> Swift.String {
     return "\(subject) Tests"
 }
 
-/// Records the position of the file's first `@Suite`-attributed type
-/// declaration or `@Test`-attributed function declaration.
 internal final class TestingFileSuffixDeclarationFinder: SyntaxVisitor {
     var first: AbsolutePosition?
 
