@@ -30,7 +30,7 @@ extension Lint.Rule.Bundle {
             .enable(.`compound identifier`),
             .enable(.`compound suite name`),
             .enable(.`compound type name`),
-            .enable(.`variable named impl`),
+            .enable(.`variable named impl`, severity: .error),
             .enable(.`int public parameter`),
             .enable(.`namespace adoption typealias`),
             .enable(.`property named flags`),
