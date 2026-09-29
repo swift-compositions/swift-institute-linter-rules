@@ -52,7 +52,7 @@ extension Lint.Rule.Bundle {
             .enable(.`stdlib forwarder outside sli`),
             .enable(.`leaf body typealias missing`),
             .enable(.`configuration before content`),
-            .enable(.`lifecycle order`),
+            .enable(.`lifecycle order`, severity: .error),
             .enable(.`unlabeled lifecycle closure`),
             .enable(.`bounded index static capacity`),
             .enable(.`enumerated with subscript`, severity: .error),
