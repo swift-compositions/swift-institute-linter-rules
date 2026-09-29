@@ -55,6 +55,18 @@ extension Lint.Rule {
       )
       visitor.walk(source.tree)
       return visitor.matches
+    },
+    repair: { source in
+      let path = source.file.filePath
+      guard path.hasPrefix("Sources/") || path.contains("/Sources/") else {
+        return .unchanged
+      }
+      let original = source.tree.description
+      let contents = StructureCommentInSourceRewriter(viewMode: .sourceAccurate)
+        .rewrite(Syntax(source.tree)).description
+      return contents == original
+        ? .unchanged
+        : .edits([.rewrite(path: source.path, contents: contents)])
     }
   )
 }
@@ -109,6 +121,60 @@ internal final class StructureCommentInSourceVisitor: SyntaxVisitor {
           message: structureCommentInSourceMessage
         )
       )
+    }
+  }
+}
+
+internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
+  override func visit(_ token: TokenSyntax) -> TokenSyntax {
+    token
+      .with(\.leadingTrivia, stripped(token.leadingTrivia, leading: true))
+      .with(\.trailingTrivia, stripped(token.trailingTrivia, leading: false))
+  }
+
+  private func stripped(_ trivia: Trivia, leading: Swift.Bool) -> Trivia {
+    var pieces: [TriviaPiece] = []
+    var skipNewline = false
+    for piece in trivia {
+      if skipNewline {
+        skipNewline = false
+        switch piece {
+        case .newlines(let count):
+          if count > 1 { pieces.append(.newlines(count - 1)) }
+          continue
+        case .carriageReturnLineFeeds(let count):
+          if count > 1 { pieces.append(.carriageReturnLineFeeds(count - 1)) }
+          continue
+        default:
+          break
+        }
+      }
+      guard structureCommentInSourceIsRemovable(piece) else {
+        pieces.append(piece)
+        continue
+      }
+      while let last = pieces.last, last.isSpaceOrTab {
+        pieces.removeLast()
+      }
+      skipNewline = leading && (pieces.last.map(\.isNewline) ?? true)
+    }
+    return Trivia(pieces: pieces)
+  }
+}
+
+internal func structureCommentInSourceIsRemovable(_ piece: TriviaPiece) -> Swift.Bool {
+  switch piece {
+  case .lineComment(let text): !text.hasPrefix("// swift-linter:")
+  case .docLineComment, .blockComment, .docBlockComment: true
+  default: false
+  }
+}
+
+extension TriviaPiece {
+  fileprivate var isSpaceOrTab: Swift.Bool {
+    switch self {
+    case .spaces, .tabs: true
+    default: false
     }
   }
 }

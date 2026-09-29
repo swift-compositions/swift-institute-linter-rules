@@ -102,3 +102,55 @@ extension Lint.Rule.`comment in source Tests`.Integration {
     #expect(findings.count == 2)
   }
 }
+
+extension Lint.Rule.`comment in source Tests`.Integration {
+  static func repaired(_ source: Swift.String) -> Swift.String? {
+    let proposal = Lint.Rule.`comment in source`.repair(
+      Lint.Source.parsed(from: source, file: "Sources/Fixture/Fixture.swift")
+    )
+    guard case .edits(let edits) = proposal, case .rewrite(_, let contents) = edits.first else {
+      return nil
+    }
+    return contents
+  }
+
+  @Test
+  func `repair removes whole-line, documentation and trailing comments`() {
+    let repaired = Self.repaired(
+      """
+      // Header
+      import Lint
+
+      /// A value.
+      struct Value {
+          /// The count.
+          let count = 1 // trailing
+          /* block */
+          let name = ""
+      }
+      """
+    )
+    #expect(
+      repaired == """
+        import Lint
+
+        struct Value {
+            let count = 1
+            let name = ""
+        }
+        """
+    )
+  }
+
+  @Test
+  func `repair keeps swift-linter directives`() {
+    let source = "// swift-linter:disable:next some rule\nlet value = 1"
+    #expect(Lint.Rule.`comment in source`.repair(Lint.Source.parsed(from: source, file: "Sources/Fixture/Fixture.swift")) == .unchanged)
+  }
+
+  @Test
+  func `repaired source is clean`() {
+    let repaired = Self.repaired("/// Doc\nfunc f() {} // note\n")
+    #expect(repaired.map { Lint.Rule.`comment in source Tests`.findings($0).isEmpty } == true)
+  }
+}
