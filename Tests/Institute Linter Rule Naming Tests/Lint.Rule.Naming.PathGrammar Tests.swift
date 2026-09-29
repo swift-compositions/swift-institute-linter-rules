@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`path name grammar Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String
+    in source: Swift::String,
+    file: Swift::String
   ) -> [Diagnostic.Record] {
     let parsed = Lint.Source.parsed(from: source, file: file)
     return Lint.Rule.`path name grammar`.observe(parsed, .warning).findings

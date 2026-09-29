@@ -1,9 +1,9 @@
 internal import SwiftSyntax
 
 internal func tier(of parameter: FunctionParameterSyntax) -> Tier {
-    let external: Swift.String? =
+    let external: Swift::String? =
         parameter.firstName.tokenKind == .wildcard ? nil : parameter.firstName.text
-    let internalName: Swift.String? = parameter.secondName?.text
+    let internalName: Swift::String? = parameter.secondName?.text
 
     for candidate in [external, internalName].compactMap({ $0 }) {
         if setupTierLabels.contains(candidate) {

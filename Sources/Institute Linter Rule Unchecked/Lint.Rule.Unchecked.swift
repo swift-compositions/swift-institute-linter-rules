@@ -40,7 +40,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let uncheckedCallSiteMessage: Swift.String =
+internal let uncheckedCallSiteMessage: Swift::String =
   "[unchecked call site] [CONV-016]: `__unchecked:` at a call site is a Tier-5 "
   + "last-resort bypass of the typed system. Prefer `.retag()` (Tier 1) or `.map()` "
   + "(Tier 2) before resorting to `__unchecked:`. The [CONV-001] extension-init "
@@ -60,7 +60,7 @@ internal let uncheckedCallSiteMessage: Swift.String =
 internal func uncheckedIsExtensionInitBottomOut(
   call: FunctionCallExprSyntax,
   at node: Syntax
-) -> Swift.Bool {
+) -> Swift::Bool {
   var current: Syntax? = node.parent
   var initializer: InitializerDeclSyntax?
   while let candidate = current {
@@ -100,15 +100,15 @@ internal func uncheckedIsExtensionInitBottomOut(
   return uncheckedCalleeNames(owner, in: call.calledExpression)
 }
 
-internal func uncheckedTypeNameTail(_ written: Swift.String) -> Swift.String {
-  let base = written.split(separator: "<", maxSplits: 1).first.map(Swift.String.init) ?? written
-  return base.split(separator: ".").last.map(Swift.String.init) ?? base
+internal func uncheckedTypeNameTail(_ written: Swift::String) -> Swift::String {
+  let base = written.split(separator: "<", maxSplits: 1).first.map(Swift::String.init) ?? written
+  return base.split(separator: ".").last.map(Swift::String.init) ?? base
 }
 
 internal func uncheckedCalleeNames(
-  _ owner: Swift.String,
+  _ owner: Swift::String,
   in callee: ExprSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
   if let specialized = callee.as(GenericSpecializationExprSyntax.self) {
     return uncheckedCalleeNames(owner, in: specialized.expression)
   }
@@ -118,7 +118,7 @@ internal func uncheckedCalleeNames(
   }
   if let member = callee.as(MemberAccessExprSyntax.self) {
     guard member.declName.baseName.text == "init" else { return false }
-    guard let base = member.base else { return true }  // `.init(…)`
+    guard let base = member.base else { return true }
     return uncheckedCalleeNames(owner, in: base)
       || base.as(DeclReferenceExprSyntax.self)?.baseName.text == "self"
   }

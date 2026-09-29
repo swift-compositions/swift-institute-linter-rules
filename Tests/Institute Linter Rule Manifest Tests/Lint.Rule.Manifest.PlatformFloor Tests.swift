@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`platform floor Tests` {
   static func observation(
-    _ source: Swift.String,
-    file: Swift.String = "Package.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Package.swift"
   ) -> Lint.Rule.Observation {
     Lint.Rule.`platform floor`.observe(Lint.Source.parsed(from: source, file: file), .warning)
   }
@@ -100,7 +100,7 @@ extension Lint.Rule.`platform floor Tests`.Integration {
 }
 
 extension Lint.Rule.`platform floor Tests`.Integration {
-  static func repaired(_ source: Swift.String) -> Swift.String? {
+  static func repaired(_ source: Swift::String) -> Swift::String? {
     let proposal = Lint.Rule.`platform floor`.repair(Lint.Source.parsed(from: source, file: "Package.swift"))
     guard case .edits(let edits) = proposal, case .rewrite(_, let contents) = edits.first else {
       return nil

@@ -40,7 +40,7 @@ extension Lint.Rule {
             forbiddenLicenseHeaderFinding(
               source: source,
               severity: severity,
-              line: Swift.Int(clamping: header.start) + 1
+              line: Swift::Int(clamping: header.start) + 1
             )
           ],
           coverage: .measured
@@ -78,8 +78,8 @@ extension Lint.Rule {
 private func forbiddenLicenseHeaderFinding(
   source: borrowing Lint.Source.Parsed,
   severity: Diagnostic.Severity,
-  line: Swift.Int = 1,
-  detail: Swift.String = "remove the complete leading license block"
+  line: Swift::Int = 1,
+  detail: Swift::String = "remove the complete leading license block"
 ) -> Diagnostic.Record {
   Diagnostic.Record(
     location: Source.Location(

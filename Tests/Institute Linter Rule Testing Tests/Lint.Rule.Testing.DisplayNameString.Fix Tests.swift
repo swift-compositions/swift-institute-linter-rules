@@ -19,12 +19,12 @@ import Testing
 @testable import Institute_Linter_Rule_Testing
 
 extension Lint.Rule.`test display name string Tests` {
-    static func fixed(_ source: Swift.String) -> Swift.String? {
+    static func fixed(_ source: Swift::String) -> Swift::String? {
         let parsed = Lint.Source.parsed(from: source, file: "Tests/X/Thing Tests.swift")
         return Lint.Rule.`test display name string`.rewritten(parsed)
     }
 
-    static func name(ofFirstFunctionIn source: Swift.String) -> Swift.String? {
+    static func name(ofFirstFunctionIn source: Swift::String) -> Swift::String? {
         let parsed = Parser.parse(source: source)
         for statement in parsed.statements {
             if let function = statement.item.as(FunctionDeclSyntax.self) {
@@ -35,9 +35,9 @@ extension Lint.Rule.`test display name string Tests` {
     }
 
     static func verify(
-        _ source: Swift.String,
+        _ source: Swift::String,
         sourceLocation: Testing.SourceLocation = #_sourceLocation
-    ) -> Swift.String? {
+    ) -> Swift::String? {
         #expect(
             !findings(in: source).isEmpty,
             "fixture must fire before it can round-trip",

@@ -54,7 +54,7 @@ extension Lint.Rule {
         )
       }
       let declared = visitor.declared
-      let reasons: [Swift.String] =
+      let reasons: [Swift::String] =
         declared == nil
         ? ["the package must declare `platforms:` with the five Apple platforms at `.v27`."]
         : manifestPlatformFloorPlatforms.compactMap { platform in
@@ -91,25 +91,25 @@ extension Lint.Rule {
       else {
         return visitor.unmeasured.map { .refused(.ambiguousRepair($0)) } ?? .unchanged
       }
-      var bytes = Swift.Array(source.tree.description.utf8)
+      var bytes = Swift::Array(source.tree.description.utf8)
       bytes.replaceSubrange(edit.range, with: edit.text.utf8)
-      return .edits([.rewrite(path: source.path, contents: Swift.String(decoding: bytes, as: Swift.UTF8.self))])
+      return .edits([.rewrite(path: source.path, contents: Swift::String(decoding: bytes, as: Swift::UTF8.self))])
     }
   )
 }
 
-private let manifestPlatformFloorCanonical: Swift.String =
+private let manifestPlatformFloorCanonical: Swift::String =
   "[\n" + manifestPlatformFloorPlatforms.map { "        .\($0)(.v27),\n" }.joined() + "    ]"
 
-private let manifestPlatformFloorPlatforms: [Swift.String] = [
+private let manifestPlatformFloorPlatforms: [Swift::String] = [
   "macOS", "iOS", "tvOS", "watchOS", "visionOS",
 ]
 
 internal final class ManifestPlatformFloorVisitor: SyntaxVisitor {
   var package: AbsolutePosition?
-  var declared: [Swift.String: Swift.String]?
-  var unmeasured: Swift.String?
-  var edit: (range: Swift.Range<Swift.Int>, text: Swift.String)?
+  var declared: [Swift::String: Swift::String]?
+  var unmeasured: Swift::String?
+  var edit: (range: Swift::Range<Swift::Int>, text: Swift::String)?
 
   override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
     guard package == nil,
@@ -137,7 +137,7 @@ internal final class ManifestPlatformFloorVisitor: SyntaxVisitor {
       unmeasured = "`platforms:` is not an array literal"
       return .skipChildren
     }
-    var platforms: [Swift.String: Swift.String] = [:]
+    var platforms: [Swift::String: Swift::String] = [:]
     for element in array.elements {
       guard let call = element.expression.as(FunctionCallExprSyntax.self),
         let name = call.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text,

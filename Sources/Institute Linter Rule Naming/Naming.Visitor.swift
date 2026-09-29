@@ -6,17 +6,17 @@ extension Naming {
 
 extension Naming.Visitor {
   @usableFromInline
-  internal static let family: Swift.Set<Swift.String> = [
+  internal static let family: Swift::Set<Swift::String> = [
     "SyntaxVisitor",
     "SyntaxAnyVisitor",
     "SyntaxRewriter",
   ]
 
-  internal static func extends(_ clause: InheritanceClauseSyntax?) -> Swift.Bool {
+  internal static func extends(_ clause: InheritanceClauseSyntax?) -> Swift::Bool {
     guard let clause else { return false }
     for inherited in clause.inheritedTypes {
       let type = inherited.type
-      let leaf: Swift.String?
+      let leaf: Swift::String?
       if let identifier = type.as(IdentifierTypeSyntax.self) {
         leaf = identifier.name.text
       } else if let member = type.as(MemberTypeSyntax.self) {
@@ -31,9 +31,9 @@ extension Naming.Visitor {
     return false
   }
 
-  internal static func inheritanceLeaves(_ clause: InheritanceClauseSyntax?) -> [Swift.String] {
+  internal static func inheritanceLeaves(_ clause: InheritanceClauseSyntax?) -> [Swift::String] {
     guard let clause else { return [] }
-    var names: [Swift.String] = []
+    var names: [Swift::String] = []
     for inherited in clause.inheritedTypes {
       let type = inherited.type
       if let identifier = type.as(IdentifierTypeSyntax.self) {

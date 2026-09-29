@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let testingFunctionNamingMessage: Swift.String =
+internal let testingFunctionNamingMessage: Swift::String =
     "[test function naming] [SWIFT-TEST-005]: `@Test` function name is "
     + "CamelCase (internal uppercase letters). CamelCase names are the "
     + "legacy XCTest pattern (`testInitCreatesEmptyBuffer`) and don't read "
@@ -56,7 +56,7 @@ internal let testingFunctionNamingMessage: Swift.String =
     + "Rule fires ONLY on CamelCase non-backticked names; both backticked "
     + "forms and plain non-CamelCase identifiers pass."
 
-private func functionNamingHasTestAttribute(_ attributes: AttributeListSyntax) -> Swift.Bool {
+private func functionNamingHasTestAttribute(_ attributes: AttributeListSyntax) -> Swift::Bool {
     testingHasAttribute(attributes, named: "Test")
 }
 

@@ -39,13 +39,13 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsRethrowsResultShimMessage: Swift.String =
+internal let throwsRethrowsResultShimMessage: Swift::String =
     "[result wrapper for rethrows shim] [IMPL-109]: stdlib `rethrows` higher-order "
     + "methods erase typed-throws to `any Error`. Materialise `Result<T, E>` "
     + "inside the closure, return it, and `try result.get()` outside."
 
 @usableFromInline
-internal let rethrowsMethodNames: Swift.Set<Swift.String> = [
+internal let rethrowsMethodNames: Swift::Set<Swift::String> = [
     "map", "compactMap", "flatMap", "filter", "forEach", "reduce",
     "first", "contains", "allSatisfy", "min", "max",
     "drop", "prefix", "suffix", "split", "sorted",
@@ -64,7 +64,7 @@ internal final class ThrowsRethrowsResultShimVisitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    private func calledMemberName(_ called: ExprSyntax) -> Swift.String? {
+    private func calledMemberName(_ called: ExprSyntax) -> Swift::String? {
         if let memberAccess = called.as(MemberAccessExprSyntax.self) {
             return memberAccess.declName.baseName.text
         }

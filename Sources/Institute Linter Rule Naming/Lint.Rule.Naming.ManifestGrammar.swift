@@ -42,9 +42,9 @@ extension Lint.Rule {
     )
 }
 
-internal func namingManifestIsKebabSlug(_ name: Swift.String) -> Swift.Bool {
+internal func namingManifestIsKebabSlug(_ name: Swift::String) -> Swift::Bool {
     guard !name.isEmpty else { return false }
-    var previousWasHyphen = true  // leading hyphen is invalid
+    var previousWasHyphen = true
     for character in name {
         if character == "-" {
             if previousWasHyphen { return false }
@@ -55,15 +55,15 @@ internal func namingManifestIsKebabSlug(_ name: Swift.String) -> Swift.Bool {
         guard character.isASCII else { return false }
         previousWasHyphen = false
     }
-    return !previousWasHyphen  // trailing hyphen is invalid
+    return !previousWasHyphen
 }
 
-internal func namingManifestCompoundWords(in name: Swift.String) -> [Swift.String] {
-    name.split(separator: " ").map(Swift.String.init).filter(namingWordIsCompound)
+internal func namingManifestCompoundWords(in name: Swift::String) -> [Swift::String] {
+    name.split(separator: " ").map(Swift::String.init).filter(namingWordIsCompound)
 }
 
 @usableFromInline
-internal func namingManifestGrammarSlugMessage(_ name: Swift.String) -> Swift.String {
+internal func namingManifestGrammarSlugMessage(_ name: Swift::String) -> Swift::String {
     "[manifest naming grammar]: package name '\(name)' is not a kebab-case "
         + "slug — the package name must match `[a-z0-9]+(-[a-z0-9]+)*` "
         + "(e.g. `institute-application`)"
@@ -71,9 +71,9 @@ internal func namingManifestGrammarSlugMessage(_ name: Swift.String) -> Swift.St
 
 @usableFromInline
 internal func namingManifestGrammarNameMessage(
-    _ name: Swift.String,
-    words: [Swift.String]
-) -> Swift.String {
+    _ name: Swift::String,
+    words: [Swift::String]
+) -> Swift::String {
     "[manifest naming grammar]: declared name '\(name)' contains "
         + "concatenated word\(words.count == 1 ? "" : "s") "
         + words.map { "'\($0)'" }.joined(separator: ", ")
@@ -83,21 +83,21 @@ internal func namingManifestGrammarNameMessage(
 
 @usableFromInline
 internal func namingManifestGrammarPathMessage(
-    name: Swift.String,
-    segment: Swift.String
-) -> Swift.String {
+    name: Swift::String,
+    segment: Swift::String
+) -> Swift::String {
     "[manifest naming grammar]: target '\(name)' declares path segment "
         + "'\(segment)', which differs from the target name only by "
         + "spacing — the directory name must correspond exactly to the "
         + "declared spaced target name"
 }
 
-private let namingManifestDeclaringFactories: Swift.Set<Swift.String> = [
+private let namingManifestDeclaringFactories: Swift::Set<Swift::String> = [
     "library", "executable", "target", "testTarget", "executableTarget", "macro", "plugin",
     "systemLibrary",
 ]
 
-private let namingManifestTargetFactories: Swift.Set<Swift.String> = [
+private let namingManifestTargetFactories: Swift::Set<Swift::String> = [
     "target", "testTarget", "executableTarget", "macro", "plugin", "systemLibrary",
 ]
 
@@ -114,7 +114,7 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    private func literalText(_ expression: ExprSyntax) -> (Swift.String, AbsolutePosition)? {
+    private func literalText(_ expression: ExprSyntax) -> (Swift::String, AbsolutePosition)? {
         guard let literal = expression.as(StringLiteralExprSyntax.self),
             literal.segments.count == 1,
             let segment = literal.segments.first?.as(StringSegmentSyntax.self)
@@ -137,7 +137,7 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
             namingManifestDeclaringFactories.contains(member.declName.baseName.text)
         else { return .visitChildren }
-        var declaredName: Swift.String?
+        var declaredName: Swift::String?
         for argument in node.arguments where argument.label?.text == "name" {
             guard let (name, position) = literalText(argument.expression) else { continue }
             declaredName = name
@@ -156,10 +156,10 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
                 guard let (path, position) = literalText(argument.expression) else { continue }
                 guard
                     let segment = path.split(separator: "/", omittingEmptySubsequences: true).last
-                        .map(Swift.String.init)
+                        .map(Swift::String.init)
                 else { continue }
-                let despacedSegment = Swift.String(segment.filter { $0 != " " })
-                let despacedName = Swift.String(name.filter { $0 != " " })
+                let despacedSegment = Swift::String(segment.filter { $0 != " " })
+                let despacedName = Swift::String(name.filter { $0 != " " })
                 if segment != name, despacedSegment == despacedName {
                     emit(
                         at: position,
@@ -171,7 +171,7 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func emit(at position: AbsolutePosition, message: Swift.String) {
+    private func emit(at position: AbsolutePosition, message: Swift::String) {
         let location = converter.location(for: position)
         matches.append(
             Diagnostic.Record(

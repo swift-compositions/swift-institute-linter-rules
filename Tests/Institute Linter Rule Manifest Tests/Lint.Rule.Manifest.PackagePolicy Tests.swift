@@ -40,8 +40,8 @@ extension Lint.Rule.`package policy revision 1 Tests` {
     """
 
   static func observation(
-    _ source: Swift.String,
-    file: Swift.String = "Package.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Package.swift"
   ) -> Lint.Rule.Observation {
     let parsed = Lint.Source.parsed(from: source, file: file)
     return Lint.Rule.`package policy revision 1`.observe(parsed, .error)

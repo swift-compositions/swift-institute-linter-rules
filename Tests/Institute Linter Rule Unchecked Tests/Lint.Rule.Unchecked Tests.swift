@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`unchecked call site Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "test.swift"
+    in source: Swift::String,
+    file: Swift::String = "test.swift"
   ) -> [Diagnostic
     .Record]
   {
@@ -40,8 +40,8 @@ extension Lint.Rule.`unchecked call site Tests` {
   /// Findings against a run whose brand pre-pass stamped `types`
   /// (#19 smaller item 1: the `Lint.Brand.owned` whole-run self-suppression).
   static func findings(
-    in source: Swift.String,
-    types: Swift.Set<Swift.String>
+    in source: Swift::String,
+    types: Swift::Set<Swift::String>
   ) -> [Diagnostic.Record] {
     let parsed = Lint.Source.parsed(from: source, types: types)
     return Lint.Rule.`unchecked call site`.observe(parsed, .warning).findings

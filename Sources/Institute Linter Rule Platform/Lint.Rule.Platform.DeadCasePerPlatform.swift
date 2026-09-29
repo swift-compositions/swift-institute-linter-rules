@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformDeadCasePerPlatformMessage: Swift.String =
+internal let platformDeadCasePerPlatformMessage: Swift::String =
   "[dead case per platform] [PATTERN-056]: public enum cases "
   + "enumerate platforms (POSIX / Windows or UTF8 / UTF16). Consumer "
   + "`switch` statements get N-1 dead branches per platform. Replace "
@@ -46,7 +46,7 @@ internal let platformDeadCasePerPlatformMessage: Swift.String =
   + "(`Path.Char`, `String.Char`) for storage; add a local `Encoding` "
   + "typealias for decoder calls."
 
-internal let platformDeadCasePerPlatformPlatformPairs: [Swift.Set<Swift.String>] = [
+internal let platformDeadCasePerPlatformPlatformPairs: [Swift::Set<Swift::String>] = [
   ["posix", "windows"],
   ["utf8", "utf16"],
   ["linux", "darwin"],
@@ -56,9 +56,9 @@ internal let platformDeadCasePerPlatformPlatformPairs: [Swift.Set<Swift.String>]
   ["macos", "windows"],
 ]
 
-internal func platformDeadCasePerPlatformMatchesPlatformPair(_ cases: [Swift.String]) -> Swift.Bool
+internal func platformDeadCasePerPlatformMatchesPlatformPair(_ cases: [Swift::String]) -> Swift::Bool
 {
-  let lower = Swift.Set(cases.map { $0.lowercased() })
+  let lower = Swift::Set(cases.map { $0.lowercased() })
   for pair in platformDeadCasePerPlatformPlatformPairs {
     if pair.isSubset(of: lower) {
       return true
@@ -84,7 +84,7 @@ internal final class PlatformDeadCasePerPlatformVisitor: SyntaxVisitor {
     guard platformIsPublicAPIEffective(Syntax(node), modifiers: node.modifiers) else {
       return .visitChildren
     }
-    var caseNames: [Swift.String] = []
+    var caseNames: [Swift::String] = []
     for member in Lint.Syntax.Conditional.members(node.memberBlock) {
       guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
         continue

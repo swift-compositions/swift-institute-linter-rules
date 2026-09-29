@@ -42,7 +42,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memorySafeAttributeUndocumentedMessage: Swift.String =
+internal let memorySafeAttributeUndocumentedMessage: Swift::String =
     "[safe attribute undocumented] [MEM-SAFE-025c]: every `@safe`-attributed "
     + "declaration MUST carry an adjacent invariant disclosure — either a "
     + "`// SAFETY:` / `// WHY:` line-comment block in the declaration's "
@@ -127,14 +127,14 @@ internal final class MemorySafeAttributeUndocumentedVisitor: SyntaxVisitor {
         }
     }
 
-    private func isInvariantPrefix(_ body: Swift.Substring) -> Bool {
+    private func isInvariantPrefix(_ body: Swift::Substring) -> Bool {
         let lower = body.lowercased()
         return lower.hasPrefix("why:") || lower.hasPrefix("safety:")
     }
 
     private func triviaHasSafetyInvariantDocSection(_ trivia: Trivia) -> Bool {
-        let pieces = Swift.Array(trivia)
-        var collected: [Swift.String] = []
+        let pieces = Swift::Array(trivia)
+        var collected: [Swift::String] = []
         var newlineRun = 0
 
         for piece in pieces.reversed() {
@@ -168,7 +168,7 @@ internal final class MemorySafeAttributeUndocumentedVisitor: SyntaxVisitor {
         return matchesSafetyInvariant(in: collected)
     }
 
-    private func matchesSafetyInvariant(in pieces: [Swift.String]) -> Bool {
+    private func matchesSafetyInvariant(in pieces: [Swift::String]) -> Bool {
         for text in pieces {
             if text.contains("## Safety Invariant") {
                 return true

@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`tagged extension public init Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "Sources/X/Test.swift"
+    in source: Swift::String,
+    file: Swift::String = "Sources/X/Test.swift"
   )
     -> [Diagnostic.Record]
   {
@@ -40,8 +40,8 @@ extension Lint.Rule.`tagged extension public init Tests` {
   /// Findings against a run whose brand pre-pass stamped `types`
   /// (#23 finding 21: `Lint.Brand.owned` whole-run self-suppression).
   static func findings(
-    in source: Swift.String,
-    types: Swift.Set<Swift.String>
+    in source: Swift::String,
+    types: Swift::Set<Swift::String>
   ) -> [Diagnostic.Record] {
     let parsed = Lint.Source.parsed(
       from: source,

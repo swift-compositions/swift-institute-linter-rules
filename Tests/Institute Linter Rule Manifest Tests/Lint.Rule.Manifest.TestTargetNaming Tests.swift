@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`test target naming Tests` {
   static func observation(
-    _ source: Swift.String,
-    file: Swift.String = "Package.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Package.swift"
   ) -> Lint.Rule.Observation {
     Lint.Rule.`test target naming`.observe(Lint.Source.parsed(from: source, file: file), .warning)
   }

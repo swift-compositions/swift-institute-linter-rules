@@ -38,18 +38,18 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformNamespaceRootMessage: Swift.String =
+internal let platformNamespaceRootMessage: Swift::String =
     "[compound platform namespace root] [PLAT-ARCH-003]: top-level "
     + "compound platform-prefix type (e.g., `LinuxKernel`, "
     + "`KqueueEventNotification`) fragments the kernel namespace. Extend "
     + "the shared `Kernel` namespace via `extension Kernel { ... }` so the "
     + "platform discriminator lives in the import, not the type name."
 
-internal let platformNamespaceRootKernelKeywords: [Swift.String] = [
+internal let platformNamespaceRootKernelKeywords: [Swift::String] = [
     "Kernel", "Kqueue", "Epoll", "IOCP", "IoUring", "EventNotification",
 ]
 
-internal func platformNamespaceRootIsCompoundPlatformName(_ name: Swift.String) -> Swift.Bool {
+internal func platformNamespaceRootIsCompoundPlatformName(_ name: Swift::String) -> Swift::Bool {
     for prefix in platformPlatformTokens {
         guard name.hasPrefix(prefix) else { continue }
         let suffix = String(name.dropFirst(prefix.count))

@@ -42,7 +42,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let testingDisplayNameStringMessage: Swift.String =
+internal let testingDisplayNameStringMessage: Swift::String =
     "[test display name string] [SWIFT-TEST-006]: `@Test`/`@Suite` carries a "
     + "string display name whose content could be spelled as a backticked raw "
     + "identifier. The string duplicates naming into data the compiler cannot "
@@ -60,7 +60,7 @@ internal let testingDisplayNameStringMessage: Swift.String =
     + "is empty, or is all operator characters."
 
 @usableFromInline
-internal let testingDisplayNameDuplicateMessage: Swift.String =
+internal let testingDisplayNameDuplicateMessage: Swift::String =
     "[test display name string] [SWIFT-TEST-006]: `@Test`/`@Suite` string "
     + "display name duplicates the declaration's own backticked raw-identifier "
     + "name. This is a COMPILE ERROR on Swift 6.3/6.4 — the explicit display "
@@ -93,7 +93,7 @@ internal func testingDisplayNameLiteral(_ attribute: AttributeSyntax) -> StringL
     return nil
 }
 
-internal func testingDisplayNameContent(_ literal: StringLiteralExprSyntax) -> Swift.String? {
+internal func testingDisplayNameContent(_ literal: StringLiteralExprSyntax) -> Swift::String? {
     var content = ""
     for segment in literal.segments {
         guard case .stringSegment(let plain) = segment else { return nil }
@@ -104,14 +104,14 @@ internal func testingDisplayNameContent(_ literal: StringLiteralExprSyntax) -> S
 
 internal func testingDisplayNameDuplicatesDeclaration(
     name: TokenSyntax,
-    content: Swift.String
-) -> Swift.Bool {
+    content: Swift::String
+) -> Swift::Bool {
     let spelled = name.trimmedDescription
     return spelled.hasPrefix("`") && spelled.hasSuffix("`")
-        && Swift.String(spelled.dropFirst().dropLast()) == content
+        && Swift::String(spelled.dropFirst().dropLast()) == content
 }
 
-internal func displayNameCanBeRawIdentifier(_ text: Swift.String) -> Swift.Bool {
+internal func displayNameCanBeRawIdentifier(_ text: Swift::String) -> Swift::Bool {
     guard !text.isEmpty else { return false }
     for character in text {
         if character == "`" || character == "\\" { return false }

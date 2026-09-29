@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let byteBinarySerializableRawValueUInt8Message: Swift.String =
+internal let byteBinarySerializableRawValueUInt8Message: Swift::String =
     "[binary serializable rawvalue uint8] [API-BYTE-004]: type conforms "
     + "to `Binary.Serializable` / `Binary.Parseable` and stores "
     + "`rawValue: UInt8`. Per the W2 discrimination rubric (broader-l2-l3"
@@ -52,9 +52,9 @@ internal final class ByteBinarySerializableRawValueUInt8Visitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    private var conformingTypePaths: Swift.Set<Swift.String> = []
-    private var typesWithRawValueUInt8: [(path: Swift.String, position: AbsolutePosition)] = []
-    private var enclosingPath: [Swift.String] = []
+    private var conformingTypePaths: Swift::Set<Swift::String> = []
+    private var typesWithRawValueUInt8: [(path: Swift::String, position: AbsolutePosition)] = []
+    private var enclosingPath: [Swift::String] = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -63,7 +63,7 @@ internal final class ByteBinarySerializableRawValueUInt8Visitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    private var currentQualifiedPath: Swift.String { enclosingPath.joined(separator: ".") }
+    private var currentQualifiedPath: Swift::String { enclosingPath.joined(separator: ".") }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         enclosingPath.append(Lint.Syntax.Identifier.unescaped(node.name.text))
@@ -154,7 +154,7 @@ internal final class ByteBinarySerializableRawValueUInt8Visitor: SyntaxVisitor {
     }
 }
 
-internal func byteTypeAnnotationIsUInt8(_ type: TypeSyntax) -> Swift.Bool {
+internal func byteTypeAnnotationIsUInt8(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "UInt8"
     }
@@ -172,7 +172,7 @@ internal func byteTypeAnnotationIsUInt8(_ type: TypeSyntax) -> Swift.Bool {
 internal func inheritanceContainsSerializableLikeProtocol(
     _ clause: InheritanceClauseSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     for inherited in clause.inheritedTypes {
         if byteTypeIsSerializableLike(inherited.type) {
@@ -182,7 +182,7 @@ internal func inheritanceContainsSerializableLikeProtocol(
     return false
 }
 
-internal func byteTypeIsSerializableLike(_ type: TypeSyntax) -> Swift.Bool {
+internal func byteTypeIsSerializableLike(_ type: TypeSyntax) -> Swift::Bool {
     guard let memberType = type.as(MemberTypeSyntax.self) else { return false }
     let trailingName = Lint.Syntax.Identifier.unescaped(memberType.name.text)
     guard trailingName == "Serializable" || trailingName == "Parseable" else { return false }
@@ -195,7 +195,7 @@ internal func byteTypeIsSerializableLike(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-internal func byteExtensionExtendedLeafName(_ type: TypeSyntax) -> Swift.String? {
+internal func byteExtensionExtendedLeafName(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text)
     }

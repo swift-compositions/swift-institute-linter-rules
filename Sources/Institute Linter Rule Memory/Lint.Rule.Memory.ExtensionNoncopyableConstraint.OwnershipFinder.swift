@@ -2,7 +2,7 @@ internal import SwiftSyntax
 
 internal final class MemoryExtensionNoncopyableOwnershipFinder: SyntaxVisitor {
     var found = false
-    private var genericsStack: [Swift.Set<Swift.String>] = []
+    private var genericsStack: [Swift::Set<Swift::String>] = []
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
     }
@@ -60,8 +60,8 @@ internal final class MemoryExtensionNoncopyableOwnershipFinder: SyntaxVisitor {
 
     private func parametersCarryTypeLevelOwnership(
         _ parameters: FunctionParameterListSyntax,
-        excluding: Swift.Set<Swift.String>
-    ) -> Swift.Bool {
+        excluding: Swift::Set<Swift::String>
+    ) -> Swift::Bool {
         for parameter in parameters {
             guard let attributed = parameter.type.as(AttributedTypeSyntax.self) else { continue }
             for specifier in attributed.specifiers {
@@ -99,10 +99,10 @@ internal final class MemoryExtensionNoncopyableOwnershipFinder: SyntaxVisitor {
     private static func genericNames(
         _ clause: GenericParameterClauseSyntax?
     )
-        -> Swift.Set<Swift.String>
+        -> Swift::Set<Swift::String>
     {
         guard let clause else { return [] }
-        var names: Swift.Set<Swift.String> = []
+        var names: Swift::Set<Swift::String> = []
         for parameter in clause.parameters {
             names.insert(parameter.name.text)
         }

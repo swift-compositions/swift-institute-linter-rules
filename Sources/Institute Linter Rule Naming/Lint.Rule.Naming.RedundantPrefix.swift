@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingRedundantPrefixMessage: Swift.String =
+private let namingRedundantPrefixMessage: Swift::String =
     "[redundant prefix] [API-NAME-013]: nested declaration name has a "
     + "redundant prefix that matches the enclosing namespace. Drop the "
     + "prefix — the containing type already supplies the context."
@@ -47,7 +47,7 @@ private final class NamingRedundantPrefixVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    var enclosingStack: [Swift.String] = []
+    var enclosingStack: [Swift::String] = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -122,7 +122,7 @@ private final class NamingRedundantPrefixVisitor: SyntaxVisitor {
         )
     }
 
-    private func lastComponent(of type: TypeSyntax) -> Swift.String {
+    private func lastComponent(of type: TypeSyntax) -> Swift::String {
         if let identifier = type.as(IdentifierTypeSyntax.self) { return identifier.name.text }
         if let member = type.as(MemberTypeSyntax.self) { return member.name.text }
         return ""

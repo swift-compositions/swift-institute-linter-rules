@@ -38,14 +38,14 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let closureParameterPositionMessage: Swift.String =
+internal let closureParameterPositionMessage: Swift::String =
     "[parameter position] [API-IMPL-012]: closure parameters MUST occupy the "
     + "final positions of the signature. A non-closure parameter MUST NOT appear "
     + "after a closure parameter — moves the trailing-closure call site. Reorder "
     + "non-closure parameters before all closure parameters; typed-throws thunks "
     + "(`() throws(E) -> T`) count as closures per [IMPL-092]."
 
-internal func isClosureType(_ type: TypeSyntax) -> Swift.Bool {
+internal func isClosureType(_ type: TypeSyntax) -> Swift::Bool {
     var current = closureStrippingWrapperTypes(type)
     while let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1 {
         current = tuple.elements.first!.type

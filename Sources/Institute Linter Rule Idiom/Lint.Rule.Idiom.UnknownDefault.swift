@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomUnknownDefaultMessage: Swift.String =
+internal let idiomUnknownDefaultMessage: Swift::String =
     "[unknown default]: handle new enum cases explicitly instead of "
     + "adding `@unknown default` — the compile-time missed-case signal is "
     + "the asset, and `@unknown default` trades it for a runtime "
@@ -57,7 +57,7 @@ internal final class IdiomUnknownDefaultVisitor: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
     }
 
-    private func isWildcard(_ pattern: PatternSyntax) -> Swift.Bool {
+    private func isWildcard(_ pattern: PatternSyntax) -> Swift::Bool {
         if pattern.is(WildcardPatternSyntax.self) { return true }
         if let expressionPattern = pattern.as(ExpressionPatternSyntax.self) {
             return expressionPattern.expression.is(DiscardAssignmentExprSyntax.self)
@@ -65,7 +65,7 @@ internal final class IdiomUnknownDefaultVisitor: SyntaxVisitor {
         return false
     }
 
-    private func isDefaultLikeLabel(_ label: SwitchCaseSyntax.Label) -> Swift.Bool {
+    private func isDefaultLikeLabel(_ label: SwitchCaseSyntax.Label) -> Swift::Bool {
         if case .default = label { return true }
         if case .case(let caseLabel) = label {
             return caseLabel.caseItems.allSatisfy { isWildcard($0.pattern) }

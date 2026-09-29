@@ -3,7 +3,7 @@ internal import SwiftSyntax
 
 internal func structureMinimalTypeBodyFixed(
   _ source: borrowing Lint.Source.Parsed
-) -> Swift.String? {
+) -> Swift::String? {
   let rewriter = StructureMinimalTypeBodyRewriter()
   let rewritten = rewriter.visit(source.tree)
   guard rewriter.changed else { return nil }
@@ -14,7 +14,7 @@ internal func structureMinimalTypeBodyFixed(
   return rewritten.with(\.statements, statements).description
 }
 
-internal func structureMinimalTypeBodyIsFixEligible(_ node: Syntax) -> Swift.Bool {
+internal func structureMinimalTypeBodyIsFixEligible(_ node: Syntax) -> Swift::Bool {
   var current = node.parent
   while let ancestor = current {
     if ancestor.is(SourceFileSyntax.self) {
@@ -50,7 +50,7 @@ internal func structureMinimalTypeBodyIsFixEligible(_ node: Syntax) -> Swift.Boo
 
 internal func structureMinimalTypeBodyHasAvailableAttribute(
   _ attributes: AttributeListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
   for attribute in attributes {
     guard let attr = attribute.as(AttributeSyntax.self) else { continue }
     if attr.attributeName.trimmedDescription == "available" {
@@ -87,7 +87,7 @@ internal func structureMinimalTypeBodyExtendedType(
 internal func structureMinimalTypeBodyMayMoveNestedTypeWhole(
   _ attributes: AttributeListSyntax,
   _ memberBlock: MemberBlockSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
   guard !structureMinimalTypeBodyHasExtensionPatternAttribute(attributes) else { return false }
   return structureMinimalTypeBodyPartition(memberBlock) == nil
 }
@@ -181,7 +181,7 @@ private func structureMinimalTypeBodyExtension(
 }
 
 internal final class StructureMinimalTypeBodyRewriter: SyntaxRewriter {
-  var changed: Swift.Bool = false
+  var changed: Swift::Bool = false
   var pendingExtensions: [ExtensionDeclSyntax] = []
 
   override func visit(_ node: StructDeclSyntax) -> DeclSyntax {

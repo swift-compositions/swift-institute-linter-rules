@@ -40,7 +40,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let structureThrowingWrapperInitMessage: Swift.String =
+internal let structureThrowingWrapperInitMessage: Swift::String =
     "[throwing wrapper init] [PATTERN-020]: throwing init body "
     + "is a single `try base.init(...)` forward with no additional validation. "
     + "If the wrapper specializes to a stricter invariant than its base, the "
@@ -49,7 +49,7 @@ internal let structureThrowingWrapperInitMessage: Swift.String =
     + "invariant directly."
 
 @usableFromInline
-internal let structureThrowingWrapperInitLaxTypeAllowlist: Swift.Set<Swift.String> = [
+internal let structureThrowingWrapperInitLaxTypeAllowlist: Swift::Set<Swift::String> = [
     "Int", "Int8", "Int16", "Int32", "Int64",
     "UInt", "UInt8", "UInt16", "UInt32", "UInt64",
     "Float", "Float16", "Float32", "Float64", "Float80", "Double",
@@ -101,7 +101,7 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func isInsideExtensionOnLaxType(_ node: Syntax) -> Swift.Bool {
+    private func isInsideExtensionOnLaxType(_ node: Syntax) -> Swift::Bool {
         var current: Syntax? = node.parent
         while let candidate = current {
             if let ext = candidate.as(ExtensionDeclSyntax.self) {
@@ -150,7 +150,7 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         return nil
     }
 
-    private func isBaseInitializerTryForward(_ syntax: Syntax) -> Swift.Bool {
+    private func isBaseInitializerTryForward(_ syntax: Syntax) -> Swift::Bool {
         if let sequence = syntax.as(SequenceExprSyntax.self) {
             let elements = Array(sequence.elements)
             if elements.count == 3, elements[1].is(AssignmentExprSyntax.self) {
@@ -171,7 +171,7 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         return isConstructorCall(inner)
     }
 
-    private func isConstructorCall(_ expr: ExprSyntax) -> Swift.Bool {
+    private func isConstructorCall(_ expr: ExprSyntax) -> Swift::Bool {
         var current = expr
         if let tuple = current.as(TupleExprSyntax.self),
             tuple.elements.count == 1,
@@ -184,7 +184,7 @@ internal final class StructureThrowingWrapperInitVisitor: SyntaxVisitor {
         return calleeIsConstructor(call.calledExpression)
     }
 
-    private func calleeIsConstructor(_ expr: ExprSyntax) -> Swift.Bool {
+    private func calleeIsConstructor(_ expr: ExprSyntax) -> Swift::Bool {
         if let generic = expr.as(GenericSpecializationExprSyntax.self) {
             return calleeIsConstructor(generic.expression)
         }

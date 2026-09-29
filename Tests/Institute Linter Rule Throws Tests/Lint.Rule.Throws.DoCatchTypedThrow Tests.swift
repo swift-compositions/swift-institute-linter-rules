@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`do throws for typed catch with throw Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "test.swift"
+    in source: Swift::String,
+    file: Swift::String = "test.swift"
   ) -> [Diagnostic
     .Record]
   {

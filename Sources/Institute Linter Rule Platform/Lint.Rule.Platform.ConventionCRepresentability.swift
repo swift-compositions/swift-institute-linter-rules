@@ -39,7 +39,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformConventionCRepresentabilityMessage: Swift.String =
+internal let platformConventionCRepresentabilityMessage: Swift::String =
     "[convention c representability] [PLAT-ARCH-005b]: `@convention(c)` "
     + "function type takes `UnsafeMutablePointer<UserType>?` for a "
     + "Swift-defined struct — pure Swift structs (including @safe "
@@ -51,7 +51,7 @@ internal let platformConventionCRepresentabilityMessage: Swift.String =
 internal func platformConventionCRepresentabilityHasConventionC(
     _ attributes: AttributeListSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     for attribute in attributes {
         guard let attr = attribute.as(AttributeSyntax.self) else { continue }
@@ -73,7 +73,7 @@ internal func platformConventionCRepresentabilityHasConventionC(
 internal func platformConventionCRepresentabilityIsUnsafePointerToUserType(
     _ type: TypeSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     var current = type
     while let optional = current.as(OptionalTypeSyntax.self) {
@@ -104,13 +104,13 @@ internal func platformConventionCRepresentabilityIsUnsafePointerToUserType(
 private func platformConventionCRepresentabilityIsStdlibPrimitive(
     _ type: TypeSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     guard let identifier = type.as(IdentifierTypeSyntax.self) else { return false }
     return platformConventionCRepresentabilityStdlibPrimitiveNames.contains(identifier.name.text)
 }
 
-private let platformConventionCRepresentabilityStdlibPrimitiveNames: Swift.Set<Swift.String> = [
+private let platformConventionCRepresentabilityStdlibPrimitiveNames: Swift::Set<Swift::String> = [
     "Int8", "Int16", "Int32", "Int64",
     "UInt8", "UInt16", "UInt32", "UInt64",
     "Int", "UInt",
@@ -122,7 +122,7 @@ private let platformConventionCRepresentabilityStdlibPrimitiveNames: Swift.Set<S
 private func platformConventionCRepresentabilityIsCInteropReference(
     _ type: TypeSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     guard let member = type.as(MemberTypeSyntax.self) else { return false }
     var base = member.baseType

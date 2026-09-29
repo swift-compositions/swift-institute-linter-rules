@@ -41,7 +41,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryErrorNoncopyableMessage: Swift.String =
+internal let memoryErrorNoncopyableMessage: Swift::String =
   "[noncopyable error] [MEM-COPY-002]: `Error`-conforming types MUST NOT "
   + "suppress `Copyable`. `Swift.Error`'s existential boxing requires `Copyable`. "
   + "A `~Copyable` Error type fails to compile or to interoperate with the "
@@ -50,7 +50,7 @@ internal let memoryErrorNoncopyableMessage: Swift.String =
   + "a copyable handle and reference it from the error."
 
 internal final class MemoryErrorNoncopyableExtensionCollector: SyntaxVisitor {
-  var conformances: [Swift.String: Swift.Set<Swift.String>] = [:]
+  var conformances: [Swift::String: Swift::Set<Swift::String>] = [:]
 
   override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
     guard let clause = node.inheritanceClause else { return .visitChildren }

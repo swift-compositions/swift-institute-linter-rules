@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`default trait Tests` {
   static func observation(
-    _ source: Swift.String,
-    file: Swift.String = "Package.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Package.swift"
   ) -> Lint.Rule.Observation {
     Lint.Rule.`default trait`.observe(Lint.Source.parsed(from: source, file: file), .warning)
   }

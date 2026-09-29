@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let closureConfigurationPlacementMessage: Swift.String =
+internal let closureConfigurationPlacementMessage: Swift::String =
     "[configuration before content] [API-IMPL-014]: "
     + "configuration-bearing parameters (`Options`, `Configuration`, "
     + "`Context`) MUST sit at first OR last non-closure position. "
@@ -47,13 +47,13 @@ internal let closureConfigurationPlacementMessage: Swift.String =
     + "vs. modifier). Move the parameter to position 0 (primary input) "
     + "or to the last non-closure slot (modifier, with a default)."
 
-internal let configurationSuffixes: Swift.Set<Swift.String> = [
+internal let configurationSuffixes: Swift::Set<Swift::String> = [
     "Options",
     "Configuration",
     "Context",
 ]
 
-internal func isConfigurationType(_ type: TypeSyntax) -> Swift.Bool {
+internal func isConfigurationType(_ type: TypeSyntax) -> Swift::Bool {
     let current = closureStrippingWrapperTypes(type)
     if let identifier = current.as(IdentifierTypeSyntax.self) {
         return configurationSuffixes.contains(where: identifier.name.text.hasSuffix)
@@ -95,7 +95,7 @@ internal final class ClosureConfigurationPlacementVisitor: SyntaxVisitor {
     }
 
     private func checkParameters(_ parameters: FunctionParameterListSyntax) {
-        let nonClosureIndices: [Swift.Int] = parameters.enumerated().compactMap {
+        let nonClosureIndices: [Swift::Int] = parameters.enumerated().compactMap {
             index,
             parameter in
             isClosureType(parameter.type) ? nil : index

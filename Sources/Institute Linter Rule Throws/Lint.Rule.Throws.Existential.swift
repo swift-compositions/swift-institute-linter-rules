@@ -39,14 +39,14 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsExistentialMessage: Swift.String =
+internal let throwsExistentialMessage: Swift::String =
   "[existential throws] feedback_no_existential_throws: `throws(any Error)` boxes "
   + "the error as an existential — semantically identical to untyped `throws`. "
   + "Use a concrete error type or make the container generic over the error type."
 
 @usableFromInline
 internal let throwsExistentialStdlibProtocolWitnessCitations:
-  [Swift.String: (witness: Swift.String, protocols: [Swift.String])] = [
+  [Swift::String: (witness: Swift::String, protocols: [Swift::String])] = [
     "init(from:)": (
       witness: "Swift.Decodable.init(from:) throws — protocol requirement is untyped",
       protocols: ["Decodable", "Codable"]
@@ -96,7 +96,7 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
     return .visitChildren
   }
 
-  private func isInsideRequireMacroFunction(_ node: Syntax) -> Swift.Bool {
+  private func isInsideRequireMacroFunction(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
       if let fn = candidate.as(FunctionDeclSyntax.self) {
@@ -121,18 +121,18 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
     return false
   }
 
-  private func throwsBodyContainsRequireMacro(_ body: CodeBlockSyntax?) -> Swift.Bool {
+  private func throwsBodyContainsRequireMacro(_ body: CodeBlockSyntax?) -> Swift::Bool {
     guard let body else { return false }
     let finder = ThrowsExistentialRequireMacroFinder(viewMode: .sourceAccurate)
     finder.walk(body)
     return finder.found
   }
 
-  private func isStdlibProtocolWitnessThrows(_ node: Syntax) -> Swift.Bool {
+  private func isStdlibProtocolWitnessThrows(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
-    var witnessKey: Swift.String?
+    var witnessKey: Swift::String?
     var witnessSignature: FunctionSignatureSyntax?
-    var inheritedTypeSuffixes: Swift.Set<Swift.String> = []
+    var inheritedTypeSuffixes: Swift::Set<Swift::String> = []
     while let candidate = current {
       if witnessKey == nil {
         if let fn = candidate.as(FunctionDeclSyntax.self) {
@@ -184,10 +184,10 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
   }
 
   private func throwsWitnessKey(
-    name: Swift.String,
+    name: Swift::String,
     parameterClause: FunctionParameterClauseSyntax
   )
-    -> Swift.String
+    -> Swift::String
   {
     var key = name + "("
     for parameter in parameterClause.parameters {
@@ -197,14 +197,14 @@ internal final class ThrowsExistentialVisitor: SyntaxVisitor {
     return key
   }
 
-  private func isAnyError(_ type: TypeSyntax) -> Swift.Bool {
+  private func isAnyError(_ type: TypeSyntax) -> Swift::Bool {
     guard let some = type.as(SomeOrAnyTypeSyntax.self),
       some.someOrAnySpecifier.tokenKind == .keyword(.any)
     else { return false }
     return isErrorType(some.constraint)
   }
 
-  private func isErrorType(_ type: TypeSyntax) -> Swift.Bool {
+  private func isErrorType(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self),
       identifier.name.text == "Error"
     {

@@ -68,7 +68,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal func manifestIsPackageManifest(_ filePath: Swift.String) -> Swift.Bool {
+internal func manifestIsPackageManifest(_ filePath: Swift::String) -> Swift::Bool {
   let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
   guard let filename = components.last else { return false }
   guard !components.dropLast().contains(where: manifestTargetTreeNames.contains) else {
@@ -78,17 +78,17 @@ internal func manifestIsPackageManifest(_ filePath: Swift.String) -> Swift.Bool 
     || (filename.hasPrefix("Package@swift-") && filename.hasSuffix(".swift"))
 }
 
-private let manifestTargetTreeNames: Swift.Set<Swift.Substring> = ["Sources", "Plugins"]
+private let manifestTargetTreeNames: Swift::Set<Swift::Substring> = ["Sources", "Plugins"]
 
 @usableFromInline
-internal let manifestBareStringDependencyMessage: Swift.String =
+internal let manifestBareStringDependencyMessage: Swift::String =
   "[bare string dependency]: a target dependency must use a typed "
   + "accessor — `.target(name:)` for a same-package target, "
   + "`.product(name:package:)` for a product — never a bare string. "
   + "SwiftPM resolves a bare string as `.byName`, which binds to "
   + "whatever it resolves first."
 
-private let manifestTargetFactories: Swift.Set<Swift.String> = [
+private let manifestTargetFactories: Swift::Set<Swift::String> = [
   "target", "testTarget", "executableTarget", "macro", "plugin",
 ]
 
@@ -97,10 +97,10 @@ internal final class ManifestBareStringDependencyVisitor: SyntaxVisitor {
   let severity: Diagnostic.Severity
   let converter: SourceLocationConverter
   var matches: [Diagnostic.Record] = []
-  var unhandledSourceShape: Swift.String?
+  var unhandledSourceShape: Swift::String?
 
-  private var fileScopeBindings: [Swift.String: ExprSyntax] = [:]
-  private var dependencyAccessorBodies: [Swift.String: ExprSyntax] = [:]
+  private var fileScopeBindings: [Swift::String: ExprSyntax] = [:]
+  private var dependencyAccessorBodies: [Swift::String: ExprSyntax] = [:]
 
   init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
     self.source = source
@@ -128,7 +128,7 @@ internal final class ManifestBareStringDependencyVisitor: SyntaxVisitor {
 
   private func resolvedElements(
     of expression: ExprSyntax,
-    visited: Swift.Set<Swift.String> = []
+    visited: Swift::Set<Swift::String> = []
   ) -> [ExprSyntax] {
     if let array = expression.as(ArrayExprSyntax.self) {
       return array.elements.map(\.expression)
@@ -155,7 +155,7 @@ internal final class ManifestBareStringDependencyVisitor: SyntaxVisitor {
 
   private func flaggedPosition(
     of element: ExprSyntax,
-    visited: Swift.Set<Swift.String> = []
+    visited: Swift::Set<Swift::String> = []
   ) -> AbsolutePosition? {
     if let literal = element.as(StringLiteralExprSyntax.self) {
       return literal.positionAfterSkippingLeadingTrivia
@@ -235,10 +235,10 @@ internal final class ManifestBareStringDependencyVisitor: SyntaxVisitor {
 
 private func manifestBareStringDependencyClassification(
   _ expression: ExprSyntax,
-  accessorBodies: [Swift.String: ExprSyntax],
-  visited: Swift.Set<Swift.String> = [],
-  unhandledSourceShape: inout Swift.String?
-) -> (handled: Swift.Bool, isBare: Swift.Bool) {
+  accessorBodies: [Swift::String: ExprSyntax],
+  visited: Swift::Set<Swift::String> = [],
+  unhandledSourceShape: inout Swift::String?
+) -> (handled: Swift::Bool, isBare: Swift::Bool) {
   if expression.is(StringLiteralExprSyntax.self) {
     return (true, true)
   }

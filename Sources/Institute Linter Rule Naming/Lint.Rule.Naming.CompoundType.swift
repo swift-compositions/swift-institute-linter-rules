@@ -38,7 +38,7 @@ extension Lint.Rule {
   )
 }
 
-private let namingCompoundTypeMessage: Swift.String =
+private let namingCompoundTypeMessage: Swift::String =
   "[compound type name] [API-NAME-001]: types MUST use the `Nest.Name` "
   + "pattern. Compound type names like `FileDirectoryWalk` or "
   + "`DirectoryWalk` are forbidden — use the nested form "
@@ -62,14 +62,14 @@ private let namingCompoundTypeMessage: Swift.String =
   + "`namingCompoundTypeBrandTokenCitations`; propose additions there "
   + "with the authority that fixes the spelling."
 
-private let namingCompoundTypeStdlibMethodMirrorCitations: [Swift.String: Swift.String] = [
+private let namingCompoundTypeStdlibMethodMirrorCitations: [Swift::String: Swift::String] = [
   "CompactMap": "Swift.Sequence.compactMap(_:) / Swift.Optional.compactMap(_:)",
   "FlatMap": "Swift.Sequence.flatMap(_:) / Swift.Optional.flatMap(_:)",
   "ForEach": "Swift.Sequence.forEach(_:)",
   "AllSatisfy": "Swift.Sequence.allSatisfy(_:)",
 ]
 
-private let namingCompoundTypeBrandTokenCitations: [Swift.String: Swift.String] = [
+private let namingCompoundTypeBrandTokenCitations: [Swift::String: Swift::String] = [
   "GitHub":
     "github.com brand orthography — ecosystem canonical `GitHub.Owner.ID` (swift-github-standard)",
   "OAuth": "RFC 6749 (The OAuth 2.0 Authorization Framework) — spec's own token spelling",
@@ -152,12 +152,12 @@ internal final class NamingCompoundTypeVisitor: SyntaxVisitor {
     return false
   }
 
-  private func isCompoundTypeIdentifier(_ name: Swift.String) -> Bool {
+  private func isCompoundTypeIdentifier(_ name: Swift::String) -> Bool {
     namingWordIsCompound(name)
   }
 }
 
-internal func namingWordIsCompound(_ name: Swift.String) -> Bool {
+internal func namingWordIsCompound(_ name: Swift::String) -> Bool {
   if namingCompoundTypeStdlibMethodMirrorCitations[name] != nil {
     return false
   }
@@ -174,7 +174,7 @@ internal func namingWordIsCompound(_ name: Swift.String) -> Bool {
     let previous = chars[chars.index(before: i)]
     let curr = chars[i]
     let nextIndex = chars.index(after: i)
-    let next: Swift.Character? = nextIndex < chars.endIndex ? chars[nextIndex] : nil
+    let next: Swift::Character? = nextIndex < chars.endIndex ? chars[nextIndex] : nil
     if curr.isUppercase {
       if previous.isLowercase {
         words += 1

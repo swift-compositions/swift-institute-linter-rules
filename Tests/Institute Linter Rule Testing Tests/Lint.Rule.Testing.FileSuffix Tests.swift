@@ -39,8 +39,8 @@ extension Lint.Rule.`test file suffix Tests` {
     static let helperSource = "func makeFixture() -> Int { 0 }"
 
     static func findings(
-        source: Swift.String,
-        file: Swift.String
+        source: Swift::String,
+        file: Swift::String
     ) -> [Diagnostic.Record] {
         let parsed = Lint.Source.parsed(from: source, file: file)
         return Lint.Rule.`test file suffix`.observe(parsed, .warning).findings
@@ -235,10 +235,10 @@ extension Lint.Rule.`test file suffix Tests`.Integration {
         // This very file's own source, under the legacy joined basename,
         // must fire; under its actual conforming basename it must not.
         let path = #filePath
-        let conformingName = path.split(separator: "/").last.map(Swift.String.init) ?? ""
+        let conformingName = path.split(separator: "/").last.map(Swift::String.init) ?? ""
         #expect(conformingName.hasSuffix(" Tests.swift"))
         let joinedName =
-            Swift.String(conformingName.dropLast(" Tests.swift".count)) + "Tests.swift"
+            Swift::String(conformingName.dropLast(" Tests.swift".count)) + "Tests.swift"
         let firing = Lint.Rule.`test file suffix Tests`.findings(
             source: "@Suite struct `test file suffix Tests` {}",
             file: "Tests/Institute Linter Rule Testing Tests/\(joinedName)"

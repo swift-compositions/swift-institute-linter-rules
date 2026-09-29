@@ -43,7 +43,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let cardinalCountMinusOneMessage: Swift.String =
+internal let cardinalCountMinusOneMessage: Swift::String =
     "[count minus one] [INFRA-200]: `<expr>.count - 1` (or syntactic "
     + "equivalents — paren-wrap `(seq.count) - 1`, cast-outside `Double(seq.count) - 1`, "
     + "algebraic-flip `+ 1 [<=] seq.count`, operand-reorder `seq.count - i - 1`) "
@@ -119,7 +119,7 @@ internal final class CardinalCountVisitor: SyntaxVisitor {
         return lit.literal.text == "1"
     }
 
-    static func isComparisonOperator(_ text: Swift.String) -> Bool {
+    static func isComparisonOperator(_ text: Swift::String) -> Bool {
         switch text {
         case "<", "<=", "==", "!=", ">=", ">": return true
         default: return false

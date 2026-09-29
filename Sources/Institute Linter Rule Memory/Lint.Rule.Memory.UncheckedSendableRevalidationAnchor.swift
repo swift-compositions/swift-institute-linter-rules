@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryUncheckedSendableRevalidationAnchorMessage: Swift.String =
+internal let memoryUncheckedSendableRevalidationAnchorMessage: Swift::String =
   "[unchecked sendable revalidation anchor] [MEM-SEND-006]: "
   + "`@unchecked Sendable` whose justification cites a compiler limitation "
   + "MUST carry a revalidation anchor in the declaration's leading trivia. "
@@ -91,8 +91,8 @@ internal final class MemoryUncheckedSendableRevalidationAnchorVisitor: SyntaxVis
     return false
   }
 
-  private func collectCommentText(_ trivia: Trivia) -> Swift.String {
-    var collected: Swift.String = ""
+  private func collectCommentText(_ trivia: Trivia) -> Swift::String {
+    var collected: Swift::String = ""
     for piece in trivia {
       switch piece {
       case .lineComment(let text),
@@ -109,7 +109,7 @@ internal final class MemoryUncheckedSendableRevalidationAnchorVisitor: SyntaxVis
     return collected
   }
 
-  private func hasCompilerLimitationIndicator(_ text: Swift.String) -> Bool {
+  private func hasCompilerLimitationIndicator(_ text: Swift::String) -> Bool {
     let lower = text.lowercased()
 
     if lower.contains("compiler") {
@@ -143,7 +143,7 @@ internal final class MemoryUncheckedSendableRevalidationAnchorVisitor: SyntaxVis
     var tracking: Bool = false
   }
 
-  private func anchorPresence(_ text: Swift.String) -> AnchorPresence {
+  private func anchorPresence(_ text: Swift::String) -> AnchorPresence {
     let lower = text.lowercased()
     return AnchorPresence(
       why: lower.contains("why:"),
@@ -152,9 +152,9 @@ internal final class MemoryUncheckedSendableRevalidationAnchorVisitor: SyntaxVis
     )
   }
 
-  private func emit(at inherited: InheritedTypeSyntax, missing: [Swift.String]) {
+  private func emit(at inherited: InheritedTypeSyntax, missing: [Swift::String]) {
     let location = converter.location(for: inherited.positionAfterSkippingLeadingTrivia)
-    let missingList: Swift.String
+    let missingList: Swift::String
     if missing.isEmpty {
       missingList = ""
     } else {
@@ -231,8 +231,8 @@ internal final class MemoryUncheckedSendableRevalidationAnchorVisitor: SyntaxVis
 extension MemoryUncheckedSendableRevalidationAnchorVisitor.AnchorPresence {
   var isComplete: Bool { why && whenToRemove && tracking }
 
-  var missingMarkers: [Swift.String] {
-    var missing: [Swift.String] = []
+  var missingMarkers: [Swift::String] {
+    var missing: [Swift::String] = []
     if !why { missing.append("WHY:") }
     if !whenToRemove { missing.append("WHEN TO REMOVE:") }
     if !tracking { missing.append("TRACKING:") }

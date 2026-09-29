@@ -54,25 +54,25 @@ extension Lint.Rule {
             )
             visitor.walk(source.tree)
             guard !visitor.periods.isEmpty else { return .unchanged }
-            var bytes = Swift.Array(source.tree.description.utf8)
+            var bytes = Swift::Array(source.tree.description.utf8)
             for offset in visitor.periods.sorted(by: >) {
                 bytes.replaceSubrange(offset..<offset + 1, with: "::".utf8)
             }
             return .edits([
-                .rewrite(path: source.path, contents: Swift.String(decoding: bytes, as: Swift.UTF8.self))
+                .rewrite(path: source.path, contents: Swift::String(decoding: bytes, as: Swift::UTF8.self))
             ])
         }
     )
 }
 
 @usableFromInline
-internal let namingModuleSelectorSpellingMessage: Swift.String =
+internal let namingModuleSelectorSpellingMessage: Swift::String =
     "[module selector spelling] [SOURCE-MODULE-SELECTOR]: qualify a name by its "
     + "module with a module selector, `Module::Name`, not with member syntax "
     + "`Module.Name`."
 
 internal final class NamingModuleSelectorImports: SyntaxVisitor {
-    var names: Swift.Set<Swift.String> = ["Swift"]
+    var names: Swift::Set<Swift::String> = ["Swift"]
 
     override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
         if let module = node.path.first?.name.text, module.contains("_") {
@@ -86,15 +86,15 @@ internal final class NamingModuleSelectorSpellingVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
-    let modules: Swift.Set<Swift.String>
+    let modules: Swift::Set<Swift::String>
     var matches: [Diagnostic.Record] = []
-    var periods: [Swift.Int] = []
+    var periods: [Swift::Int] = []
 
     init(
         source: Source.File,
         severity: Diagnostic.Severity,
         converter: SourceLocationConverter,
-        modules: Swift.Set<Swift.String>
+        modules: Swift::Set<Swift::String>
     ) {
         self.source = source
         self.severity = severity

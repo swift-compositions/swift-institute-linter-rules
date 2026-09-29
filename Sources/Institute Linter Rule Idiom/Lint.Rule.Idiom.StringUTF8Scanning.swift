@@ -41,7 +41,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomStringUTF8ScanningMessage: Swift.String =
+internal let idiomStringUTF8ScanningMessage: Swift::String =
     "[string utf8 scanning] [IMPL-089]: `.unicodeScalars` access is "
     + "the wrong code-unit view for Foundation-free string scanning. "
     + "Use `.utf8` — byte-literal matching is O(n), no Unicode table "
@@ -58,18 +58,18 @@ internal let idiomStringUTF8ScanningMessage: Swift.String =
     + "`// swift-linter:disable:next string utf8 scanning` and `// REASON:` "
     + "continuation naming the specification section."
 
-private let idiomFoundationModuleFamily: Swift.Set<Swift.String> = [
+private let idiomFoundationModuleFamily: Swift::Set<Swift::String> = [
     "Foundation",
     "FoundationEssentials",
     "FoundationNetworking",
     "FoundationXML",
 ]
 
-internal func idiomFileImportsFoundation(_ tree: SourceFileSyntax) -> Swift.Bool {
+internal func idiomFileImportsFoundation(_ tree: SourceFileSyntax) -> Swift::Bool {
     for statement in tree.statements {
         guard let importDecl = statement.item.as(ImportDeclSyntax.self) else { continue }
         let firstComponent =
-            importDecl.path.trimmedDescription.split(separator: ".").first.map(Swift.String.init)
+            importDecl.path.trimmedDescription.split(separator: ".").first.map(Swift::String.init)
             ?? importDecl.path.trimmedDescription
         if idiomFoundationModuleFamily.contains(firstComponent) {
             return true

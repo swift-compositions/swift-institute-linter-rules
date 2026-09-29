@@ -42,14 +42,14 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformSwiftQualificationShadowedProtocols: Swift.Set<Swift.String> = [
+internal let platformSwiftQualificationShadowedProtocols: Swift::Set<Swift::String> = [
     "Sequence",
     "Collection",
     "Error",
 ]
 
 @usableFromInline
-internal let platformSwiftQualificationStdlibShadowingTypes: Swift.Set<Swift.String> = [
+internal let platformSwiftQualificationStdlibShadowingTypes: Swift::Set<Swift::String> = [
     "Set",
     "Array",
     "ArraySlice",
@@ -73,7 +73,7 @@ internal let platformSwiftQualificationStdlibShadowingTypes: Swift.Set<Swift.Str
     "UnsafeMutableBufferPointer",
 ]
 
-internal func platformSwiftQualificationIsInsideStdlibExtension(_ node: Syntax) -> Swift.Bool {
+internal func platformSwiftQualificationIsInsideStdlibExtension(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
         if let ext = candidate.as(ExtensionDeclSyntax.self) {
@@ -97,7 +97,7 @@ internal func platformSwiftQualificationIsInsideStdlibExtension(_ node: Syntax) 
 }
 
 @usableFromInline
-internal let platformSwiftQualificationMessage: Swift.String =
+internal let platformSwiftQualificationMessage: Swift::String =
     "[swift protocol qualification] [PLAT-ARCH-022]: stdlib-shadowing "
     + "protocol reference is unqualified. Use `Swift.<Protocol>` form "
     + "(e.g., `some Swift.Sequence<UInt8>` not `some Sequence<UInt8>`; "
@@ -108,8 +108,8 @@ internal let platformSwiftQualificationMessage: Swift.String =
 
 internal func platformSwiftQualificationBareShadowedLeaves(
     in type: TypeSyntax
-) -> [(name: Swift.String, position: AbsolutePosition)] {
-    var results: [(name: Swift.String, position: AbsolutePosition)] = []
+) -> [(name: Swift::String, position: AbsolutePosition)] {
+    var results: [(name: Swift::String, position: AbsolutePosition)] = []
     var stack: [TypeSyntax] = [type]
     while let next = stack.popLast() {
         var current = next

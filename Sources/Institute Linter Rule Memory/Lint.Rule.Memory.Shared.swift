@@ -2,10 +2,10 @@ internal import SwiftSyntax
 
 internal func memoryTriviaHasAdjacentComment(
     _ trivia: Trivia,
-    matching isWanted: (Swift.String) -> Swift.Bool
-) -> Swift.Bool {
+    matching isWanted: (Swift::String) -> Swift::Bool
+) -> Swift::Bool {
     var newlineRun = 0
-    for piece in Swift.Array(trivia).reversed() {
+    for piece in Swift::Array(trivia).reversed() {
         switch piece {
         case .newlines(let count), .carriageReturns(let count), .carriageReturnLineFeeds(let count):
             newlineRun += count
@@ -15,7 +15,7 @@ internal func memoryTriviaHasAdjacentComment(
             newlineRun = 0
             let trimmed = text.trimmingPrefix("//")
             let body = trimmed.drop(while: { $0 == " " || $0 == "\t" })
-            if isWanted(Swift.String(body)) {
+            if isWanted(Swift::String(body)) {
                 return true
             }
             continue
@@ -37,7 +37,7 @@ internal func memoryTriviaHasAdjacentComment(
 internal func memoryWhereClauseHasPositiveCopyable(
     _ clause: GenericWhereClauseSyntax?
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     guard let clause else { return false }
     for requirement in clause.requirements {
@@ -54,7 +54,7 @@ internal func memoryWhereClauseHasPositiveCopyable(
 internal func memoryWhereClauseHasNoncopyable(
     _ clause: GenericWhereClauseSyntax?
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     guard let clause else { return false }
     for requirement in clause.requirements {
@@ -68,7 +68,7 @@ internal func memoryWhereClauseHasNoncopyable(
     return false
 }
 
-private func memoryTypeMentionsSuppressedCopyable(_ type: TypeSyntax) -> Swift.Bool {
+private func memoryTypeMentionsSuppressedCopyable(_ type: TypeSyntax) -> Swift::Bool {
     if let suppressed = type.as(SuppressedTypeSyntax.self) {
         return memoryTypeMentionsPositiveCopyable(suppressed.type)
     }
@@ -82,7 +82,7 @@ private func memoryTypeMentionsSuppressedCopyable(_ type: TypeSyntax) -> Swift.B
     return false
 }
 
-internal func memoryTypeMentionsPositiveCopyable(_ type: TypeSyntax) -> Swift.Bool {
+internal func memoryTypeMentionsPositiveCopyable(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self),
         identifier.name.text == "Copyable"
     {

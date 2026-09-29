@@ -1,5 +1,5 @@
 extension Tier {
-    var rank: Swift.Int {
+    var rank: Swift::Int {
         switch self {
         case .setup: return 0
         case .body: return 1

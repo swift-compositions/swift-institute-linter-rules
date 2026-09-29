@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingSingleTypeNamespaceMessage: Swift.String =
+private let namingSingleTypeNamespaceMessage: Swift::String =
     "[single type namespace] [API-NAME-001a]: caseless-enum namespace "
     + "contains exactly one nested type — that's a *variant label*, "
     + "not a namespace. Promote the inner type and nest the label "

@@ -68,20 +68,20 @@ extension Lint.Rule {
 }
 
 private func structureExtensionFileNamingFindings(
-  path: Swift.String,
+  path: Swift::String,
   source: Source.File,
   severity: Diagnostic.Severity,
   converter: SourceLocationConverter,
   tree: SourceFileSyntax
 ) -> [Diagnostic.Record] {
-  let filename: Swift.String
+  let filename: Swift::String
   if let slashIndex = path.lastIndex(of: "/") {
-    filename = Swift.String(path[path.index(after: slashIndex)...])
+    filename = Swift::String(path[path.index(after: slashIndex)...])
   } else {
     filename = path
   }
   guard filename.hasSuffix(".swift") else { return [] }
-  let basename = Swift.String(filename.dropLast(".swift".count))
+  let basename = Swift::String(filename.dropLast(".swift".count))
 
   let collector = StructureExtensionFileNamingCollector()
   collector.walk(tree)
@@ -91,7 +91,7 @@ private func structureExtensionFileNamingFindings(
 
   let location = converter.location(for: first.extendedType.positionAfterSkippingLeadingTrivia)
 
-  func record(_ message: Swift.String) -> [Diagnostic.Record] {
+  func record(_ message: Swift::String) -> [Diagnostic.Record] {
     [
       Diagnostic.Record(
         location: Source.Location(
@@ -107,7 +107,7 @@ private func structureExtensionFileNamingFindings(
     ]
   }
 
-  let bases = Swift.Set(
+  let bases = Swift::Set(
     collector.extensions.map { structureExtensionFileNamingBaseKey($0.extendedType) }
   )
   let base = structureExtensionFileNamingBaseKey(first.extendedType)
@@ -122,7 +122,7 @@ private func structureExtensionFileNamingFindings(
       structureExtensionFileNamingStdlibConformanceMessage(basename: basename, base: base)
     )
   }
-  let conformances = collector.extensions.flatMap { extensionDecl -> [Swift.String] in
+  let conformances = collector.extensions.flatMap { extensionDecl -> [Swift::String] in
     guard let clause = extensionDecl.inheritanceClause else { return [] }
     return clause.inheritedTypes.compactMap {
       structureDottedName(of: $0.type).map(Lint.Syntax.Identifier.unescaped)
@@ -134,7 +134,7 @@ private func structureExtensionFileNamingFindings(
   if !conformances.isEmpty {
     let conformancePrefix = "\(base)+"
     if basename.hasPrefix(conformancePrefix) {
-      let candidate = Swift.String(basename.dropFirst(conformancePrefix.count))
+      let candidate = Swift::String(basename.dropFirst(conformancePrefix.count))
       if conformances.contains(where: {
         structureExtensionFileNamingConformanceMatches(
           candidate: candidate,
@@ -179,9 +179,9 @@ private func structureExtensionFileNamingFindings(
 
 @usableFromInline
 internal func structureExtensionFileNamingMixedBaseMessage(
-  basename: Swift.String,
-  bases: Swift.Set<Swift.String>
-) -> Swift.String {
+  basename: Swift::String,
+  bases: Swift::Set<Swift::String>
+) -> Swift::String {
   let sorted = bases.sorted().joined(separator: "', '")
   return "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' mixes "
     + "extensions on different base types ('\(sorted)'); a mixed-base extension file has "
@@ -190,9 +190,9 @@ internal func structureExtensionFileNamingMixedBaseMessage(
 
 @usableFromInline
 internal func structureExtensionFileNamingStdlibConformanceMessage(
-  basename: Swift.String,
-  base: Swift.String
-) -> Swift.String {
+  basename: Swift::String,
+  base: Swift::String
+) -> Swift::String {
   "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' adds only "
     + "standard-library conformances; those stay in the type's own file '\(base).swift' as "
     + "extensions directly under the type declaration (e.g. `extension \(base): Sendable {}`), "
@@ -201,28 +201,28 @@ internal func structureExtensionFileNamingStdlibConformanceMessage(
 
 @usableFromInline
 internal func structureExtensionFileNamingConformanceMessage(
-  basename: Swift.String,
-  base: Swift.String,
-  conformance: Swift.String
-) -> Swift.String {
+  basename: Swift::String,
+  base: Swift::String,
+  conformance: Swift::String
+) -> Swift::String {
   "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' must be named "
     + "'\(base)+\(conformance).swift' for the conformance it adds"
 }
 
 @usableFromInline
 internal func structureExtensionFileNamingWhereMessage(
-  basename: Swift.String,
-  base: Swift.String
-) -> Swift.String {
+  basename: Swift::String,
+  base: Swift::String
+) -> Swift::String {
   "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' must use the "
     + "'\(base) where <discriminator>.swift' shape"
 }
 
 @usableFromInline
 internal func structureExtensionFileNamingOwnFileMessage(
-  basename: Swift.String,
-  base: Swift.String
-) -> Swift.String {
+  basename: Swift::String,
+  base: Swift::String
+) -> Swift::String {
   "[extension file naming] [API-IMPL-007]: extension file '\(basename).swift' holds "
     + "member-only extensions of '\(base)'; those live in the type's own file "
     + "'\(base).swift' (merge into it when the type is declared in this module; a "
@@ -232,13 +232,13 @@ internal func structureExtensionFileNamingOwnFileMessage(
 }
 
 private func structureExtensionFileNamingIsConversionOwned(
-  basename: Swift.String,
-  extendedBase: Swift.String,
+  basename: Swift::String,
+  extendedBase: Swift::String,
   extensions: [ExtensionDeclSyntax]
-) -> Swift.Bool {
+) -> Swift::Bool {
   let suffix = "+\(extendedBase)"
   guard basename.hasSuffix(suffix), basename.count > suffix.count else { return false }
-  let owner = Swift.String(basename.dropLast(suffix.count))
+  let owner = Swift::String(basename.dropLast(suffix.count))
 
   for extensionDecl in extensions {
     for member in extensionDecl.memberBlock.members {
@@ -255,7 +255,7 @@ private func structureExtensionFileNamingIsConversionOwned(
 
 private final class StructureExtensionFileNamingCollector: SyntaxVisitor {
   var extensions: [ExtensionDeclSyntax] = []
-  var hasPrimaryType: Swift.Bool = false
+  var hasPrimaryType: Swift::Bool = false
 
   init() { super.init(viewMode: .sourceAccurate) }
 
@@ -278,19 +278,19 @@ private final class StructureExtensionFileNamingCollector: SyntaxVisitor {
   }
 }
 
-private func structureExtensionFileNamingBaseKey(_ type: TypeSyntax) -> Swift.String {
+private func structureExtensionFileNamingBaseKey(_ type: TypeSyntax) -> Swift::String {
   structureDottedName(of: type) ?? type.trimmedDescription
 }
 
 private func structureExtensionFileNamingConformanceMatches(
-  candidate: Swift.String,
-  conformance: Swift.String
-) -> Swift.Bool {
+  candidate: Swift::String,
+  conformance: Swift::String
+) -> Swift::Bool {
   if candidate == conformance { return true }
   return conformance.hasSuffix(".\(candidate)")
 }
 
-private func structureExtensionFileNamingIsPrimaryTypeDecl(_ decl: DeclSyntax) -> Swift.Bool {
+private func structureExtensionFileNamingIsPrimaryTypeDecl(_ decl: DeclSyntax) -> Swift::Bool {
   decl.is(StructDeclSyntax.self)
     || decl.is(ClassDeclSyntax.self)
     || decl.is(EnumDeclSyntax.self)

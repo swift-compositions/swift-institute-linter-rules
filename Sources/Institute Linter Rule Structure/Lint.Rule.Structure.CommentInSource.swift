@@ -72,7 +72,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let structureCommentInSourceMessage: Swift.String =
+internal let structureCommentInSourceMessage: Swift::String =
   "[comment in source] [SOURCE-NO-COMMENTS]: sources carry no `//`, `///` or "
   + "`/* */` comments; names, types and tests carry the meaning. Only "
   + "`// swift-linter:` directives are admitted."
@@ -100,7 +100,7 @@ internal final class StructureCommentInSourceVisitor: SyntaxVisitor {
     var position = start
     for piece in trivia {
       defer { position = position.advanced(by: piece.sourceLength.utf8Length) }
-      let text: Swift.String? =
+      let text: Swift::String? =
         switch piece {
         case .lineComment(let text): text
         case .docLineComment(let text), .blockComment(let text), .docBlockComment(let text): text
@@ -132,7 +132,7 @@ internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
       .with(\.trailingTrivia, stripped(token.trailingTrivia, leading: false))
   }
 
-  private func stripped(_ trivia: Trivia, leading: Swift.Bool) -> Trivia {
+  private func stripped(_ trivia: Trivia, leading: Swift::Bool) -> Trivia {
     var pieces: [TriviaPiece] = []
     var skipNewline = false
     for piece in trivia {
@@ -162,7 +162,7 @@ internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
   }
 }
 
-internal func structureCommentInSourceIsRemovable(_ piece: TriviaPiece) -> Swift.Bool {
+internal func structureCommentInSourceIsRemovable(_ piece: TriviaPiece) -> Swift::Bool {
   switch piece {
   case .lineComment(let text): !text.hasPrefix("// swift-linter:")
   case .docLineComment, .blockComment, .docBlockComment: true
@@ -171,7 +171,7 @@ internal func structureCommentInSourceIsRemovable(_ piece: TriviaPiece) -> Swift
 }
 
 extension TriviaPiece {
-  fileprivate var isSpaceOrTab: Swift.Bool {
+  fileprivate var isSpaceOrTab: Swift::Bool {
     switch self {
     case .spaces, .tabs: true
     default: false

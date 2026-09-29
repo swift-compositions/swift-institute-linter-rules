@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomSliLiteralMessage: Swift.String =
+internal let idiomSliLiteralMessage: Swift::String =
     "[sli literal] [IDX-019]: verbose compile-time-constant "
     + "`Index`/`Tagged` construction wraps an integer literal in "
     + "`Ordinal(UInt(…))`. The tagged SLI carve-out "
@@ -47,7 +47,7 @@ internal let idiomSliLiteralMessage: Swift.String =
     + "`Index<Element>(Ordinal(UInt(x)))` construction only for runtime "
     + "values (identifiers, member accesses, call results)."
 
-internal func idiomSliOuterCalleeName(_ call: FunctionCallExprSyntax) -> Swift.String? {
+internal func idiomSliOuterCalleeName(_ call: FunctionCallExprSyntax) -> Swift::String? {
     let callee = call.calledExpression
     if let reference = callee.as(DeclReferenceExprSyntax.self) {
         return reference.baseName.text
@@ -60,7 +60,7 @@ internal func idiomSliOuterCalleeName(_ call: FunctionCallExprSyntax) -> Swift.S
     return nil
 }
 
-internal func idiomSliBareCalleeName(_ call: FunctionCallExprSyntax) -> Swift.String? {
+internal func idiomSliBareCalleeName(_ call: FunctionCallExprSyntax) -> Swift::String? {
     call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text
 }
 

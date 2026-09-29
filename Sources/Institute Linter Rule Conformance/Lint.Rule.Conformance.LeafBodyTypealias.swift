@@ -39,7 +39,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let conformanceLeafBodyTypealiasMessage: Swift.String =
+internal let conformanceLeafBodyTypealiasMessage: Swift::String =
     "[leaf body typealias missing] [API-IMPL-020]: leaf conformer to "
     + "`Parsing` / `Serializing` / "
     + "`Coding` MUST declare `public typealias Body = Never` "
@@ -55,9 +55,9 @@ internal final class ConformanceLeafBodyTypealiasVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    private var conformanceSite: [Swift.String: AbsolutePosition] = [:]
-    private var typesWithBodyProperty: Swift.Set<Swift.String> = []
-    private var typesWithBodyNeverTypealias: Swift.Set<Swift.String> = []
+    private var conformanceSite: [Swift::String: AbsolutePosition] = [:]
+    private var typesWithBodyProperty: Swift::Set<Swift::String> = []
+    private var typesWithBodyNeverTypealias: Swift::Set<Swift::String> = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -67,7 +67,7 @@ internal final class ConformanceLeafBodyTypealiasVisitor: SyntaxVisitor {
     }
 
     private func record(
-        key: Swift.String,
+        key: Swift::String,
         inheritance: InheritanceClauseSyntax?,
         memberBlock: MemberBlockSyntax,
         keywordPosition: AbsolutePosition
@@ -164,7 +164,7 @@ internal final class ConformanceLeafBodyTypealiasVisitor: SyntaxVisitor {
     }
 }
 
-private func conformanceLeafBodyTypeKey(_ type: TypeSyntax) -> Swift.String {
+private func conformanceLeafBodyTypeKey(_ type: TypeSyntax) -> Swift::String {
     if let member = type.as(MemberTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(member.name.text)
     }
@@ -174,14 +174,14 @@ private func conformanceLeafBodyTypeKey(_ type: TypeSyntax) -> Swift.String {
     return type.trimmedDescription
 }
 
-private let leafBodyProtocolNames: Swift.Set<Swift.String> = ["Parsing", "Serializing", "Coding"]
+private let leafBodyProtocolNames: Swift::Set<Swift::String> = ["Parsing", "Serializing", "Coding"]
 
-private func inheritanceContainsLeafBodyProtocol(_ clause: InheritanceClauseSyntax) -> Swift.Bool {
+private func inheritanceContainsLeafBodyProtocol(_ clause: InheritanceClauseSyntax) -> Swift::Bool {
     clause.inheritedTypes.contains { typeMatchesLeafBodyProtocol($0.type) }
 }
 
-private func typeMatchesLeafBodyProtocol(_ type: TypeSyntax) -> Swift.Bool {
-    let name: Swift.String? =
+private func typeMatchesLeafBodyProtocol(_ type: TypeSyntax) -> Swift::Bool {
+    let name: Swift::String? =
         if let identifier = type.as(IdentifierTypeSyntax.self) {
             Lint.Syntax.Identifier.unescaped(identifier.name.text)
         } else if let member = type.as(MemberTypeSyntax.self) {
@@ -192,7 +192,7 @@ private func typeMatchesLeafBodyProtocol(_ type: TypeSyntax) -> Swift.Bool {
     return name.map(leafBodyProtocolNames.contains) ?? false
 }
 
-private func memberBlockHasBodyProperty(_ block: MemberBlockSyntax) -> Swift.Bool {
+private func memberBlockHasBodyProperty(_ block: MemberBlockSyntax) -> Swift::Bool {
     for member in block.members {
         guard let variable = member.decl.as(VariableDeclSyntax.self) else { continue }
         for binding in variable.bindings {
@@ -205,7 +205,7 @@ private func memberBlockHasBodyProperty(_ block: MemberBlockSyntax) -> Swift.Boo
     return false
 }
 
-private func memberBlockHasBodyNeverTypealias(_ block: MemberBlockSyntax) -> Swift.Bool {
+private func memberBlockHasBodyNeverTypealias(_ block: MemberBlockSyntax) -> Swift::Bool {
     for member in block.members {
         guard let typealiasDecl = member.decl.as(TypeAliasDeclSyntax.self) else { continue }
         guard Lint.Syntax.Identifier.unescaped(typealiasDecl.name.text) == "Body" else { continue }

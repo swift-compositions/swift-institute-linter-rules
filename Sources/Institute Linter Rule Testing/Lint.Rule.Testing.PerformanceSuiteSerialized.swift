@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let testingPerformanceSuiteSerializedMessage: Swift.String =
+internal let testingPerformanceSuiteSerializedMessage: Swift::String =
     "[performance suite serialized] [SWIFT-TEST-004]: performance suites MUST "
     + "carry `.serialized` to prevent parallel execution variance from polluting "
     + "timing measurements."
@@ -64,7 +64,7 @@ internal final class TestingPerformanceSuiteSerializedVisitor: SyntaxVisitor {
         return nil
     }
 
-    private func mentionsSerialized(_ attribute: AttributeSyntax) -> Swift.Bool {
+    private func mentionsSerialized(_ attribute: AttributeSyntax) -> Swift::Bool {
         guard case .argumentList(let arguments) = attribute.arguments else { return false }
         for argument in arguments {
             if let member = argument.expression.as(MemberAccessExprSyntax.self),
@@ -76,7 +76,7 @@ internal final class TestingPerformanceSuiteSerializedVisitor: SyntaxVisitor {
         return false
     }
 
-    private func hasTestFunction(_ members: MemberBlockItemListSyntax) -> Swift.Bool {
+    private func hasTestFunction(_ members: MemberBlockItemListSyntax) -> Swift::Bool {
         for member in members {
             guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }
             for attribute in function.attributes {

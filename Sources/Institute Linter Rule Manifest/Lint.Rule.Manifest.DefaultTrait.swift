@@ -54,7 +54,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let manifestDefaultTraitMessage: Swift.String =
+internal let manifestDefaultTraitMessage: Swift::String =
   "[default trait] [PACKAGE-DEFAULT-TRAIT]: a package must not declare default "
   + "traits; every consumer requests the traits it uses explicitly."
 

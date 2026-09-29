@@ -42,7 +42,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let architectureExportedImportMessage: Swift.String =
+internal let architectureExportedImportMessage: Swift::String =
     "[exported import] [SOURCE-EXPORTED-IMPORT]: `@_exported` re-exports a module "
     + "to every consumer and hides the real dependency edge; consumers import "
     + "what they use."

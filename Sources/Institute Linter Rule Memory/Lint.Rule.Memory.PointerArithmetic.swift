@@ -48,7 +48,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryPointerArithmeticMessage: Swift.String =
+internal let memoryPointerArithmeticMessage: Swift::String =
   "[pointer advanced by] [MEM-SPAN-003]: raw pointer arithmetic via "
   + "`unsafe …advanced(by:)` is mechanism. Prefer the Span family: `.span` "
   + "(read the initialised region), `.mutableSpan` (mutate it in place), or "

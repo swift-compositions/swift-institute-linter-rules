@@ -43,33 +43,33 @@ extension Lint.Rule {
     )
 }
 
-private let architectureImportBoundaryUmbrellaFilename: Swift.String = "exports.swift"
+private let architectureImportBoundaryUmbrellaFilename: Swift::String = "exports.swift"
 
 private func architectureImportBoundaryIsUmbrellaExportsFile(
-    _ filePath: Swift.String
-) -> Swift.Bool {
+    _ filePath: Swift::String
+) -> Swift::Bool {
     guard let filename = filePath.split(separator: "/", omittingEmptySubsequences: true).last
     else { return false }
     return filename == architectureImportBoundaryUmbrellaFilename
 }
 
-private let architectureImportBoundaryNonMainTargetRoots: [Swift.String] = [
+private let architectureImportBoundaryNonMainTargetRoots: [Swift::String] = [
     "Tests",
     "Experiments",
     "Examples",
 ]
 
 private func architectureImportBoundaryIsOutsideMainTarget(
-    _ filePath: Swift.String
-) -> Swift.Bool {
+    _ filePath: Swift::String
+) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     guard components.count > 1 else { return false }
     return components.dropLast().contains { component in
-        architectureImportBoundaryNonMainTargetRoots.contains(Swift.String(component))
+        architectureImportBoundaryNonMainTargetRoots.contains(Swift::String(component))
     }
 }
 
-private let architectureImportBoundaryMessage: Swift.String =
+private let architectureImportBoundaryMessage: Swift::String =
     "[architecture import boundary] [ARCH-FOUND-001]: `@_exported import` "
     + "re-exports a dependency edge that import-based architecture measurement "
     + "cannot see from consumers. Re-exports belong in the target's single "

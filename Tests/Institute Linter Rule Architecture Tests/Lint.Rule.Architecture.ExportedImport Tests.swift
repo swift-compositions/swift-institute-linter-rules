@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`exported import Tests` {
   static func findings(
-    _ source: Swift.String,
-    file: Swift.String = "Sources/Fixture/exports.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Sources/Fixture/exports.swift"
   ) -> [Diagnostic.Record] {
     Lint.Rule.`exported import`
       .observe(Lint.Source.parsed(from: source, file: file), .warning)

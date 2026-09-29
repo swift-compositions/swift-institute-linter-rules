@@ -29,8 +29,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`protocol sentinel under generic front door Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "test.swift"
+    in source: Swift::String,
+    file: Swift::String = "test.swift"
   ) -> [Diagnostic
     .Record]
   {

@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryUnsafeAssignmentGranularityMessage: Swift.String =
+internal let memoryUnsafeAssignmentGranularityMessage: Swift::String =
   "[unsafe assignment granularity] [PATTERN-005b]/[MEM-SAFE-002]: "
   + "`<lvalue> = unsafe <expr>` marks only the RHS as unsafe, and `<lvalue>` "
   + "is itself an unsafe destination (a `.pointee` store, a pointer "
@@ -49,7 +49,7 @@ internal let memoryUnsafeAssignmentGranularityMessage: Swift.String =
 
 internal func memoryUnsafeAssignmentGranularityLHSIsUnsafeDestination(
   _ lhs: ExprSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
   let finder = MemoryUnsafeAssignmentLHSFinder(viewMode: .sourceAccurate)
   finder.walk(lhs)
   return finder.isUnsafeDestination

@@ -3,7 +3,7 @@ internal import SwiftSyntax
 
 internal func platformSwiftQualificationFixed(
   _ source: borrowing Lint.Source.Parsed
-) -> Swift.String? {
+) -> Swift::String? {
   let rewriter = PlatformSwiftQualificationRewriter(
     declared: platformSwiftQualificationDeclaredShadowNames(in: source.tree)
   )
@@ -14,14 +14,14 @@ internal func platformSwiftQualificationFixed(
 
 internal func platformSwiftQualificationDeclaredShadowNames(
   in tree: SourceFileSyntax
-) -> Swift.Set<Swift.String> {
+) -> Swift::Set<Swift::String> {
   let collector = PlatformSwiftQualificationShadowDeclarationCollector()
   collector.walk(tree)
   return collector.declared
 }
 
 private final class PlatformSwiftQualificationShadowDeclarationCollector: SyntaxVisitor {
-  var declared: Swift.Set<Swift.String> = []
+  var declared: Swift::Set<Swift::String> = []
 
   init() {
     super.init(viewMode: .sourceAccurate)
@@ -75,7 +75,7 @@ private final class PlatformSwiftQualificationShadowDeclarationCollector: Syntax
 
 internal func platformSwiftQualificationQualified(
   _ type: TypeSyntax,
-  declared: Swift.Set<Swift.String> = []
+  declared: Swift::Set<Swift::String> = []
 ) -> TypeSyntax? {
   if let optional = type.as(OptionalTypeSyntax.self) {
     guard

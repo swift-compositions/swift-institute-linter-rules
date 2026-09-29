@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryNonisolatedUnsafeInvariantMessage: Swift.String =
+internal let memoryNonisolatedUnsafeInvariantMessage: Swift::String =
     "[nonisolated unsafe without invariant] [MEM-SAFE-025a]: `nonisolated(unsafe)` "
     + "declarations MUST carry an adjacent `// SAFETY:` or `// WHY:` comment "
     + "citing the encapsulation invariant (allocated once / never mutated post-init / "

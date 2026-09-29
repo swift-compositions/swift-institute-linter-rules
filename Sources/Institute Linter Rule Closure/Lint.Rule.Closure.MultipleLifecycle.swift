@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let closureMultipleLifecycleMessage: Swift.String =
+internal let closureMultipleLifecycleMessage: Swift::String =
     "[unlabeled lifecycle closure] [API-IMPL-013]: signatures with two or more closure "
     + "parameters MUST label every closure after the primary body closure. The "
     + "secondary closure label names the closure's *role* (`completion:`, "

@@ -40,7 +40,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformOptionSetShellMessage: Swift.String =
+internal let platformOptionSetShellMessage: Swift::String =
   "[optionset shell pattern] [PLAT-ARCH-013]: OptionSet type body "
   + "contains a `static let X = Self(rawValue: …)` platform-constant "
   + "declaration. Move platform constants to an extension to preserve "
@@ -51,7 +51,7 @@ internal let platformOptionSetShellMessage: Swift.String =
 
 internal func platformOptionSetShellConformsToOptionSet(
   _ inheritanceClause: InheritanceClauseSyntax?
-) -> Swift.Bool {
+) -> Swift::Bool {
   guard let inheritanceClause else { return false }
   for inherited in inheritanceClause.inheritedTypes {
     if let identifier = inherited.type.as(IdentifierTypeSyntax.self),
@@ -70,7 +70,7 @@ internal func platformOptionSetShellConformsToOptionSet(
   return false
 }
 
-internal func platformOptionSetShellIsStaticDecl(_ modifiers: DeclModifierListSyntax) -> Swift.Bool
+internal func platformOptionSetShellIsStaticDecl(_ modifiers: DeclModifierListSyntax) -> Swift::Bool
 {
   for modifier in modifiers {
     if case .keyword(.static) = modifier.name.tokenKind {
@@ -82,8 +82,8 @@ internal func platformOptionSetShellIsStaticDecl(_ modifiers: DeclModifierListSy
 
 internal func platformOptionSetShellIsSelfRawValueInit(
   _ initializer: InitializerClauseSyntax?,
-  typeName: Swift.String
-) -> Swift.Bool {
+  typeName: Swift::String
+) -> Swift::Bool {
   guard let initializer else { return false }
   guard let call = initializer.value.as(FunctionCallExprSyntax.self) else {
     return false

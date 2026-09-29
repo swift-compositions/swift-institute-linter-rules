@@ -42,7 +42,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let structureMinimalTypeBodyMessage: Swift.String =
+internal let structureMinimalTypeBodyMessage: Swift::String =
   "[minimal type body] [API-IMPL-008]: type bodies MUST contain "
   + "ONLY stored properties, the canonical initializer(s), and "
   + "(for classes / ~Copyable types) `deinit`. Methods, computed "
@@ -51,7 +51,7 @@ internal let structureMinimalTypeBodyMessage: Swift.String =
   + "layout immediately visible and separate stable data from "
   + "evolving behavior."
 
-internal func structureMinimalTypeBodyIsComputedProperty(_ node: VariableDeclSyntax) -> Swift.Bool {
+internal func structureMinimalTypeBodyIsComputedProperty(_ node: VariableDeclSyntax) -> Swift::Bool {
   for binding in node.bindings {
     if let accessors = binding.accessorBlock {
       switch accessors.accessors {
@@ -78,7 +78,7 @@ internal func structureMinimalTypeBodyIsComputedProperty(_ node: VariableDeclSyn
 internal func structureMinimalTypeBodyIsStaticOrClassMember(
   _ modifiers: DeclModifierListSyntax
 )
-  -> Swift.Bool
+  -> Swift::Bool
 {
   for modifier in modifiers {
     switch modifier.name.tokenKind {
@@ -222,14 +222,14 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
 
 internal func structureMinimalTypeBodyHasExtensionPatternAttribute(
   _ attributes: AttributeListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
   for attribute in attributes {
     guard let attr = attribute.as(AttributeSyntax.self) else { continue }
     let name = attr.attributeName.trimmedDescription
     if name == "resultBuilder" || name.hasSuffix(".resultBuilder") {
       return true
     }
-    let leaf = name.split(separator: ".").last.map(Swift.String.init) ?? name
+    let leaf = name.split(separator: ".").last.map(Swift::String.init) ?? name
     guard let first = leaf.first, first.isUppercase else { continue }
     if structureMinimalTypeBodyNonMacroCapitalisedAttributes.contains(leaf) { continue }
     return true
@@ -237,7 +237,7 @@ internal func structureMinimalTypeBodyHasExtensionPatternAttribute(
   return false
 }
 
-internal let structureMinimalTypeBodyNonMacroCapitalisedAttributes: Swift.Set<Swift.String> = [
+internal let structureMinimalTypeBodyNonMacroCapitalisedAttributes: Swift::Set<Swift::String> = [
   "MainActor",
   "NSCopying", "NSManaged", "NSApplicationMain",
   "UIApplicationMain",

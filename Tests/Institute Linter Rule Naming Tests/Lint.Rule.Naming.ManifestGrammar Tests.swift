@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`manifest naming grammar Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "Package.swift"
+    in source: Swift::String,
+    file: Swift::String = "Package.swift"
   ) -> [Diagnostic.Record] {
     let parsed = Lint.Source.parsed(from: source, file: file)
     return Lint.Rule.`manifest naming grammar`.observe(parsed, .warning).findings

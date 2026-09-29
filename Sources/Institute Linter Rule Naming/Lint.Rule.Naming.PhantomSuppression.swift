@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingPhantomSuppressionMessage: Swift.String =
+private let namingPhantomSuppressionMessage: Swift::String =
     "[phantom suppression] [API-NAME-010b]: phantom generic parameter (a pure "
     + "Tagged/Index/Property discriminator, never stored) is under-suppressed — "
     + "bind it `~Copyable & ~Escapable`, not `~Copyable`-only or bare. A marker "
@@ -146,12 +146,12 @@ internal final class NamingPhantomSuppressionVisitor: SyntaxVisitor {
     }
 }
 
-private func phantomParameterName(ofWrapper leaf: Swift.String) -> Swift.String {
+private func phantomParameterName(ofWrapper leaf: Swift::String) -> Swift::String {
     leaf == "Index" ? "Element" : "Tag"
 }
 
-private func phantomWrapperBaseName(_ type: TypeSyntax) -> Swift.String? {
-    let leaf: Swift.String?
+private func phantomWrapperBaseName(_ type: TypeSyntax) -> Swift::String? {
+    let leaf: Swift::String?
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         leaf = identifier.name.text
     } else if let member = type.as(MemberTypeSyntax.self) {
@@ -163,7 +163,7 @@ private func phantomWrapperBaseName(_ type: TypeSyntax) -> Swift.String? {
     return leaf
 }
 
-private func constraintIsCopyableOnly(_ type: TypeSyntax) -> Swift.Bool {
+private func constraintIsCopyableOnly(_ type: TypeSyntax) -> Swift::Bool {
     if let suppressed = type.as(SuppressedTypeSyntax.self) {
         return suppressedIsCopyable(suppressed)
     }
@@ -181,15 +181,15 @@ private func constraintIsCopyableOnly(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-private func suppressedIsCopyable(_ suppressed: SuppressedTypeSyntax) -> Swift.Bool {
+private func suppressedIsCopyable(_ suppressed: SuppressedTypeSyntax) -> Swift::Bool {
     suppressedLeaf(suppressed) == "Copyable"
 }
 
-private func suppressedLeaf(_ suppressed: SuppressedTypeSyntax) -> Swift.String? {
+private func suppressedLeaf(_ suppressed: SuppressedTypeSyntax) -> Swift::String? {
     suppressed.type.as(IdentifierTypeSyntax.self)?.name.text
 }
 
-private func usedAsPhantomDiscriminator(_ name: Swift.String, in body: Swift.String) -> Swift.Bool {
+private func usedAsPhantomDiscriminator(_ name: Swift::String, in body: Swift::String) -> Swift::Bool {
     for wrapper in ["Tagged<", "Index<", "Property<"] {
         if body.contains(wrapper + name + ",") || body.contains(wrapper + name + ">") {
             return true
@@ -198,7 +198,7 @@ private func usedAsPhantomDiscriminator(_ name: Swift.String, in body: Swift.Str
     return false
 }
 
-private func usedAsStoredValue(_ name: Swift.String, in body: Swift.String) -> Swift.Bool {
+private func usedAsStoredValue(_ name: Swift::String, in body: Swift::String) -> Swift::Bool {
     for marker in [
         "[" + name + "]", "-> " + name, ": " + name + ")", ": " + name + " ",
         ": " + name + ",", ": " + name + "\n", name + "?",
@@ -209,7 +209,7 @@ private func usedAsStoredValue(_ name: Swift.String, in body: Swift.String) -> S
     return false
 }
 
-private let namingPhantomEscapableConstrainedGenericTypes: [Swift.String] = [
+private let namingPhantomEscapableConstrainedGenericTypes: [Swift::String] = [
     "UnsafePointer",
     "UnsafeMutablePointer",
     "UnsafeBufferPointer",
@@ -220,9 +220,9 @@ private let namingPhantomEscapableConstrainedGenericTypes: [Swift.String] = [
 ]
 
 private func usedAtStructurallyEscapablePosition(
-    _ name: Swift.String,
-    in body: Swift.String
-) -> Swift.Bool {
+    _ name: Swift::String,
+    in body: Swift::String
+) -> Swift::Bool {
     for type in namingPhantomEscapableConstrainedGenericTypes {
         if body.contains(type + "<" + name + ">") || body.contains(type + "<" + name + ",") {
             return true
@@ -232,9 +232,9 @@ private func usedAtStructurallyEscapablePosition(
 }
 
 private func usedAsWhereClauseContainerBinding(
-    _ name: Swift.String,
+    _ name: Swift::String,
     in whereClause: GenericWhereClauseSyntax?
-) -> Swift.Bool {
+) -> Swift::Bool {
     guard let whereClause else { return false }
     for requirement in whereClause.requirements {
         guard case .sameTypeRequirement(let sameType) = requirement.requirement else { continue }
@@ -252,7 +252,7 @@ private func usedAsWhereClauseContainerBinding(
     return false
 }
 
-private func usedAsGenericArgument(_ name: Swift.String, in type: TypeSyntax) -> Swift.Bool {
+private func usedAsGenericArgument(_ name: Swift::String, in type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return genericArgumentsBind(name, identifier.genericArgumentClause)
     }
@@ -270,9 +270,9 @@ private func usedAsGenericArgument(_ name: Swift.String, in type: TypeSyntax) ->
 }
 
 private func genericArgumentsBind(
-    _ name: Swift.String,
+    _ name: Swift::String,
     _ clause: GenericArgumentClauseSyntax?
-) -> Swift.Bool {
+) -> Swift::Bool {
     guard let clause else { return false }
     for argument in clause.arguments {
         guard let argumentType = argument.argument.as(TypeSyntax.self) else { continue }

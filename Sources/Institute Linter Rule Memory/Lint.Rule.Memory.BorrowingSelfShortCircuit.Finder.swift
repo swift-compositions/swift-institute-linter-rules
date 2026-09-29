@@ -1,10 +1,10 @@
 internal import SwiftSyntax
 
 internal final class MemoryBorrowingSelfShortCircuitFinder: SyntaxVisitor {
-    let borrowingSelfNames: Swift.Set<Swift.String>
+    let borrowingSelfNames: Swift::Set<Swift::String>
     var positions: [AbsolutePosition] = []
 
-    init(viewMode: SyntaxTreeViewMode, borrowingSelfNames: Swift.Set<Swift.String>) {
+    init(viewMode: SyntaxTreeViewMode, borrowingSelfNames: Swift::Set<Swift::String>) {
         self.borrowingSelfNames = borrowingSelfNames
         super.init(viewMode: viewMode)
     }
@@ -32,7 +32,7 @@ internal final class MemoryBorrowingSelfShortCircuitFinder: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func rootIdentifierIsBorrowingSelf(_ node: some SyntaxProtocol) -> Swift.Bool {
+    private func rootIdentifierIsBorrowingSelf(_ node: some SyntaxProtocol) -> Swift::Bool {
         if let decl = node.as(DeclReferenceExprSyntax.self) {
             return borrowingSelfNames.contains(decl.baseName.text)
         }

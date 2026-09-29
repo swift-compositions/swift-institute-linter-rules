@@ -38,11 +38,11 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let namingCompoundSuiteMessage: Swift.String =
+internal let namingCompoundSuiteMessage: Swift::String =
     "[compound suite name] [SWIFT-TEST-002]: `@Suite` types MUST occupy a "
     + "`<Domain>.Test` subdomain (`extension Foo { @Suite struct Test {} }`)."
 
-private func compoundSuiteHasSuiteAttribute(_ attributes: AttributeListSyntax) -> Swift.Bool {
+private func compoundSuiteHasSuiteAttribute(_ attributes: AttributeListSyntax) -> Swift::Bool {
     for attribute in attributes {
         guard let attr = attribute.as(AttributeSyntax.self) else { continue }
         if attr.attributeName.trimmedDescription == "Suite" { return true }
@@ -50,7 +50,7 @@ private func compoundSuiteHasSuiteAttribute(_ attributes: AttributeListSyntax) -
     return false
 }
 
-private func compoundSuiteHasDomain(_ node: Syntax) -> Swift.Bool {
+private func compoundSuiteHasDomain(_ node: Syntax) -> Swift::Bool {
     guard
         node.parent?.is(MemberBlockItemSyntax.self) == true,
         let declaration = node.parent?.parent?.parent?.parent

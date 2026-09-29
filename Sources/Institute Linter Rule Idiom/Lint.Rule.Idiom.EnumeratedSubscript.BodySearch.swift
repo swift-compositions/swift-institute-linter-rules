@@ -1,11 +1,11 @@
 internal import SwiftSyntax
 
 internal final class IdiomEnumeratedSubscriptBodySearch: SyntaxVisitor {
-    let indexName: Swift.String
-    let receiverText: Swift.String
+    let indexName: Swift::String
+    let receiverText: Swift::String
     var hits: [AbsolutePosition] = []
 
-    init(indexName: Swift.String, receiverText: Swift.String) {
+    init(indexName: Swift::String, receiverText: Swift::String) {
         self.indexName = indexName
         self.receiverText = receiverText
         super.init(viewMode: .sourceAccurate)

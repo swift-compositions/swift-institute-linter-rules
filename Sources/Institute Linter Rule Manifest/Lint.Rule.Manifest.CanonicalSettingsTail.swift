@@ -37,7 +37,7 @@ extension Lint.Rule {
         )
       }
       let text = source.tree.description
-      let tail = text.range(of: manifestCanonicalSettingsTailHead).map { Swift.String(text[$0.lowerBound...]) }
+      let tail = text.range(of: manifestCanonicalSettingsTailHead).map { Swift::String(text[$0.lowerBound...]) }
       guard manifestCanonicalSettingsTailNormalized(tail) != manifestCanonicalSettingsTailNormalized(manifestCanonicalSettingsTail)
       else {
         return Lint.Rule.Observation(findings: [], coverage: .measured)
@@ -70,7 +70,7 @@ extension Lint.Rule {
     repair: { source in
       guard manifestIsPackageManifest(source.file.filePath) else { return .unchanged }
       let text = source.tree.description
-      let tail = text.range(of: manifestCanonicalSettingsTailHead).map { Swift.String(text[$0.lowerBound...]) }
+      let tail = text.range(of: manifestCanonicalSettingsTailHead).map { Swift::String(text[$0.lowerBound...]) }
       return if manifestCanonicalSettingsTailNormalized(tail)
         == manifestCanonicalSettingsTailNormalized(manifestCanonicalSettingsTail)
       {
@@ -85,10 +85,10 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let manifestCanonicalSettingsTailHead: Swift.String = "for target in package.targets"
+internal let manifestCanonicalSettingsTailHead: Swift::String = "for target in package.targets"
 
 @usableFromInline
-internal let manifestCanonicalSettingsTail: Swift.String = """
+internal let manifestCanonicalSettingsTail: Swift::String = """
   for target in package.targets where ![.system, .binary, .plugin].contains(target.type) {
       target.swiftSettings = (target.swiftSettings ?? []) + [
           .strictMemorySafety(),
@@ -104,13 +104,13 @@ internal let manifestCanonicalSettingsTail: Swift.String = """
 
   """
 
-internal func manifestCanonicalSettingsTailNormalized(_ text: Swift.String?) -> Swift.String? {
+internal func manifestCanonicalSettingsTailNormalized(_ text: Swift::String?) -> Swift::String? {
   text.map { $0.split(whereSeparator: \.isWhitespace).joined(separator: " ") }
 }
 
-internal func manifestCanonicalSettingsTailRewrite(_ text: Swift.String) -> Swift.String? {
+internal func manifestCanonicalSettingsTailRewrite(_ text: Swift::String) -> Swift::String? {
   guard let head = text.range(of: manifestCanonicalSettingsTailHead) else {
-    return Swift.String(text.reversed().drop(while: \.isWhitespace).reversed())
+    return Swift::String(text.reversed().drop(while: \.isWhitespace).reversed())
       + "\n\n" + manifestCanonicalSettingsTail
   }
   var depth = 0
@@ -122,7 +122,7 @@ internal func manifestCanonicalSettingsTailRewrite(_ text: Swift.String) -> Swif
       depth -= 1
       if depth == 0 {
         return text[text.index(after: index)...].allSatisfy(\.isWhitespace)
-          ? Swift.String(text[..<head.lowerBound]) + manifestCanonicalSettingsTail
+          ? Swift::String(text[..<head.lowerBound]) + manifestCanonicalSettingsTail
           : nil
       }
     default:

@@ -58,11 +58,11 @@ extension Lint.Rule {
   )
 }
 
-private let manifestLayerNames: [Swift.Int: Swift.String] = [
+private let manifestLayerNames: [Swift::Int: Swift::String] = [
   1: "atoms", 2: "molecules", 3: "standards", 4: "compositions",
 ]
 
-private let manifestOrganizationLayers: [Swift.String: Swift.Int] = [
+private let manifestOrganizationLayers: [Swift::String: Swift::Int] = [
   "swift-atoms": 1,
   "swift-molecules": 2,
   "swift-standards": 3,
@@ -83,8 +83,8 @@ private let manifestOrganizationLayers: [Swift.String: Swift.Int] = [
   "swift-compositions": 4,
 ]
 
-internal func manifestLayer(ofPath path: Swift.String) -> Swift.Int? {
-  let components = path.split(separator: "/").map(Swift.String.init)
+internal func manifestLayer(ofPath path: Swift::String) -> Swift::Int? {
+  let components = path.split(separator: "/").map(Swift::String.init)
   return components.dropLast().compactMap { component in
     switch component {
     case "swift-atoms": 1
@@ -96,10 +96,10 @@ internal func manifestLayer(ofPath path: Swift.String) -> Swift.Int? {
   }.first
 }
 
-internal func manifestLayer(ofURL url: Swift.String) -> Swift.Int? {
+internal func manifestLayer(ofURL url: Swift::String) -> Swift::Int? {
   let prefix = "https://github.com/"
   guard url.hasPrefix(prefix) else { return nil }
-  let organization = url.dropFirst(prefix.count).split(separator: "/").first.map(Swift.String.init)
+  let organization = url.dropFirst(prefix.count).split(separator: "/").first.map(Swift::String.init)
   return organization.flatMap { manifestOrganizationLayers[$0] }
 }
 
@@ -107,14 +107,14 @@ internal final class ManifestUpwardLayerEdgeVisitor: SyntaxVisitor {
   let source: Source.File
   let severity: Diagnostic.Severity
   let converter: SourceLocationConverter
-  let layer: Swift.Int
+  let layer: Swift::Int
   var matches: [Diagnostic.Record] = []
 
   init(
     source: Source.File,
     severity: Diagnostic.Severity,
     converter: SourceLocationConverter,
-    layer: Swift.Int
+    layer: Swift::Int
   ) {
     self.source = source
     self.severity = severity

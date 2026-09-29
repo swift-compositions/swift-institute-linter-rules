@@ -38,13 +38,13 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsLifecycleTypealiasReviewMessage: Swift.String =
+internal let throwsLifecycleTypealiasReviewMessage: Swift::String =
     "[lifecycle typealias review] [API-ERR-008]: typealias `Error = "
     + "<Domain>.Lifecycle.Error` adopts a SHARED lifecycle-error type. "
     + "Confirm the primitive actually produces EVERY case of the "
     + "lifecycle type."
 
-private func lifecycleIsLifecycleErrorMemberType(_ type: TypeSyntax) -> Swift.Bool {
+private func lifecycleIsLifecycleErrorMemberType(_ type: TypeSyntax) -> Swift::Bool {
     guard let member = type.as(MemberTypeSyntax.self) else { return false }
     guard member.name.text == "Error" else { return false }
     guard let parent = member.baseType.as(MemberTypeSyntax.self) else {

@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsResultCallbackMessage: Swift.String =
+internal let throwsResultCallbackMessage: Swift::String =
     "[callback result over throws thunk] [IMPL-092]: callback closure "
     + "parameters MUST deliver outcomes via a `() throws(E) -> T` thunk, "
     + "not a `Result<T, E>` value."

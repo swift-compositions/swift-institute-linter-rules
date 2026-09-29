@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let rawValueTaggedUncheckedMessage: Swift.String =
+internal let rawValueTaggedUncheckedMessage: Swift::String =
     "[tagged unchecked with typed alternative] [CONV-015]: "
     + "`Tagged<…>(_unchecked: …)` bypasses tagged' typed-init alternatives "
     + "(ExpressibleBy*Literal conformances in the Standard Library Integration target). "
@@ -47,13 +47,13 @@ internal let rawValueTaggedUncheckedMessage: Swift.String =
     + "and a typed init is genuinely unavailable."
 
 @usableFromInline
-internal let rawValueTaggedUncheckedExemptOperations: [Swift.String: Swift.String] = [
+internal let rawValueTaggedUncheckedExemptOperations: [Swift::String: Swift::String] = [
     "map": "preserve-shape transform; closure output is opaque-by-construction",
     "retag": "phantom-tag swap; underlying validated upstream by Tagged construction invariant",
 ]
 
 @usableFromInline
-internal let rawValueTaggedUncheckedExemptAttributes: [Swift.String: Swift.String] = [
+internal let rawValueTaggedUncheckedExemptAttributes: [Swift::String: Swift::String] = [
     "Test": "swift-testing test function; tests exercise the full API surface including _unchecked"
 ]
 
@@ -102,12 +102,12 @@ internal final class RawValueTaggedUncheckedVisitor: SyntaxVisitor {
                     message: rawValueTaggedUncheckedMessage
                 )
             )
-            break  // one finding per call site
+            break
         }
         return .visitChildren
     }
 
-    private static func isInsideExemptOperation(_ node: Syntax) -> Swift.Bool {
+    private static func isInsideExemptOperation(_ node: Syntax) -> Swift::Bool {
         var current: Syntax? = node.parent
         while let candidate = current {
             if let fn = candidate.as(FunctionDeclSyntax.self) {
@@ -124,10 +124,10 @@ internal final class RawValueTaggedUncheckedVisitor: SyntaxVisitor {
         return false
     }
 
-    private static func hasExemptAttribute(_ attributes: AttributeListSyntax) -> Swift.Bool {
+    private static func hasExemptAttribute(_ attributes: AttributeListSyntax) -> Swift::Bool {
         for element in attributes {
             guard case .attribute(let attribute) = element else { continue }
-            let name: Swift.String
+            let name: Swift::String
             if let ident = attribute.attributeName.as(IdentifierTypeSyntax.self) {
                 name = ident.name.text
             } else if let member = attribute.attributeName.as(MemberTypeSyntax.self) {

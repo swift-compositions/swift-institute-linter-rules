@@ -39,7 +39,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let structureRawValueAccessMessage: Swift.String =
+internal let structureRawValueAccessMessage: Swift::String =
   "[raw value access] [PATTERN-017]: `.rawValue` at a "
   + "consumer call site bypasses the typed-conversion ladder. These "
   + "accessors are reserved for the brand-newtype's own initializers — "
@@ -62,10 +62,10 @@ internal let structureRawValueAccessMessage: Swift.String =
   + "`// swift-linter:disable:next raw value access` and a `// REASON:` "
   + "continuation for legitimate same-package use."
 
-internal let structureRawValueAccessFlaggedAccessors: Swift.Set<Swift.String> = ["rawValue"]
+internal let structureRawValueAccessFlaggedAccessors: Swift::Set<Swift::String> = ["rawValue"]
 
 internal func structureEnclosingParameter(
-  named name: Swift.String,
+  named name: Swift::String,
   at node: Syntax
 ) -> FunctionParameterSyntax? {
   var current: Syntax? = node.parent
@@ -91,7 +91,7 @@ internal func structureEnclosingParameter(
   return nil
 }
 
-internal func structureNormalizedTypeName(_ type: TypeSyntax) -> Swift.String {
+internal func structureNormalizedTypeName(_ type: TypeSyntax) -> Swift::String {
   var current = type
   while true {
     if let attributed = current.as(AttributedTypeSyntax.self) {
@@ -113,8 +113,8 @@ internal func structureNormalizedTypeName(_ type: TypeSyntax) -> Swift.String {
   return current.trimmedDescription
 }
 
-internal func structureEnclosingTypeNames(at node: Syntax) -> Swift.Set<Swift.String> {
-  var names: Swift.Set<Swift.String> = []
+internal func structureEnclosingTypeNames(at node: Syntax) -> Swift::Set<Swift::String> {
+  var names: Swift::Set<Swift::String> = []
   var current: Syntax? = node.parent
   while let candidate = current {
     if let structDecl = candidate.as(StructDeclSyntax.self) {
@@ -136,7 +136,7 @@ internal final class StructureRawValueAccessVisitor: SyntaxVisitor {
   let severity: Diagnostic.Severity
   let converter: SourceLocationConverter
   var matches: [Diagnostic.Record] = []
-  var bodyDepth: Swift.Int = 0
+  var bodyDepth: Swift::Int = 0
 
   init(
     source: Source.File,
@@ -230,7 +230,7 @@ internal final class StructureRawValueAccessVisitor: SyntaxVisitor {
     return .visitChildren
   }
 
-  private func isDirectlyInsideInitializer(_ node: Syntax) -> Swift.Bool {
+  private func isDirectlyInsideInitializer(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
       if candidate.is(InitializerDeclSyntax.self) { return true }
@@ -251,7 +251,7 @@ internal final class StructureRawValueAccessVisitor: SyntaxVisitor {
   private func receiverIsEnclosingTypeInstance(
     _ receiver: ExprSyntax,
     at node: Syntax
-  ) -> Swift.Bool {
+  ) -> Swift::Bool {
     guard let reference = receiver.as(DeclReferenceExprSyntax.self) else { return false }
     let name = reference.baseName.text
     if name == "self" { return true }
@@ -263,14 +263,14 @@ internal final class StructureRawValueAccessVisitor: SyntaxVisitor {
     return structureEnclosingTypeNames(at: node).contains(written)
   }
 
-  private func receiverLooksLikeEnumCaseAccess(_ base: ExprSyntax) -> Swift.Bool {
+  private func receiverLooksLikeEnumCaseAccess(_ base: ExprSyntax) -> Swift::Bool {
     guard let caseAccess = base.as(MemberAccessExprSyntax.self),
       let typeBase = caseAccess.base
     else { return false }
     return isTypeChain(typeBase)
   }
 
-  private func isTypeChain(_ expr: ExprSyntax) -> Swift.Bool {
+  private func isTypeChain(_ expr: ExprSyntax) -> Swift::Bool {
     if let ref = expr.as(DeclReferenceExprSyntax.self) {
       return ref.baseName.text.first?.isUppercase ?? false
     }

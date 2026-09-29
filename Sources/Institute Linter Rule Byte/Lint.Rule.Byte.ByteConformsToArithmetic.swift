@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let byteConformsToArithmeticMessage: Swift.String =
+internal let byteConformsToArithmeticMessage: Swift::String =
     "[byte conforms to arithmetic protocol] [API-BYTE-002]: `Byte` MUST "
     + "NOT conform to a stdlib arithmetic protocol. Per the byte-arithmetic "
     + "conformance note v1.0.0, `Byte` carries byte-domain identity, NOT "
@@ -48,7 +48,7 @@ internal let byteConformsToArithmeticMessage: Swift.String =
     + "kind-tag / opaque byte, retype storage to `Byte` and remove the "
     + "arithmetic conformance."
 
-private let byteArithmeticProtocolNames: Swift.Set<Swift.String> = [
+private let byteArithmeticProtocolNames: Swift::Set<Swift::String> = [
     "AdditiveArithmetic",
     "Numeric",
     "SignedNumeric",
@@ -112,7 +112,7 @@ internal final class ByteConformsToArithmeticVisitor: SyntaxVisitor {
     }
 }
 
-internal func extensionIsOnByte(_ type: TypeSyntax) -> Swift.Bool {
+internal func extensionIsOnByte(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "Byte"
     }
@@ -126,7 +126,7 @@ internal func extensionIsOnByte(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-private func arithmeticProtocolLeafName(_ type: TypeSyntax) -> Swift.String? {
+private func arithmeticProtocolLeafName(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         let leaf = Lint.Syntax.Identifier.unescaped(identifier.name.text)
         if byteArithmeticProtocolNames.contains(leaf) {

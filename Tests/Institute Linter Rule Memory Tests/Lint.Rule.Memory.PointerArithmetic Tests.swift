@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`pointer advanced by Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "Sources/test.swift"
+    in source: Swift::String,
+    file: Swift::String = "Sources/test.swift"
   )
     -> [Diagnostic.Record]
   {

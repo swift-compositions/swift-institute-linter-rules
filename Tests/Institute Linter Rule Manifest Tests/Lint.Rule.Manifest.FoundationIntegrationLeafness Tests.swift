@@ -29,8 +29,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`foundation integration leaf target Tests` {
   static func findings(
-    source: Swift.String,
-    file: Swift.String = "Package.swift"
+    source: Swift::String,
+    file: Swift::String = "Package.swift"
   ) -> [Diagnostic
     .Record]
   {
@@ -38,7 +38,7 @@ extension Lint.Rule.`foundation integration leaf target Tests` {
     return Lint.Rule.`foundation integration leaf target`.observe(parsed, .warning).findings
   }
 
-  static func observation(source: Swift.String) -> Lint.Rule.Observation {
+  static func observation(source: Swift::String) -> Lint.Rule.Observation {
     let parsed = Lint.Source.parsed(from: source, file: "Package.swift")
     return Lint.Rule.`foundation integration leaf target`.observe(parsed, .warning)
   }

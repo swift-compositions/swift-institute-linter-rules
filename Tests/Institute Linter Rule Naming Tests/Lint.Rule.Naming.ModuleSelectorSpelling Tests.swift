@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`module selector spelling Tests` {
   static func findings(
-    _ source: Swift.String,
-    file: Swift.String = "Sources/Fixture/Fixture.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Sources/Fixture/Fixture.swift"
   ) -> [Diagnostic.Record] {
     Lint.Rule.`module selector spelling`
       .observe(Lint.Source.parsed(from: source, file: file), .warning)
@@ -81,7 +81,7 @@ extension Lint.Rule.`module selector spelling Tests`.Integration {
 }
 
 extension Lint.Rule.`module selector spelling Tests`.Integration {
-  static func repaired(_ source: Swift.String) -> Swift.String? {
+  static func repaired(_ source: Swift::String) -> Swift::String? {
     let proposal = Lint.Rule.`module selector spelling`.repair(
       Lint.Source.parsed(from: source, file: "Sources/Fixture/Fixture.swift")
     )

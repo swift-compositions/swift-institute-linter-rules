@@ -48,7 +48,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomExistentialParameterMessage: Swift.String =
+internal let idiomExistentialParameterMessage: Swift::String =
     "[existential parameter] [SOURCE-EXISTENTIAL-PARAMETER]: a parameter typed "
     + "`any P` boxes its argument and erases its type; take `some P` or a "
     + "generic parameter instead. `any Error` is admitted."

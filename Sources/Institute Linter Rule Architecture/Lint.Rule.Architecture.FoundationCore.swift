@@ -48,7 +48,7 @@ extension Lint.Rule {
     )
 }
 
-private let architectureFoundationTypeModuleFamily: [Swift.String] = [
+private let architectureFoundationTypeModuleFamily: [Swift::String] = [
     "Foundation",
     "FoundationEssentials",
     "FoundationNetworking",
@@ -56,20 +56,20 @@ private let architectureFoundationTypeModuleFamily: [Swift.String] = [
 ]
 
 private func architectureFoundationTypeIsFoundationClassName(
-    _ name: Swift.String
-) -> Swift.Bool {
+    _ name: Swift::String
+) -> Swift::Bool {
     guard name.count > 2, name.hasPrefix("NS") else { return false }
     let remainder = name.dropFirst(2)
     guard let first = remainder.first, first.isUppercase else { return false }
     return remainder.contains { $0.isLowercase }
 }
 
-private let architectureFoundationTypeIntegrationTargetSuffix: Swift.String =
+private let architectureFoundationTypeIntegrationTargetSuffix: Swift::String =
     " Foundation Integration"
 
 private func architectureFoundationTypeIsInsideFoundationIntegrationTarget(
-    _ filePath: Swift.String
-) -> Swift.Bool {
+    _ filePath: Swift::String
+) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     guard components.count > 1 else { return false }
     return components.dropLast().contains {
@@ -77,32 +77,32 @@ private func architectureFoundationTypeIsInsideFoundationIntegrationTarget(
     }
 }
 
-private let architectureFoundationTypeNonMainTargetRoots: [Swift.String] = [
+private let architectureFoundationTypeNonMainTargetRoots: [Swift::String] = [
     "Tests",
     "Experiments",
     "Examples",
 ]
 
 private func architectureFoundationTypeIsOutsideMainTarget(
-    _ filePath: Swift.String
-) -> Swift.Bool {
+    _ filePath: Swift::String
+) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     guard components.count > 1 else { return false }
     return components.dropLast().contains { component in
-        architectureFoundationTypeNonMainTargetRoots.contains(Swift.String(component))
+        architectureFoundationTypeNonMainTargetRoots.contains(Swift::String(component))
     }
 }
 
 private func architectureFoundationTypeIsPackageManifest(
-    _ filePath: Swift.String
-) -> Swift.Bool {
+    _ filePath: Swift::String
+) -> Swift::Bool {
     guard let filename = filePath.split(separator: "/", omittingEmptySubsequences: true).last
     else { return false }
     if filename == "Package.swift" { return true }
     return filename.hasPrefix("Package@swift-") && filename.hasSuffix(".swift")
 }
 
-private let architectureFoundationTypeMessage: Swift.String =
+private let architectureFoundationTypeMessage: Swift::String =
     "[architecture foundation type] [ARCH-LAYER-007]: no package's main target "
     + "may USE Foundation types — Foundation-freedom governs use, not just the "
     + "import statement, and a transitively re-exported Foundation module makes "

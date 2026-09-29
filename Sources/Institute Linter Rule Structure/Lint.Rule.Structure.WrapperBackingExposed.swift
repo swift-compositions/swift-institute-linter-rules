@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let structureWrapperBackingExposedMessage: Swift.String =
+internal let structureWrapperBackingExposedMessage: Swift::String =
     "[wrapper backing exposed] [API-IMPL-011]: wrapper backing property "
     + "(`_backing` / `_wrapped` / `_underlying`) is exposed at non-private "
     + "visibility — consumers will reach through (`wrapper._backing.run { … }`) "
@@ -46,7 +46,7 @@ internal let structureWrapperBackingExposedMessage: Swift.String =
     + "looks fake. Make the property `private` (or `fileprivate`), and own the "
     + "primary operation on the wrapper directly. `@usableFromInline` is exempt."
 
-internal let structureWrapperBackingExposedTrackedNames: Swift.Set<Swift.String> = [
+internal let structureWrapperBackingExposedTrackedNames: Swift::Set<Swift::String> = [
     "_backing",
     "_wrapped",
     "_underlying",
@@ -54,7 +54,7 @@ internal let structureWrapperBackingExposedTrackedNames: Swift.Set<Swift.String>
 
 internal func structureWrapperBackingExposedHasPrivateOrFilePrivate(
     _ modifiers: DeclModifierListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
         case .keyword(.private), .keyword(.fileprivate):
@@ -72,7 +72,7 @@ internal func structureWrapperBackingExposedHasPrivateOrFilePrivate(
 internal func structureWrapperBackingExposedHasUsableFromInline(
     _ attributes: AttributeListSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     for attribute in attributes {
         guard let attr = attribute.as(AttributeSyntax.self) else { continue }
@@ -88,7 +88,7 @@ internal final class StructureWrapperBackingExposedVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    var typeDepth: Swift.Int = 0
+    var typeDepth: Swift::Int = 0
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source

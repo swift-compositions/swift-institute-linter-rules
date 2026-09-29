@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`ascii identifier Tests` {
   static func findings(
-    _ source: Swift.String,
-    file: Swift.String = "Sources/Fixture/Fixture.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Sources/Fixture/Fixture.swift"
   ) -> [Diagnostic.Record] {
     Lint.Rule.`ascii identifier`
       .observe(Lint.Source.parsed(from: source, file: file), .warning)

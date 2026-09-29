@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformCTypeInPublicAPIMessage: Swift.String =
+internal let platformCTypeInPublicAPIMessage: Swift::String =
     "[c type in public api] [PLAT-ARCH-005a]: platform C type appears in "
     + "public API signature. Public APIs in the platform stack MUST wrap "
     + "every C type in an ecosystem type at L1 so consumers never need to "
@@ -46,7 +46,7 @@ internal let platformCTypeInPublicAPIMessage: Swift.String =
     + "canonical leak patterns (`kevent`, `epoll_event`, `OVERLAPPED`, "
     + "`sockaddr`, `HANDLE`, etc.)."
 
-internal let platformCTypeInPublicAPIFlaggedCTypes: Swift.Set<Swift.String> = [
+internal let platformCTypeInPublicAPIFlaggedCTypes: Swift::Set<Swift::String> = [
     "kevent", "epoll_event", "OVERLAPPED", "sockaddr", "iovec",
     "io_uring_sqe", "io_uring_cqe", "timespec", "pid_t",
     "HANDLE", "DWORD", "WCHAR", "BOOL", "LPVOID", "WSABUF",
@@ -54,7 +54,7 @@ internal let platformCTypeInPublicAPIFlaggedCTypes: Swift.Set<Swift.String> = [
     "sockaddr_un", "stat", "statfs", "dirent", "passwd",
 ]
 
-internal func platformCTypeInPublicAPIContainsCType(_ type: TypeSyntax) -> Swift.Bool {
+internal func platformCTypeInPublicAPIContainsCType(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         if platformCTypeInPublicAPIFlaggedCTypes.contains(identifier.name.text) {
             return true

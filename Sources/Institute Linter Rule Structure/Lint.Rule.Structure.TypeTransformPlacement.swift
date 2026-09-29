@@ -38,16 +38,16 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let structureTypeTransformPlacementMessage: Swift.String =
+internal let structureTypeTransformPlacementMessage: Swift::String =
     "[type transform placement] [PATTERN-012]: instance method `to<Type>()` "
     + "/ `as<Type>()` returning the matching type is the type-transformation "
     + "anti-pattern. Move the conversion to an `init(_ source: Source)` on the "
     + "target type or a static method (`Target.from(_ source: Source)`) so the "
     + "canonical conversion site lives with the target."
 
-internal let structureTypeTransformPlacementPrefixes: [Swift.String] = ["to", "as"]
+internal let structureTypeTransformPlacementPrefixes: [Swift::String] = ["to", "as"]
 
-internal func structureTypeTransformPlacementTransformSuffix(of name: Swift.String) -> Swift.String?
+internal func structureTypeTransformPlacementTransformSuffix(of name: Swift::String) -> Swift::String?
 {
     for prefix in structureTypeTransformPlacementPrefixes {
         guard name.hasPrefix(prefix) else { continue }
@@ -58,7 +58,7 @@ internal func structureTypeTransformPlacementTransformSuffix(of name: Swift.Stri
     return nil
 }
 
-internal func structureTypeTransformPlacementReturnTypeLeafName(_ type: TypeSyntax) -> Swift.String?
+internal func structureTypeTransformPlacementReturnTypeLeafName(_ type: TypeSyntax) -> Swift::String?
 {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return identifier.name.text
@@ -80,7 +80,7 @@ internal func structureTypeTransformPlacementReturnTypeLeafName(_ type: TypeSynt
 
 internal func structureTypeTransformPlacementHasStaticOrClassModifier(
     _ modifiers: DeclModifierListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
         case .keyword(.static), .keyword(.class):

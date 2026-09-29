@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformPlatformConditionalMessage: Swift.String =
+internal let platformPlatformConditionalMessage: Swift::String =
     "[canimport conditional] [PATTERN-004a]: platform "
     + "identity check uses `#if canImport(...)` on a platform-prefixed "
     + "module — `canImport` evaluates against module resolution (varies "
@@ -51,7 +51,7 @@ internal let platformPlatformConditionalMessage: Swift.String =
     + "distinguish Glibc from Musl. Institute platform-prefixed modules "
     + "(`Darwin_Kernel_Standard` etc.) are the forbidden shape."
 
-internal let platformPlatformConditionalCLibraryModules: Swift.Set<Swift.String> = [
+internal let platformPlatformConditionalCLibraryModules: Swift::Set<Swift::String> = [
     "Darwin",
     "Glibc",
     "Musl",
@@ -63,10 +63,10 @@ internal let platformPlatformConditionalCLibraryModules: Swift.Set<Swift.String>
     "CRT",
 ]
 
-internal let platformPlatformConditionalPlatformPrefixes: Swift.Set<Swift.String> =
+internal let platformPlatformConditionalPlatformPrefixes: Swift::Set<Swift::String> =
     platformPlatformTokens.union(["Glibc", "Musl", "Bionic", "WinSDK"])
 
-internal func platformPlatformConditionalIsPlatformModuleName(_ name: Swift.String) -> Swift.Bool {
+internal func platformPlatformConditionalIsPlatformModuleName(_ name: Swift::String) -> Swift::Bool {
     if platformPlatformConditionalCLibraryModules.contains(name) { return false }
     if platformPlatformConditionalPlatformPrefixes.contains(name) { return true }
     for prefix in platformPlatformConditionalPlatformPrefixes {

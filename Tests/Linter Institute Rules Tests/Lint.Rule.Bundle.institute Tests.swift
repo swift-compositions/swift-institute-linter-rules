@@ -31,7 +31,7 @@ import Testing
 /// reflection — Swift has none for static members — so it is exactly as
 /// current as the last person who touched a rule pack kept it. That is
 /// the property this test exists to enforce.
-private let allDeclaredRuleIDs: Swift.Set<Swift.String> = [
+private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
   "ad hoc box class",
   // Architecture pack (TX-A2, swift-compositions/swift-linter#44).
   "architecture foundation type",
@@ -158,7 +158,7 @@ private let allDeclaredRuleIDs: Swift.Set<Swift.String> = [
 /// `Lint.Rule.Bundle.institute`, with the citation to why. Distinguishes
 /// "deliberately deferred" from "accidentally dropped" — nothing else in
 /// the source tells a reader which one a missing id means.
-private let deliberateExclusions: Swift.Set<Swift.String> = [
+private let deliberateExclusions: Swift::Set<Swift::String> = [
   // [BENCH-003] deferred 2026-05-18 — depends on swift-testing's
   // `.timed()` trait, which isn't production-ready yet. See the
   // re-enable condition documented at the `.enable` call site's comment
@@ -190,9 +190,9 @@ struct `Lint Rule Bundle institute Tests` {
 /// "what THIS package's 18 rule packs contribute" first subtracts the
 /// universal tier's own ids back out, or it would be comparing the
 /// master list against a set it can never equal.
-private func instituteContributedEnabledIDs() -> Swift.Set<Swift.String> {
-  let universalIDs = Swift.Set(Lint.Rule.Bundle.universal.map(\.rule.id.underlying))
-  let enabledIDs = Swift.Set(
+private func instituteContributedEnabledIDs() -> Swift::Set<Swift::String> {
+  let universalIDs = Swift::Set(Lint.Rule.Bundle.universal.map(\.rule.id.underlying))
+  let enabledIDs = Swift::Set(
     Lint.Rule.Bundle.institute
       .filter { $0.mode == .enabled }
       .map(\.rule.id.underlying)
@@ -241,7 +241,7 @@ extension `Lint Rule Bundle institute Tests`.`Id integrity` {
   @Test
   func `institute bundle rule ids are unique`() {
     let ids = Lint.Rule.Bundle.institute.map(\.rule.id.underlying)
-    let unique = Swift.Set(ids)
+    let unique = Swift::Set(ids)
     #expect(
       ids.count == unique.count,
       "Duplicate rule id(s) in Lint.Rule.Bundle.institute — consumers write these ids in suppression directives and configuration; a collision is silently ambiguous."
@@ -253,7 +253,7 @@ extension `Lint Rule Bundle institute Tests`.`Id integrity` {
     // Compares the 18 institute packs' OWN declared ids (not the
     // concatenated bundle, which trivially contains every universal id)
     // against the universal tier.
-    let universalIDs = Swift.Set(Lint.Rule.Bundle.universal.map(\.rule.id.underlying))
+    let universalIDs = Swift::Set(Lint.Rule.Bundle.universal.map(\.rule.id.underlying))
     let collisions = allDeclaredRuleIDs.intersection(universalIDs)
     #expect(
       collisions.isEmpty,

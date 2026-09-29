@@ -42,7 +42,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let frameworkSuiteCategoriesMessage: Swift.String =
+internal let frameworkSuiteCategoriesMessage: Swift::String =
     "[suite categories] [TEST-005]: top-level `@Suite struct` MUST contain "
     + "all three canonical sub-suites declared via nested "
     + "`@Suite struct (Unit | \\`Edge Case\\` | Integration)`. "
@@ -79,7 +79,7 @@ internal final class FrameworkSuiteCategoriesVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func emit(at position: AbsolutePosition, missing: [Swift.String]) {
+    private func emit(at position: AbsolutePosition, missing: [Swift::String]) {
         let location = converter.location(for: position)
         let missingList = missing.joined(separator: ", ")
         matches.append(
@@ -98,7 +98,7 @@ internal final class FrameworkSuiteCategoriesVisitor: SyntaxVisitor {
     }
 }
 
-internal func suiteCategoriesHasSuiteAttribute(_ attrs: AttributeListSyntax) -> Swift.Bool {
+internal func suiteCategoriesHasSuiteAttribute(_ attrs: AttributeListSyntax) -> Swift::Bool {
     for attr in attrs {
         guard case .attribute(let a) = attr else { continue }
         let name = a.attributeName.trimmedDescription
@@ -109,7 +109,7 @@ internal func suiteCategoriesHasSuiteAttribute(_ attrs: AttributeListSyntax) -> 
     return false
 }
 
-internal func suiteCategoriesIsTopLevel(_ node: Syntax) -> Swift.Bool {
+internal func suiteCategoriesIsTopLevel(_ node: Syntax) -> Swift::Bool {
     var current = node.parent
     while let parent = current {
         if parent.is(ExtensionDeclSyntax.self) {
@@ -128,12 +128,12 @@ internal func suiteCategoriesIsTopLevel(_ node: Syntax) -> Swift.Bool {
     return true
 }
 
-private let suiteCategoriesCanonical: [Swift.String] = [
+private let suiteCategoriesCanonical: [Swift::String] = [
     "Unit", "`Edge Case`", "Integration",
 ]
 
-internal func suiteCategoriesMissingFromBody(_ memberBlock: MemberBlockSyntax) -> [Swift.String] {
-    var declared = Set<Swift.String>()
+internal func suiteCategoriesMissingFromBody(_ memberBlock: MemberBlockSyntax) -> [Swift::String] {
+    var declared = Set<Swift::String>()
     for member in memberBlock.members {
         guard let structDecl = member.decl.as(StructDeclSyntax.self) else { continue }
         guard suiteCategoriesHasSuiteAttribute(structDecl.attributes) else { continue }

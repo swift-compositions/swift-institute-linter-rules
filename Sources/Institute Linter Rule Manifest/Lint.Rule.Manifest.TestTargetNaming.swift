@@ -44,14 +44,14 @@ extension Lint.Rule {
       }
       let visitor = ManifestTestTargetNamingVisitor(viewMode: .sourceAccurate)
       visitor.walk(source.tree)
-      let subjects = Swift.Set(visitor.targets.map(\.name))
-      var seen: Swift.Set<Swift.String> = []
+      let subjects = Swift::Set(visitor.targets.map(\.name))
+      var seen: Swift::Set<Swift::String> = []
       var findings: [Diagnostic.Record] = []
       for test in visitor.testTargets {
-        let reason: Swift.String? =
+        let reason: Swift::String? =
           if !test.name.hasSuffix(" Tests") {
             "`\(test.name)` must be named `<Target> Tests`."
-          } else if !subjects.contains(Swift.String(test.name.dropLast(" Tests".count))) {
+          } else if !subjects.contains(Swift::String(test.name.dropLast(" Tests".count))) {
             "`\(test.name)` names no target of this package; a test target tests exactly one target."
           } else if !seen.insert(test.name).inserted {
             "`\(test.name)` is declared twice; one test target per target."
@@ -83,13 +83,13 @@ extension Lint.Rule {
   )
 }
 
-private let manifestSubjectTargetFactories: Swift.Set<Swift.String> = [
+private let manifestSubjectTargetFactories: Swift::Set<Swift::String> = [
   "target", "executableTarget", "macro", "plugin", "systemLibrary", "binaryTarget",
 ]
 
 internal final class ManifestTestTargetNamingVisitor: SyntaxVisitor {
   struct Declared {
-    let name: Swift.String
+    let name: Swift::String
     let position: AbsolutePosition
   }
 

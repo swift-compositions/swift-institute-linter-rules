@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingOptionsMessage: Swift.String =
+private let namingOptionsMessage: Swift::String =
     "[property named flags] [API-NAME-011]: an `OptionSet` type named with "
     + "the `Flags` suffix uses C-speak. The institute convention is `.Options` "
     + "(e.g., `File.Open.Options`, `Walk.Options`)."
@@ -79,7 +79,7 @@ internal final class NamingOptionsVisitor: SyntaxVisitor {
     }
 }
 
-private func namingOptionsConformsToOptionSet(_ clause: InheritanceClauseSyntax) -> Swift.Bool {
+private func namingOptionsConformsToOptionSet(_ clause: InheritanceClauseSyntax) -> Swift::Bool {
     for entry in clause.inheritedTypes {
         if let identifier = entry.type.as(IdentifierTypeSyntax.self),
             identifier.name.text == "OptionSet"

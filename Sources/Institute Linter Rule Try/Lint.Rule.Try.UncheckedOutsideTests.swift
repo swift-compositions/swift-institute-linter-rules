@@ -42,7 +42,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let tryUncheckedOutsideTestsMessage: Swift.String =
+internal let tryUncheckedOutsideTestsMessage: Swift::String =
     "[unchecked try outside tests] [SOURCE-UNCHECKED-TRY]: `try!` traps on any "
     + "thrown error; library and executable sources propagate the typed error "
     + "instead. `try!` is admitted only in tests and fixtures."

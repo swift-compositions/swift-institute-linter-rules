@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsDoCatchTypedMessage: Swift.String =
+internal let throwsDoCatchTypedMessage: Swift::String =
     "[do throws for typed catch] [IMPL-075]: bare `do { try ... } catch { }` "
     + "erases the concrete error type. Use `do throws(E) { try ... } catch { }` "
     + "to preserve `E` in the catch binding."

@@ -59,7 +59,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let manifestPathDependencyMessage: Swift.String =
+internal let manifestPathDependencyMessage: Swift::String =
   "[path dependency] [PACKAGE-PATH-DEPENDENCY]: a package dependency must be "
   + "declared by URL, never by `path:`; local checkouts are provided by the "
   + "workspace, not by the manifest."

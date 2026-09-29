@@ -3,7 +3,7 @@ internal import SwiftSyntax
 
 internal func frameworkSuiteCategoriesFixed(
     _ source: borrowing Lint.Source.Parsed
-) -> Swift.String? {
+) -> Swift::String? {
     let rewriter = FrameworkSuiteCategoriesRewriter()
     let rewritten = rewriter.visit(source.tree)
     guard rewriter.changed else { return nil }
@@ -12,9 +12,9 @@ internal func frameworkSuiteCategoriesFixed(
 
 internal func frameworkSuiteCategoriesIsFixEligible(
     _ memberBlock: MemberBlockSyntax,
-    missingBareNames: [Swift.String]
-) -> Swift.Bool {
-    let missing = Swift.Set(missingBareNames)
+    missingBareNames: [Swift::String]
+) -> Swift::Bool {
+    let missing = Swift::Set(missingBareNames)
     for member in memberBlock.members {
         let decl = member.decl
         if decl.is(IfConfigDeclSyntax.self) {
@@ -34,7 +34,7 @@ internal func frameworkSuiteCategoriesIsFixEligible(
 
 private func frameworkSuiteCategoriesHasTestAttribute(
     _ attributes: AttributeListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     for attribute in attributes {
         guard let attr = attribute.as(AttributeSyntax.self) else { continue }
         let name = attr.attributeName.trimmedDescription
@@ -45,7 +45,7 @@ private func frameworkSuiteCategoriesHasTestAttribute(
     return false
 }
 
-private func frameworkSuiteCategoriesDeclaredNames(_ decl: DeclSyntax) -> [Swift.String] {
+private func frameworkSuiteCategoriesDeclaredNames(_ decl: DeclSyntax) -> [Swift::String] {
     if let d = decl.as(StructDeclSyntax.self) {
         return [Lint.Syntax.Identifier.unescaped(d.name.text)]
     }
@@ -79,13 +79,13 @@ private func frameworkSuiteCategoriesDeclaredNames(_ decl: DeclSyntax) -> [Swift
     return []
 }
 
-private func frameworkSuiteCategoriesBareName(_ name: Swift.String) -> Swift.String {
+private func frameworkSuiteCategoriesBareName(_ name: Swift::String) -> Swift::String {
     guard name.hasPrefix("`"), name.hasSuffix("`"), name.count >= 2 else { return name }
-    return Swift.String(name.dropFirst().dropLast())
+    return Swift::String(name.dropFirst().dropLast())
 }
 
 private func frameworkSuiteCategoriesInsertedStruct(
-    _ bareName: Swift.String
+    _ bareName: Swift::String
 ) -> MemberBlockItemSyntax {
     let nameText = bareName.contains(" ") ? "`\(bareName)`" : bareName
     let decl = StructDeclSyntax(
@@ -110,7 +110,7 @@ private func frameworkSuiteCategoriesInsertedStruct(
 }
 
 internal final class FrameworkSuiteCategoriesRewriter: SyntaxRewriter {
-    var changed: Swift.Bool = false
+    var changed: Swift::Bool = false
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
         guard suiteCategoriesHasSuiteAttribute(node.attributes) else { return super.visit(node) }
@@ -127,7 +127,7 @@ internal final class FrameworkSuiteCategoriesRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         changed = true
-        let existing = Swift.Array(node.memberBlock.members)
+        let existing = Swift::Array(node.memberBlock.members)
         let inserted = missingBareNames.map(frameworkSuiteCategoriesInsertedStruct)
         let newBlock = node.memberBlock.with(
             \.members,

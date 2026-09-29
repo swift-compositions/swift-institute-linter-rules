@@ -41,7 +41,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsGenericNeverSpecializationMessage: Swift.String =
+internal let throwsGenericNeverSpecializationMessage: Swift::String =
     "[generic throws missing never] [IMPL-042]: public "
     + "generic API throws a generic-parameter-typed error. The rule fires "
     + "as a REVIEW PROMPT — per [IMPL-042]'s 'When to apply' criteria the "
@@ -56,7 +56,7 @@ internal let throwsGenericNeverSpecializationMessage: Swift.String =
     + "declarations because the compiler can specialize at consumer call "
     + "sites without a duplicated body."
 
-private func gnsIsPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift.Bool {
+private func gnsIsPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift::Bool {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
         case .keyword(.public), .keyword(.open): return true
@@ -69,7 +69,7 @@ private func gnsIsPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift.Boo
 private func gnsIsPublicOrOpenEffective(
     _ node: Syntax,
     modifiers: DeclModifierListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     if gnsIsPublicOrOpen(modifiers) {
         return true
     }
@@ -86,17 +86,17 @@ private func gnsIsPublicOrOpenEffective(
 private func gnsCollectGenericParamNames(
     _ clause: GenericParameterClauseSyntax?
 )
-    -> Swift.Set<Swift.String>
+    -> Swift::Set<Swift::String>
 {
     guard let clause else { return [] }
-    var names: Swift.Set<Swift.String> = []
+    var names: Swift::Set<Swift::String> = []
     for parameter in clause.parameters { names.insert(parameter.name.text) }
     return names
 }
 
 private func gnsGenericFailureTypePosition(
     in clause: ThrowsClauseSyntax?,
-    availableGenerics: Swift.Set<Swift.String>
+    availableGenerics: Swift::Set<Swift::String>
 ) -> AbsolutePosition? {
     guard let clause, let type = clause.type else { return nil }
     guard let member = type.as(MemberTypeSyntax.self) else { return nil }
@@ -105,12 +105,12 @@ private func gnsGenericFailureTypePosition(
     return member.positionAfterSkippingLeadingTrivia
 }
 
-private func gnsCollectExtendedGenericNames(_ type: TypeSyntax) -> Swift.Set<Swift.String> {
+private func gnsCollectExtendedGenericNames(_ type: TypeSyntax) -> Swift::Set<Swift::String> {
     _ = type
     return []
 }
 
-private func gnsIsInlinable(_ attributes: AttributeListSyntax) -> Swift.Bool {
+private func gnsIsInlinable(_ attributes: AttributeListSyntax) -> Swift::Bool {
     for element in attributes {
         guard let attr = element.as(AttributeSyntax.self) else { continue }
         guard let ident = attr.attributeName.as(IdentifierTypeSyntax.self) else { continue }
@@ -124,8 +124,8 @@ private func gnsIsInlinable(_ attributes: AttributeListSyntax) -> Swift.Bool {
 
 private func gnsCollectNeverCompanionNames(
     in extensionDecl: ExtensionDeclSyntax
-) -> Swift.Set<Swift.String> {
-    var names: Swift.Set<Swift.String> = []
+) -> Swift::Set<Swift::String> {
+    var names: Swift::Set<Swift::String> = []
     for memberItem in extensionDecl.memberBlock.members {
         if let funcDecl = memberItem.decl.as(FunctionDeclSyntax.self),
             gnsHasNeverFailureWhereClause(funcDecl.genericWhereClause)
@@ -141,7 +141,7 @@ private func gnsCollectNeverCompanionNames(
     return names
 }
 
-private func gnsHasNeverFailureWhereClause(_ clause: GenericWhereClauseSyntax?) -> Swift.Bool {
+private func gnsHasNeverFailureWhereClause(_ clause: GenericWhereClauseSyntax?) -> Swift::Bool {
     guard let clause else { return false }
     for requirement in clause.requirements {
         guard let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self) else {
@@ -160,8 +160,8 @@ internal final class ThrowsGenericNeverSpecializationVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    var genericsStack: [Swift.Set<Swift.String>] = []
-    var companionsStack: [Swift.Set<Swift.String>] = []
+    var genericsStack: [Swift::Set<Swift::String>] = []
+    var companionsStack: [Swift::Set<Swift::String>] = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -188,14 +188,14 @@ internal final class ThrowsGenericNeverSpecializationVisitor: SyntaxVisitor {
     }
 
     private func currentAvailable(
-        _ funcGenerics: Swift.Set<Swift.String>
-    ) -> Swift.Set<Swift.String> {
-        var result: Swift.Set<Swift.String> = funcGenerics
+        _ funcGenerics: Swift::Set<Swift::String>
+    ) -> Swift::Set<Swift::String> {
+        var result: Swift::Set<Swift::String> = funcGenerics
         for set in genericsStack { result.formUnion(set) }
         return result
     }
 
-    private func hasCompanion(_ baseName: Swift.String) -> Swift.Bool {
+    private func hasCompanion(_ baseName: Swift::String) -> Swift::Bool {
         for set in companionsStack {
             if set.contains(baseName) { return true }
         }

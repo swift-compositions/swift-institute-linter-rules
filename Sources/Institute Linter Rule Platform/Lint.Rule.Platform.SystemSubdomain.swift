@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformSystemSubdomainMessage: Swift.String =
+internal let platformSystemSubdomainMessage: Swift::String =
     "[system subdomain] [PLAT-ARCH-026]: `System` must NOT be "
     + "a subdomain of `Darwin` / `Linux` / `Windows`. Platform System "
     + "targets extend the cross-platform `System` namespace directly "
@@ -47,7 +47,7 @@ internal let platformSystemSubdomainMessage: Swift.String =
     + "published per [PLAT-ARCH-027]; the variant `@_exported` re-"
     + "export carries the namespace without that publication step."
 
-private func platformSystemSubdomainRootIdentifier(_ type: TypeSyntax) -> Swift.String? {
+private func platformSystemSubdomainRootIdentifier(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return identifier.name.text
     }
@@ -74,7 +74,7 @@ internal final class PlatformSystemSubdomainVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    var nameStack: [Swift.String] = []
+    var nameStack: [Swift::String] = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -100,7 +100,7 @@ internal final class PlatformSystemSubdomainVisitor: SyntaxVisitor {
         )
     }
 
-    private static func extensionLeafName(_ type: TypeSyntax) -> Swift.String? {
+    private static func extensionLeafName(_ type: TypeSyntax) -> Swift::String? {
         if let identifier = type.as(IdentifierTypeSyntax.self) {
             return identifier.name.text
         }

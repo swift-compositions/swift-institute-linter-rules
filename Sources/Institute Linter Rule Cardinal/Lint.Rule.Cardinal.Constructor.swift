@@ -39,7 +39,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let cardinalZeroOneConstructorMessage: Swift.String =
+internal let cardinalZeroOneConstructorMessage: Swift::String =
     "[zero or one literal] [INFRA-101]: `Cardinal(0)` / `Cardinal(1)` "
     + "constructor calls with literal `0` or `1` bypass the typed-system literal "
     + "discipline. Use the canonical accessors `.zero` / `.one` instead. If this site "
@@ -94,7 +94,7 @@ internal final class CardinalConstructorVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    static func calleeTypeName(_ expr: ExprSyntax) -> Swift.String? {
+    static func calleeTypeName(_ expr: ExprSyntax) -> Swift::String? {
         if let ref = expr.as(DeclReferenceExprSyntax.self) {
             return ref.baseName.text
         }

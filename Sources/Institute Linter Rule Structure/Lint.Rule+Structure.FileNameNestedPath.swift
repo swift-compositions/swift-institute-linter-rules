@@ -47,7 +47,7 @@ extension Lint.Rule {
           tree: source.tree
         )
       }
-      let filename = Swift.String(path[path.index(after: slashIndex)...])
+      let filename = Swift::String(path[path.index(after: slashIndex)...])
       return structureFileNameNestedPathFindings(
         basename: filename,
         source: source.file,
@@ -60,14 +60,14 @@ extension Lint.Rule {
 }
 
 private func structureFileNameNestedPathFindings(
-  basename filename: Swift.String,
+  basename filename: Swift::String,
   source: Source.File,
   severity: Diagnostic.Severity,
   converter: SourceLocationConverter,
   tree: SourceFileSyntax
 ) -> [Diagnostic.Record] {
   guard filename.hasSuffix(".swift") else { return [] }
-  let basename = Swift.String(filename.dropLast(".swift".count))
+  let basename = Swift::String(filename.dropLast(".swift".count))
 
   if basename.contains("+") || basename.contains(" where ") { return [] }
 
@@ -139,14 +139,14 @@ private func structureFileNameNestedPathFindings(
 
 @usableFromInline
 internal func structureFileNameNestedPathMessage(
-  basename: Swift.String,
-  dottedPath: Swift.String
-) -> Swift.String {
+  basename: Swift::String,
+  dottedPath: Swift::String
+) -> Swift::String {
   "[file name nested path] [API-IMPL-006]: file name '\(basename).swift' does not match "
     + "the declared type's nested path '\(dottedPath)'; rename to '\(dottedPath).swift'"
 }
 
-private func structureFileNameNestedPathResolve(_ node: DeclSyntax) -> Swift.String {
+private func structureFileNameNestedPathResolve(_ node: DeclSyntax) -> Swift::String {
   guard let enumDecl = node.as(EnumDeclSyntax.self) else {
     return structureFileNameNestedPathOwnName(node) ?? ""
   }
@@ -168,7 +168,7 @@ private func structureFileNameNestedPathResolve(_ node: DeclSyntax) -> Swift.Str
   return "\(enumDecl.name.text).\(structureFileNameNestedPathResolve(nestedTypes[0]))"
 }
 
-private func structureFileNameNestedPathIsPrimaryTypeDecl(_ declaration: DeclSyntax) -> Swift.Bool {
+private func structureFileNameNestedPathIsPrimaryTypeDecl(_ declaration: DeclSyntax) -> Swift::Bool {
   declaration.is(StructDeclSyntax.self)
     || declaration.is(ClassDeclSyntax.self)
     || declaration.is(EnumDeclSyntax.self)
@@ -176,7 +176,7 @@ private func structureFileNameNestedPathIsPrimaryTypeDecl(_ declaration: DeclSyn
     || declaration.is(ProtocolDeclSyntax.self)
 }
 
-private func structureFileNameNestedPathOwnName(_ node: DeclSyntax) -> Swift.String? {
+private func structureFileNameNestedPathOwnName(_ node: DeclSyntax) -> Swift::String? {
   if let d = node.as(StructDeclSyntax.self) { return d.name.text }
   if let d = node.as(ClassDeclSyntax.self) { return d.name.text }
   if let d = node.as(ActorDeclSyntax.self) { return d.name.text }
@@ -185,7 +185,7 @@ private func structureFileNameNestedPathOwnName(_ node: DeclSyntax) -> Swift.Str
   return nil
 }
 
-internal func isPrimary(_ decl: DeclSyntax) -> Swift.Bool {
+internal func isPrimary(_ decl: DeclSyntax) -> Swift::Bool {
   if let classDecl = decl.as(ClassDeclSyntax.self) {
     if structureExtendsSyntaxVisitor(classDecl.inheritanceClause) { return false }
     return true

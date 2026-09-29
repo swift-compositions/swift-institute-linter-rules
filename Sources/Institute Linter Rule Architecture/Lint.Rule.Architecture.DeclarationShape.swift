@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let architectureNamespaceShapeMessage: Swift.String =
+private let architectureNamespaceShapeMessage: Swift::String =
     "[architecture namespace shape] [ARCH-FOUND-001]: a caseless enum is a "
     + "namespace — it is uninhabited, so this instance member can never be "
     + "called. Either mark the member `static` (namespace intent) or make the "
@@ -111,7 +111,7 @@ private func architectureNamespaceShapeInstanceMember(
 
 private func architectureNamespaceShapeIsTypeMember(
     _ modifiers: DeclModifierListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     modifiers.contains { modifier in
         modifier.name.tokenKind == .keyword(.static) || modifier.name.tokenKind == .keyword(.class)
     }

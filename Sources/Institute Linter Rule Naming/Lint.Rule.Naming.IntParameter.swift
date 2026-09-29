@@ -38,7 +38,7 @@ extension Lint.Rule {
   )
 }
 
-private let namingIntParameterMessageParameter: Swift.String =
+private let namingIntParameterMessageParameter: Swift::String =
   "[int public parameter] [IMPL-010]: public function/initializer/subscript "
   + "signature has a bare `Int` parameter. Push the stdlib boundary "
   + "out — use a typed wrapper (`Index<T>`, `Ordinal`, `Cardinal`, "
@@ -46,7 +46,7 @@ private let namingIntParameterMessageParameter: Swift.String =
   + "boundary overload internally. `Int(bitPattern:)` lives in one "
   + "place, once, forever (per [IMPL-010])."
 
-private let namingIntParameterMessageReturn: Swift.String =
+private let namingIntParameterMessageReturn: Swift::String =
   "[int public parameter] [IMPL-010]: public function/subscript returns a "
   + "bare `Int`. Push the stdlib boundary out — return a typed wrapper "
   + "(`Cardinal`, `Count<T>`, `Offset<T>`) so consumers see typed "
@@ -148,7 +148,7 @@ internal final class NamingIntParameterVisitor: SyntaxVisitor {
     }
   }
 
-  private func emit(at position: AbsolutePosition, message: Swift.String) {
+  private func emit(at position: AbsolutePosition, message: Swift::String) {
     let location = converter.location(for: position)
     matches.append(
       Diagnostic.Record(

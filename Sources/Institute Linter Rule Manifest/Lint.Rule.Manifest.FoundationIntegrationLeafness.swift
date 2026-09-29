@@ -83,7 +83,7 @@ extension Lint.Rule {
   )
 }
 
-private let manifestFoundationIntegrationLeafnessMessage: Swift.String =
+private let manifestFoundationIntegrationLeafnessMessage: Swift::String =
   "[foundation integration leaf target]: a target named `* Foundation "
   + "Integration` must be a LEAF — declared as a `.library` or `.executable` product "
   + "of "
@@ -96,7 +96,7 @@ private let manifestFoundationIntegrationLeafnessMessage: Swift.String =
   + "`dependencies:` still lists it (per "
   + "swift-structured-queries#2)."
 
-private let manifestFoundationIntegrationTargetFactories: Swift.Set<Swift.String> = [
+private let manifestFoundationIntegrationTargetFactories: Swift::Set<Swift::String> = [
   "target", "testTarget", "executableTarget", "macro", "plugin",
 ]
 
@@ -109,18 +109,18 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
   private var matches: [Diagnostic.Record] = []
 
   private struct FoundationIntegrationTarget {
-    let name: Swift.String
+    let name: Swift::String
     let position: AbsolutePosition
   }
   private var foundationIntegrationTargets: [FoundationIntegrationTarget] = []
 
-  private var dependencyEdgesByDepender: [Swift.String: Swift.Set<Swift.String>] = [:]
+  private var dependencyEdgesByDepender: [Swift::String: Swift::Set<Swift::String>] = [:]
 
-  private var leafProductTargetLists: [[Swift.String]] = []
-  var unhandledSourceShape: Swift.String?
-  private var stringStaticAccessorBodies: [Swift.String: ExprSyntax] = [:]
-  private var stringInstanceAccessorBodies: [Swift.String: ExprSyntax] = [:]
-  private var dependencyAccessorBodies: [Swift.String: ExprSyntax] = [:]
+  private var leafProductTargetLists: [[Swift::String]] = []
+  var unhandledSourceShape: Swift::String?
+  private var stringStaticAccessorBodies: [Swift::String: ExprSyntax] = [:]
+  private var stringInstanceAccessorBodies: [Swift::String: ExprSyntax] = [:]
+  private var dependencyAccessorBodies: [Swift::String: ExprSyntax] = [:]
 
   init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
     self.source = source
@@ -130,7 +130,7 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
   }
 
   internal func collectManifestAccessors(_ file: SourceFileSyntax) {
-    let stringTypes: Swift.Set<Swift.String> = ["String", "Swift.String"]
+    let stringTypes: Swift::Set<Swift::String> = ["String", "Swift.String"]
     stringStaticAccessorBodies = manifestAccessorBodies(
       in: file,
       extendedTypes: stringTypes,
@@ -163,7 +163,7 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
     return .visitChildren
   }
 
-  private func isNestedInsideDependenciesArgument(_ node: Syntax) -> Swift.Bool {
+  private func isNestedInsideDependenciesArgument(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
       if let labeled = candidate.as(LabeledExprSyntax.self),
@@ -183,7 +183,7 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
           "computed product targets '\(argument.expression.trimmedDescription)'"
         continue
       }
-      var names: [Swift.String] = []
+      var names: [Swift::String] = []
       for element in array.elements {
         guard
           let text = manifestResolvedString(
@@ -219,7 +219,7 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
       )
     }
 
-    var referenced: Swift.Set<Swift.String> = []
+    var referenced: Swift::Set<Swift::String> = []
     for argument in node.arguments where argument.label?.text == "dependencies" {
       guard let array = argument.expression.as(ArrayExprSyntax.self) else {
         unhandledSourceShape =
@@ -271,12 +271,12 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
 
 private func manifestFoundationIntegrationDependency(
   _ expression: ExprSyntax,
-  dependencyAccessorBodies: [Swift.String: ExprSyntax],
-  stringStaticAccessors: [Swift.String: ExprSyntax],
-  stringInstanceAccessors: [Swift.String: ExprSyntax],
-  visited: Swift.Set<Swift.String> = [],
-  unhandledSourceShape: inout Swift.String?
-) -> (handled: Swift.Bool, localTarget: Swift.String?) {
+  dependencyAccessorBodies: [Swift::String: ExprSyntax],
+  stringStaticAccessors: [Swift::String: ExprSyntax],
+  stringInstanceAccessors: [Swift::String: ExprSyntax],
+  visited: Swift::Set<Swift::String> = [],
+  unhandledSourceShape: inout Swift::String?
+) -> (handled: Swift::Bool, localTarget: Swift::String?) {
   if let literal = expression.as(StringLiteralExprSyntax.self) {
     guard let text = manifestStringLiteralText(literal) else {
       unhandledSourceShape =

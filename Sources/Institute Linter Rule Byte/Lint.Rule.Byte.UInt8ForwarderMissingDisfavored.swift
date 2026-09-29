@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let byteUInt8ForwarderMissingDisfavoredMessage: Swift.String =
+internal let byteUInt8ForwarderMissingDisfavoredMessage: Swift::String =
     "[uint8 forwarder missing disfavored] [API-BYTE-006]: function in a "
     + "byte-domain extension takes a `UInt8` parameter or returns "
     + "`[UInt8]` without `@_disfavoredOverload`. The primary path is "
@@ -53,7 +53,7 @@ internal final class ByteUInt8ForwarderMissingDisfavoredVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    private var contextStack: [Swift.Bool] = []
+    private var contextStack: [Swift::Bool] = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -109,7 +109,7 @@ internal final class ByteUInt8ForwarderMissingDisfavoredVisitor: SyntaxVisitor {
     }
 }
 
-private let byteCollectionTypeNames: Swift.Set<Swift.String> = [
+private let byteCollectionTypeNames: Swift::Set<Swift::String> = [
     "Array",
     "ContiguousArray",
     "ArraySlice",
@@ -118,7 +118,7 @@ private let byteCollectionTypeNames: Swift.Set<Swift.String> = [
     "Sequence",
 ]
 
-private func byteExtensionIsByteDomain(_ node: ExtensionDeclSyntax) -> Swift.Bool {
+private func byteExtensionIsByteDomain(_ node: ExtensionDeclSyntax) -> Swift::Bool {
     if byteTypeIsArrayOfByte(node.extendedType) {
         return true
     }
@@ -131,7 +131,7 @@ private func byteExtensionIsByteDomain(_ node: ExtensionDeclSyntax) -> Swift.Boo
     return false
 }
 
-private func byteTypeIsArrayOfByte(_ type: TypeSyntax) -> Swift.Bool {
+private func byteTypeIsArrayOfByte(_ type: TypeSyntax) -> Swift::Bool {
     if let arrayType = type.as(ArrayTypeSyntax.self) {
         return byteTypeIsByteToken(arrayType.element)
     }
@@ -156,7 +156,7 @@ private func byteTypeIsArrayOfByte(_ type: TypeSyntax) -> Swift.Bool {
 private func byteTypeIsStdlibCollectionWithByteElement(
     _ type: TypeSyntax,
     whereClause: GenericWhereClauseSyntax?
-) -> Swift.Bool {
+) -> Swift::Bool {
     guard let identifier = type.as(IdentifierTypeSyntax.self) else { return false }
     guard
         byteCollectionTypeNames.contains(Lint.Syntax.Identifier.unescaped(identifier.name.text))
@@ -172,7 +172,7 @@ private func byteTypeIsStdlibCollectionWithByteElement(
     return false
 }
 
-private func byteTypeIsByteToken(_ type: TypeSyntax) -> Swift.Bool {
+private func byteTypeIsByteToken(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "Byte"
     }
@@ -185,23 +185,23 @@ private func byteTypeIsByteToken(_ type: TypeSyntax) -> Swift.Bool {
 private func byteRequirementIsElementEqualsByte(
     _ requirement: GenericRequirementSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     guard let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self) else {
         return false
     }
     let left = Lint.Syntax.Identifier.unescaped(sameType.leftType.trimmedDescription)
     let right = Lint.Syntax.Identifier.unescaped(sameType.rightType.trimmedDescription)
-    func isElement(_ text: Swift.String) -> Swift.Bool {
+    func isElement(_ text: Swift::String) -> Swift::Bool {
         text == "Element" || text.hasSuffix(".Element")
     }
-    func isByte(_ text: Swift.String) -> Swift.Bool { text == "Byte" || text.hasSuffix(".Byte") }
+    func isByte(_ text: Swift::String) -> Swift::Bool { text == "Byte" || text.hasSuffix(".Byte") }
     if isElement(left), isByte(right) { return true }
     if isByte(left), isElement(right) { return true }
     return false
 }
 
-private func byteFunctionMentionsUInt8(_ node: FunctionDeclSyntax) -> Swift.Bool {
+private func byteFunctionMentionsUInt8(_ node: FunctionDeclSyntax) -> Swift::Bool {
     for parameter in node.signature.parameterClause.parameters {
         if byteTypeMentionsUInt8(parameter.type) {
             return true
@@ -215,7 +215,7 @@ private func byteFunctionMentionsUInt8(_ node: FunctionDeclSyntax) -> Swift.Bool
     return false
 }
 
-private func byteInitializerMentionsUInt8(_ node: InitializerDeclSyntax) -> Swift.Bool {
+private func byteInitializerMentionsUInt8(_ node: InitializerDeclSyntax) -> Swift::Bool {
     for parameter in node.signature.parameterClause.parameters {
         if byteTypeMentionsUInt8(parameter.type) {
             return true
@@ -224,7 +224,7 @@ private func byteInitializerMentionsUInt8(_ node: InitializerDeclSyntax) -> Swif
     return false
 }
 
-private func byteTypeMentionsUInt8(_ type: TypeSyntax) -> Swift.Bool {
+private func byteTypeMentionsUInt8(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         if Lint.Syntax.Identifier.unescaped(identifier.name.text) == "UInt8" {
             return true

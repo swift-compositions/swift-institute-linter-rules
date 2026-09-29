@@ -48,7 +48,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let structureSingleTypePerFileMessage: Swift.String =
+internal let structureSingleTypePerFileMessage: Swift::String =
     "[single type per file] [API-IMPL-005]: each `.swift` source file MUST contain "
     + "exactly one type declaration (`struct`, `class`, `enum`, `actor`, `protocol`). "
     + "Multiple `extension` declarations of the enclosing type are permitted. "

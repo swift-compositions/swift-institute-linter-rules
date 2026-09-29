@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformTypealiasedNamespaceMessage: Swift.String =
+internal let platformTypealiasedNamespaceMessage: Swift::String =
   "[typealiased namespace bridge] [PLAT-ARCH-018]: typealias whose "
   + "LHS name matches its RHS member-type leaf silently bridges a "
   + "foreign namespace into the local one. New-type declarations at "
@@ -88,7 +88,7 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
     return .visitChildren
   }
 
-  private func isInsideConformingExtension(_ node: Syntax) -> Swift.Bool {
+  private func isInsideConformingExtension(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     var immediateExtension: ExtensionDeclSyntax? = nil
     while let candidate = current {
@@ -123,9 +123,9 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
   }
 
   private func fileDeclaresConformance(
-    forExtendedType targetPath: Swift.String,
+    forExtendedType targetPath: Swift::String,
     origin: Syntax
-  ) -> Swift.Bool {
+  ) -> Swift::Bool {
     var current: Syntax? = origin
     while let candidate = current {
       if let file = candidate.as(SourceFileSyntax.self) {
@@ -147,12 +147,12 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
 
   private static func declConformsToProtocol(
     _ item: CodeBlockItemSyntax.Item,
-    targetPath: Swift.String,
-    currentPrefix: Swift.String
-  ) -> Swift.Bool {
+    targetPath: Swift::String,
+    currentPrefix: Swift::String
+  ) -> Swift::Bool {
     if let ext = item.as(ExtensionDeclSyntax.self) {
       let extendedType = ext.extendedType.trimmedDescription
-      let fullPath: Swift.String =
+      let fullPath: Swift::String =
         currentPrefix.isEmpty
         ? extendedType
         : currentPrefix + "." + extendedType
@@ -211,9 +211,9 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
 
   private static func memberConformsToProtocol(
     _ decl: DeclSyntax,
-    targetPath: Swift.String,
-    currentPrefix: Swift.String
-  ) -> Swift.Bool {
+    targetPath: Swift::String,
+    currentPrefix: Swift::String
+  ) -> Swift::Bool {
     if let structDecl = decl.as(StructDeclSyntax.self) {
       return Self.typeDeclConformsToProtocol(
         name: structDecl.name.text,
@@ -254,13 +254,13 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
   }
 
   private static func typeDeclConformsToProtocol(
-    name: Swift.String,
+    name: Swift::String,
     inheritanceClause: InheritanceClauseSyntax?,
     memberBlock: MemberBlockSyntax,
-    targetPath: Swift.String,
-    currentPrefix: Swift.String
-  ) -> Swift.Bool {
-    let fullPath: Swift.String =
+    targetPath: Swift::String,
+    currentPrefix: Swift::String
+  ) -> Swift::Bool {
+    let fullPath: Swift::String =
       currentPrefix.isEmpty
       ? name
       : currentPrefix + "." + name

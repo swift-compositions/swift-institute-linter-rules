@@ -50,7 +50,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomStatementWhereExpressionFitsMessage: Swift.String =
+internal let idiomStatementWhereExpressionFitsMessage: Swift::String =
     "[statement where expression fits] [SOURCE-EXPRESSION-OVER-STATEMENT]: every "
     + "branch of this `if` returns or assigns one value; write it as an `if` or "
     + "`switch` expression (`return if ...`, `let x = if ...`) or a ternary."
@@ -94,7 +94,7 @@ internal final class IdiomStatementWhereExpressionFitsVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func branches(of node: IfExprSyntax) -> [Swift.String?]? {
+    private func branches(of node: IfExprSyntax) -> [Swift::String?]? {
         let head = shape(of: node.body)
         return switch node.elseBody {
         case .none: nil
@@ -103,7 +103,7 @@ internal final class IdiomStatementWhereExpressionFitsVisitor: SyntaxVisitor {
         }
     }
 
-    private func shape(of block: CodeBlockSyntax) -> Swift.String? {
+    private func shape(of block: CodeBlockSyntax) -> Swift::String? {
         guard block.statements.count == 1, let item = block.statements.first?.item else {
             return nil
         }
@@ -116,7 +116,7 @@ internal final class IdiomStatementWhereExpressionFitsVisitor: SyntaxVisitor {
         else {
             return nil
         }
-        let elements = Swift.Array(sequence.elements)
+        let elements = Swift::Array(sequence.elements)
         guard elements[1].is(AssignmentExprSyntax.self),
             let target = elements[0].as(DeclReferenceExprSyntax.self)
         else {

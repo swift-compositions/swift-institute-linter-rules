@@ -40,7 +40,7 @@ extension Lint.Rule {
     )
 }
 
-private let structureProtocolSentinelUnderGenericFrontDoorMessage: Swift.String =
+private let structureProtocolSentinelUnderGenericFrontDoorMessage: Swift::String =
     "[protocol sentinel under generic front door]: this `Protocol` "
     + "sentinel is nested under a carrier that a public GENERIC "
     + "top-level `typealias` fronts. Member-type lookup through an "
@@ -59,10 +59,10 @@ internal final class StructureProtocolSentinelUnderGenericFrontDoorVisitor: Synt
     let converter: SourceLocationConverter
     private var matches: [Diagnostic.Record] = []
 
-    private var frontDoorCarrierNames: Swift.Set<Swift.String> = []
+    private var frontDoorCarrierNames: Swift::Set<Swift::String> = []
 
     private struct Candidate {
-        let carrierName: Swift.String
+        let carrierName: Swift::String
         let position: AbsolutePosition
     }
     private var candidates: [Candidate] = []
@@ -116,7 +116,7 @@ internal final class StructureProtocolSentinelUnderGenericFrontDoorVisitor: Synt
     }
 }
 
-private func psgfdHasPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift.Bool {
+private func psgfdHasPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift::Bool {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
         case .keyword(.public), .keyword(.open): return true
@@ -126,7 +126,7 @@ private func psgfdHasPublicOrOpen(_ modifiers: DeclModifierListSyntax) -> Swift.
     return false
 }
 
-private func psgfdLeafIdentifierName(_ type: TypeSyntax) -> Swift.String? {
+private func psgfdLeafIdentifierName(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text)
     }

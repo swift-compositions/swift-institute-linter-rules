@@ -1,11 +1,11 @@
 internal import SwiftSyntax
 
-internal let platformPlatformTokens: Swift.Set<Swift.String> = [
+internal let platformPlatformTokens: Swift::Set<Swift::String> = [
     "Darwin", "Linux", "Windows", "Android", "WASI", "FreeBSD", "OpenBSD",
     "NetBSD", "BSD",
 ]
 
-internal func platformIsPublicAPI(_ modifiers: DeclModifierListSyntax) -> Swift.Bool {
+internal func platformIsPublicAPI(_ modifiers: DeclModifierListSyntax) -> Swift::Bool {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
         case .keyword(.public), .keyword(.open):
@@ -21,7 +21,7 @@ internal func platformIsPublicAPI(_ modifiers: DeclModifierListSyntax) -> Swift.
 internal func platformIsPublicAPIEffective(
     _ node: Syntax,
     modifiers: DeclModifierListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     if platformIsPublicAPI(modifiers) {
         return true
     }

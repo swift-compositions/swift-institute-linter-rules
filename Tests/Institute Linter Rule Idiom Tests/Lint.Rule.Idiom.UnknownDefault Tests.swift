@@ -28,7 +28,7 @@ extension Lint.Rule {
 }
 
 extension Lint.Rule.`unknown default Tests` {
-    static func findings(source: Swift.String) -> [Diagnostic.Record] {
+    static func findings(source: Swift::String) -> [Diagnostic.Record] {
         let parsed = Lint.Source.parsed(from: source)
         return Lint.Rule.`unknown default`.observe(parsed, .warning).findings
     }

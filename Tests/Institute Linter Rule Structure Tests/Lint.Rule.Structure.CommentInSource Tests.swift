@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`comment in source Tests` {
   static func findings(
-    _ source: Swift.String,
-    file: Swift.String = "Sources/Fixture/Fixture.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Sources/Fixture/Fixture.swift"
   ) -> [Diagnostic.Record] {
     Lint.Rule.`comment in source`
       .observe(Lint.Source.parsed(from: source, file: file), .warning)
@@ -104,7 +104,7 @@ extension Lint.Rule.`comment in source Tests`.Integration {
 }
 
 extension Lint.Rule.`comment in source Tests`.Integration {
-  static func repaired(_ source: Swift.String) -> Swift.String? {
+  static func repaired(_ source: Swift::String) -> Swift::String? {
     let proposal = Lint.Rule.`comment in source`.repair(
       Lint.Source.parsed(from: source, file: "Sources/Fixture/Fixture.swift")
     )

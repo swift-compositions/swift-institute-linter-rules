@@ -1,11 +1,11 @@
 internal import SwiftSyntax
 
 internal final class PlatformSwiftQualificationRewriter: SyntaxRewriter {
-    var changed: Swift.Bool = false
+    var changed: Swift::Bool = false
 
-    private let declared: Swift.Set<Swift.String>
+    private let declared: Swift::Set<Swift::String>
 
-    init(declared: Swift.Set<Swift.String>) {
+    init(declared: Swift::Set<Swift::String>) {
         self.declared = declared
         super.init()
     }

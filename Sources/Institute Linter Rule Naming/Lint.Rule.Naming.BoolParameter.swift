@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingBoolParameterMessage: Swift.String =
+private let namingBoolParameterMessage: Swift::String =
     "[bool public parameter] [API-IMPL-003]: public function/initializer "
     + "signature has a `Bool` parameter. Use an enum (or named-options "
     + "struct) so additional states can be added without an API break "
@@ -161,14 +161,14 @@ internal final class NamingBoolParameterVisitor: SyntaxVisitor {
 }
 
 private func namingBoolParameterHasWireSchemaConformance(_ node: Syntax) -> Bool {
-    let wireSchemaLeaves: Swift.Set<Swift.String> = ["Codable", "Decodable", "Encodable"]
+    let wireSchemaLeaves: Swift::Set<Swift::String> = ["Codable", "Decodable", "Encodable"]
     for leaf in Naming.conformances(node) where wireSchemaLeaves.contains(leaf) {
         return true
     }
     return false
 }
 
-private func namingBoolParameterEnclosingTypeName(_ node: Syntax) -> Swift.String? {
+private func namingBoolParameterEnclosingTypeName(_ node: Syntax) -> Swift::String? {
     var current: Syntax? = node.parent
     while let candidate = current {
         if let decl = candidate.as(StructDeclSyntax.self) { return decl.name.text }
@@ -177,7 +177,7 @@ private func namingBoolParameterEnclosingTypeName(_ node: Syntax) -> Swift.Strin
         if let decl = candidate.as(ActorDeclSyntax.self) { return decl.name.text }
         if let ext = candidate.as(ExtensionDeclSyntax.self) {
             let path = ext.extendedType.trimmedDescription
-            if let leaf = path.split(separator: ".").last { return Swift.String(leaf) }
+            if let leaf = path.split(separator: ".").last { return Swift::String(leaf) }
             return path
         }
         current = candidate.parent
@@ -187,7 +187,7 @@ private func namingBoolParameterEnclosingTypeName(_ node: Syntax) -> Swift.Strin
 
 private func namingBoolParameterAssignsSelf(
     _ body: CodeBlockSyntax?,
-    parameter name: Swift.String
+    parameter name: Swift::String
 ) -> Bool {
     guard let body else { return false }
     for item in body.statements {
@@ -212,7 +212,7 @@ private func namingBoolParameterAssignsSelf(
     return false
 }
 
-private func namingBoolParameterIsSelfMember(_ expr: ExprSyntax, named name: Swift.String) -> Bool {
+private func namingBoolParameterIsSelfMember(_ expr: ExprSyntax, named name: Swift::String) -> Bool {
     guard let member = expr.as(MemberAccessExprSyntax.self),
         member.declName.baseName.text == name,
         let base = member.base?.as(DeclReferenceExprSyntax.self),
@@ -221,7 +221,7 @@ private func namingBoolParameterIsSelfMember(_ expr: ExprSyntax, named name: Swi
     return true
 }
 
-private func namingBoolParameterIsReference(_ expr: ExprSyntax, named name: Swift.String) -> Bool {
+private func namingBoolParameterIsReference(_ expr: ExprSyntax, named name: Swift::String) -> Bool {
     guard let reference = expr.as(DeclReferenceExprSyntax.self) else { return false }
     return reference.baseName.text == name
 }

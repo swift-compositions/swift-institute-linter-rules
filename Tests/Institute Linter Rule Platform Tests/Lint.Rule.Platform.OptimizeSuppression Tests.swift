@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`optimize suppression attribute Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "test.swift"
+    in source: Swift::String,
+    file: Swift::String = "test.swift"
   ) -> [Diagnostic
     .Record]
   {

@@ -42,7 +42,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomIterationIntentMessage: Swift.String =
+internal let idiomIterationIntentMessage: Swift::String =
     "[counter loop iteration] [IMPL-033]: `for <name> in <a>..<<b>` "
     + "(or `.reversed()` of the same range) is mechanism, not intent. "
     + "This fires on any identifier-pattern range iteration, not only an "
@@ -57,7 +57,7 @@ internal let idiomIterationIntentMessage: Swift.String =
     + "and erases `throws(E)` to `any Error`, so the counter loop is the "
     + "lawful spelling there, not mechanism."
 
-internal func idiomIsRangeExpression(_ expression: ExprSyntax) -> Swift.Bool {
+internal func idiomIsRangeExpression(_ expression: ExprSyntax) -> Swift::Bool {
     if idiomIsBareRangeExpression(expression) {
         return true
     }
@@ -72,7 +72,7 @@ internal func idiomIsRangeExpression(_ expression: ExprSyntax) -> Swift.Bool {
     return false
 }
 
-private func idiomIsBareRangeExpression(_ expression: ExprSyntax) -> Swift.Bool {
+private func idiomIsBareRangeExpression(_ expression: ExprSyntax) -> Swift::Bool {
     if let sequence = expression.as(SequenceExprSyntax.self) {
         for element in sequence.elements {
             if let binary = element.as(BinaryOperatorExprSyntax.self) {
@@ -102,12 +102,12 @@ extension ExprSyntax {
     }
 }
 
-internal func idiomLoopPreservesTypedThrows(_ loop: ForStmtSyntax) -> Swift.Bool {
+internal func idiomLoopPreservesTypedThrows(_ loop: ForStmtSyntax) -> Swift::Bool {
     guard idiomContainsTryExpression(Syntax(loop.body)) else { return false }
     return idiomEnclosingDeclHasTypedThrows(Syntax(loop))
 }
 
-private func idiomContainsTryExpression(_ node: Syntax) -> Swift.Bool {
+private func idiomContainsTryExpression(_ node: Syntax) -> Swift::Bool {
     if let tryExpr = node.as(TryExprSyntax.self), tryExpr.questionOrExclamationMark == nil {
         return true
     }
@@ -117,7 +117,7 @@ private func idiomContainsTryExpression(_ node: Syntax) -> Swift.Bool {
     return false
 }
 
-private func idiomEnclosingDeclHasTypedThrows(_ node: Syntax) -> Swift.Bool {
+private func idiomEnclosingDeclHasTypedThrows(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
         if let function = candidate.as(FunctionDeclSyntax.self) {

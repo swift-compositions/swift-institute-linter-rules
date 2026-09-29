@@ -39,14 +39,14 @@ extension Lint.Rule {
   )
 }
 
-private let taggedExtensionPublicInitMessage: Swift.String =
+private let taggedExtensionPublicInitMessage: Swift::String =
   "[tagged extension public init] [PATTERN-019]: extensions on `Tagged` "
   + "MUST NOT provide `public init` — bypasses the brand's bounded invariants. "
   + "Callers reaching through an extension init never cross the validation gate "
   + "the tag owner controls. Drop the init, or move construction behind a "
   + "validating factory at the brand owner's layer."
 
-private let taggedExtensionPublicInitProtocolWitnessCitations: [Swift.String: Swift.String] = [
+private let taggedExtensionPublicInitProtocolWitnessCitations: [Swift::String: Swift::String] = [
   "ExpressibleByIntegerLiteral":
     "Swift.ExpressibleByIntegerLiteral — init(integerLiteral:) protocol witness",
   "ExpressibleByFloatLiteral":
@@ -136,9 +136,9 @@ internal final class RawValueTaggedExtensionPublicInitVisitor: SyntaxVisitor {
     return hasPublicModifier(extensionModifiers)
   }
 
-  private func inheritanceLeafNames(_ clause: InheritanceClauseSyntax?) -> [Swift.String] {
+  private func inheritanceLeafNames(_ clause: InheritanceClauseSyntax?) -> [Swift::String] {
     guard let clause else { return [] }
-    var names: [Swift.String] = []
+    var names: [Swift::String] = []
     for inherited in clause.inheritedTypes {
       if let identifier = inherited.type.as(IdentifierTypeSyntax.self) {
         names.append(identifier.name.text)
@@ -149,7 +149,7 @@ internal final class RawValueTaggedExtensionPublicInitVisitor: SyntaxVisitor {
     return names
   }
 
-  private func isFreeGenericTagDomainExtension(_ clause: GenericWhereClauseSyntax?) -> Swift.Bool {
+  private func isFreeGenericTagDomainExtension(_ clause: GenericWhereClauseSyntax?) -> Swift::Bool {
     guard let clause else { return false }
     var bindsUnderlying = false
     var bindsTag = false

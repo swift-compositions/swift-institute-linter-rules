@@ -30,8 +30,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`bitpattern rawvalue chain Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "test.swift"
+    in source: Swift::String,
+    file: Swift::String = "test.swift"
   ) -> [Diagnostic
     .Record]
   {
@@ -42,8 +42,8 @@ extension Lint.Rule.`bitpattern rawvalue chain Tests` {
   /// Findings against a run whose brand pre-pass stamped `types`
   /// (#23 finding 21: `Lint.Brand.owned` whole-run self-suppression).
   static func findings(
-    in source: Swift.String,
-    types: Swift.Set<Swift.String>
+    in source: Swift::String,
+    types: Swift::Set<Swift::String>
   ) -> [Diagnostic.Record] {
     let parsed = Lint.Source.parsed(from: source, types: types)
     return Lint.Rule.`bitpattern rawvalue chain`.observe(parsed, .warning).findings

@@ -38,7 +38,7 @@ extension Lint.Rule {
   )
 }
 
-private let namingCompoundMessage: Swift.String =
+private let namingCompoundMessage: Swift::String =
   "[compound identifier] [API-NAME-002]: method or property has a compound "
   + "camelCase name (e.g., `walkFiles` instead of `walk.files()`). "
   + "**Default disposition**: refactor to nested accessors — "
@@ -92,11 +92,11 @@ private let namingCompoundMessage: Swift.String =
   + "stdlib-mirror vocabulary, propose adding it to "
   + "`namingCompoundSwiftNativeIdiomCitations` with its Swift citation."
 
-private let namingCompoundBooleanPrefixes: [Swift.String] = [
+private let namingCompoundBooleanPrefixes: [Swift::String] = [
   "is", "has", "should", "will", "did", "can", "must",
 ]
 
-private let namingCompoundSwiftNativeIdiomCitations: [Swift.String: Swift.String] = [
+private let namingCompoundSwiftNativeIdiomCitations: [Swift::String: Swift::String] = [
   "rawValue": "Swift.RawRepresentable.rawValue",
   "customMirror": "Swift.CustomReflectable.customMirror",
   "description": "Swift.CustomStringConvertible.description",
@@ -150,7 +150,7 @@ private let namingCompoundSwiftNativeIdiomCitations: [Swift.String: Swift.String
 ]
 
 private let namingCompoundProtocolWitnessMethodCitations:
-  [Swift.String: (citation: Swift.String, conformanceGated: Swift.Bool)] = [
+  [Swift::String: (citation: Swift::String, conformanceGated: Swift::Bool)] = [
     "encodeAtomicRepresentation": (
       "Swift.AtomicRepresentable.encodeAtomicRepresentation(_:)", true
     ),
@@ -296,7 +296,7 @@ internal final class NamingCompoundVisitor: SyntaxVisitor {
     return false
   }
 
-  private func isCompoundIdentifier(_ name: Swift.String) -> Bool {
+  private func isCompoundIdentifier(_ name: Swift::String) -> Bool {
     guard namingCompoundSwiftNativeIdiomCitations[name] == nil else {
       return false
     }

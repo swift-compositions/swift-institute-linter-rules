@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let byteStdlibForwarderOutsideSLIMessage: Swift.String =
+internal let byteStdlibForwarderOutsideSLIMessage: Swift::String =
     "[stdlib forwarder outside sli] [API-BYTE-007]: declaration extends "
     + "a stdlib type (Array, ContiguousArray, ArraySlice, Span, "
     + "UnsafeBufferPointer, …), carries `@_disfavoredOverload`, and "
@@ -58,7 +58,7 @@ internal final class ByteStdlibForwarderOutsideSLIVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    private let hostIsSLI: Swift.Bool
+    private let hostIsSLI: Swift::Bool
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -122,9 +122,9 @@ internal final class ByteStdlibForwarderOutsideSLIVisitor: SyntaxVisitor {
     }
 }
 
-private func byteStdlibForwarderHostIsSLI(_ filePath: Swift.String) -> Swift.Bool {
+private func byteStdlibForwarderHostIsSLI(_ filePath: Swift::String) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true).map(
-        Swift.String.init
+        Swift::String.init
     )
     for index in components.indices.reversed() where components[index] == "Sources" {
         let targetIndex = components.index(after: index)
@@ -137,7 +137,7 @@ private func byteStdlibForwarderHostIsSLI(_ filePath: Swift.String) -> Swift.Boo
 private func byteStdlibForwarderHasDisfavoredOverload(
     _ attributes: AttributeListSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     for attribute in attributes {
         guard let attr = attribute.as(AttributeSyntax.self) else { continue }
@@ -148,7 +148,7 @@ private func byteStdlibForwarderHasDisfavoredOverload(
     return false
 }
 
-private func byteStdlibForwarderFunctionMentionsUInt8(_ node: FunctionDeclSyntax) -> Swift.Bool {
+private func byteStdlibForwarderFunctionMentionsUInt8(_ node: FunctionDeclSyntax) -> Swift::Bool {
     for parameter in node.signature.parameterClause.parameters {
         if byteStdlibForwarderTypeMentionsUInt8(parameter.type) {
             return true
@@ -170,7 +170,7 @@ private func byteStdlibForwarderFunctionMentionsUInt8(_ node: FunctionDeclSyntax
 private func byteStdlibForwarderInitializerMentionsUInt8(
     _ node: InitializerDeclSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     for parameter in node.signature.parameterClause.parameters {
         if byteStdlibForwarderTypeMentionsUInt8(parameter.type) {
@@ -188,7 +188,7 @@ private func byteStdlibForwarderInitializerMentionsUInt8(
 private func byteStdlibForwarderWhereClauseMentionsUInt8(
     _ whereClause: GenericWhereClauseSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     for requirement in whereClause.requirements {
         if let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self) {
@@ -207,7 +207,7 @@ private func byteStdlibForwarderWhereClauseMentionsUInt8(
     return false
 }
 
-private func byteStdlibForwarderTypeMentionsUInt8(_ type: TypeSyntax) -> Swift.Bool {
+private func byteStdlibForwarderTypeMentionsUInt8(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         let leaf = Lint.Syntax.Identifier.unescaped(identifier.name.text)
         if leaf == "UInt8" {
@@ -276,7 +276,7 @@ private func byteStdlibForwarderTypeMentionsUInt8(_ type: TypeSyntax) -> Swift.B
     return false
 }
 
-private let byteStdlibForwarderStdlibTypeLeafNames: Swift.Set<Swift.String> = [
+private let byteStdlibForwarderStdlibTypeLeafNames: Swift::Set<Swift::String> = [
     "Array",
     "ContiguousArray",
     "ArraySlice",
@@ -324,7 +324,7 @@ private func byteStdlibForwarderEnclosingExtension(_ node: Syntax) -> ExtensionD
 private func byteStdlibForwarderExtensionConstraintMentionsUInt8(
     _ ext: ExtensionDeclSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     if let whereClause = ext.genericWhereClause,
         byteStdlibForwarderWhereClauseMentionsUInt8(whereClause)
@@ -334,7 +334,7 @@ private func byteStdlibForwarderExtensionConstraintMentionsUInt8(
     return byteStdlibForwarderTypeMentionsUInt8(ext.extendedType)
 }
 
-private func byteStdlibForwarderTypeIsStdlibType(_ type: TypeSyntax) -> Swift.Bool {
+private func byteStdlibForwarderTypeIsStdlibType(_ type: TypeSyntax) -> Swift::Bool {
     if let memberType = type.as(MemberTypeSyntax.self) {
         if let baseIdentifier = memberType.baseType.as(IdentifierTypeSyntax.self),
             Lint.Syntax.Identifier.unescaped(baseIdentifier.name.text) == "Swift"
@@ -356,8 +356,8 @@ private func byteStdlibForwarderTypeIsStdlibType(_ type: TypeSyntax) -> Swift.Bo
     return false
 }
 
-private func byteStdlibForwarderTypeIsStdlibScalar(_ type: TypeSyntax) -> Swift.Bool {
-    let name: Swift.String? =
+private func byteStdlibForwarderTypeIsStdlibScalar(_ type: TypeSyntax) -> Swift::Bool {
+    let name: Swift::String? =
         if let identifier = type.as(IdentifierTypeSyntax.self) {
             Lint.Syntax.Identifier.unescaped(identifier.name.text)
         } else if let member = type.as(MemberTypeSyntax.self),
@@ -370,7 +370,7 @@ private func byteStdlibForwarderTypeIsStdlibScalar(_ type: TypeSyntax) -> Swift.
     return name.map(byteStdlibForwarderStdlibScalarNames.contains) ?? false
 }
 
-private let byteStdlibForwarderStdlibScalarNames: Swift.Set<Swift.String> = [
+private let byteStdlibForwarderStdlibScalarNames: Swift::Set<Swift::String> = [
     "UInt8", "Int8", "UInt16", "Int16", "UInt32", "Int32", "UInt64", "Int64",
     "UInt", "Int", "Bool", "Character", "Double", "Float",
 ]

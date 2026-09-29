@@ -35,28 +35,28 @@ extension Lint.Rule {
   )
 }
 
-internal func namingPathGrammarDirectoryIsExempt(_ segment: Swift.String) -> Swift.Bool {
+internal func namingPathGrammarDirectoryIsExempt(_ segment: Swift::String) -> Swift::Bool {
   if segment.hasSuffix(".docc") { return true }
   if segment == ".snapshots" { return true }
   return false
 }
 
 internal func namingPathGrammarSnapshotDirectoryIsInvalid(
-  _ segment: Swift.String
-) -> Swift.Bool {
+  _ segment: Swift::String
+) -> Swift::Bool {
   guard segment != ".snapshots" else { return false }
   return segment.filter { $0.isLetter }.lowercased() == "snapshots"
 }
 
-internal func namingPathGrammarCompoundWords(in segment: Swift.String) -> [Swift.String] {
-  segment.split(separator: " ").map(Swift.String.init).filter(namingWordIsCompound)
+internal func namingPathGrammarCompoundWords(in segment: Swift::String) -> [Swift::String] {
+  segment.split(separator: " ").map(Swift::String.init).filter(namingWordIsCompound)
 }
 
 @usableFromInline
 internal func namingPathGrammarDirectoryMessage(
-  segment: Swift.String,
-  words: [Swift.String]
-) -> Swift.String {
+  segment: Swift::String,
+  words: [Swift::String]
+) -> Swift::String {
   "[path name grammar]: directory '\(segment)' contains concatenated "
     + "word\(words.count == 1 ? "" : "s") "
     + words.map { "'\($0)'" }.joined(separator: ", ")
@@ -66,17 +66,17 @@ internal func namingPathGrammarDirectoryMessage(
 
 @usableFromInline
 internal func namingPathGrammarSnapshotDirectoryMessage(
-  segment: Swift.String
-) -> Swift.String {
+  segment: Swift::String
+) -> Swift::String {
   "[path name grammar]: snapshot-reference directory '\(segment)' uses a "
     + "noncanonical spelling — rename the directory to `.snapshots`"
 }
 
 @usableFromInline
 internal func namingPathGrammarBasenameMessage(
-  segment: Swift.String,
-  basename: Swift.String
-) -> Swift.String {
+  segment: Swift::String,
+  basename: Swift::String
+) -> Swift::String {
   "[path name grammar]: file name segment '\(segment)' in "
     + "'\(basename).swift' is a concatenated compound — file names are "
     + "the declared type's dotted Nest.Name path "
@@ -89,7 +89,7 @@ internal func namingPathGrammarFindings(
   tree: SourceFileSyntax
 ) -> [Diagnostic.Record] {
   let path = source.filePath
-  let parts = path.split(separator: "/", omittingEmptySubsequences: true).map(Swift.String.init)
+  let parts = path.split(separator: "/", omittingEmptySubsequences: true).map(Swift::String.init)
   guard parts.count >= 2 else { return [] }
   guard let rootIndex = parts.firstIndex(where: { $0 == "Sources" || $0 == "Tests" })
   else { return [] }
@@ -97,7 +97,7 @@ internal func namingPathGrammarFindings(
   guard filename.hasSuffix(".swift") else { return [] }
 
   var records: [Diagnostic.Record] = []
-  func emit(_ message: Swift.String) {
+  func emit(_ message: Swift::String) {
     records.append(
       Diagnostic.Record(
         location: Source.Location(
@@ -127,22 +127,22 @@ internal func namingPathGrammarFindings(
     }
   }
 
-  var basename = Swift.String(filename.dropLast(".swift".count))
+  var basename = Swift::String(filename.dropLast(".swift".count))
   if let plusIndex = basename.firstIndex(of: "+") {
-    basename = Swift.String(basename[basename.startIndex..<plusIndex])
+    basename = Swift::String(basename[basename.startIndex..<plusIndex])
   }
   if let whereRange = basename.range(of: " where ") {
-    basename = Swift.String(basename[basename.startIndex..<whereRange.lowerBound])
+    basename = Swift::String(basename[basename.startIndex..<whereRange.lowerBound])
   }
   let collector = NamingPathGrammarPrimaryTypeCollector()
   collector.walk(tree)
   guard collector.declaresPrimaryType else { return records }
-  for segment in basename.split(separator: ".").map(Swift.String.init) {
+  for segment in basename.split(separator: ".").map(Swift::String.init) {
     if namingWordIsCompound(segment) {
       emit(
         namingPathGrammarBasenameMessage(
           segment: segment,
-          basename: Swift.String(filename.dropLast(".swift".count))
+          basename: Swift::String(filename.dropLast(".swift".count))
         )
       )
     }
@@ -151,11 +151,11 @@ internal func namingPathGrammarFindings(
 }
 
 internal final class NamingPathGrammarPrimaryTypeCollector: SyntaxVisitor {
-  var declaresPrimaryType: Swift.Bool = false
+  var declaresPrimaryType: Swift::Bool = false
 
   init() { super.init(viewMode: .sourceAccurate) }
 
-  private func isPrimary(_ decl: DeclSyntax) -> Swift.Bool {
+  private func isPrimary(_ decl: DeclSyntax) -> Swift::Bool {
     if let classDecl = decl.as(ClassDeclSyntax.self) {
       return !Naming.Visitor.extends(classDecl.inheritanceClause)
     }

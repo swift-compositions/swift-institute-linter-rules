@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformOptimizeSuppressionMessage: Swift.String =
+internal let platformOptimizeSuppressionMessage: Swift::String =
     "[optimize suppression attribute] [ISSUE-008]: optimization-suppression "
     + "attribute (`@_optimize(none)`, `@_optimize(size)`, or "
     + "`@_semantics(\"optimize.no.*\")`) used as a crash-workaround. The "
@@ -50,7 +50,7 @@ internal let platformOptimizeSuppressionMessage: Swift.String =
 
 internal func platformOptimizeSuppressionSemanticsString(
     _ node: AttributeSyntax
-) -> Swift.String? {
+) -> Swift::String? {
     guard case .argumentList(let arguments)? = node.arguments,
         let first = arguments.first,
         let literal = first.expression.as(StringLiteralExprSyntax.self)

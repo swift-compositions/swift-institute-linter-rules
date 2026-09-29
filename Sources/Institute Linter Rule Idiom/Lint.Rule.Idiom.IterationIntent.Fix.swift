@@ -3,14 +3,14 @@ internal import SwiftSyntax
 
 internal func idiomIterationIntentFixed(
     _ source: borrowing Lint.Source.Parsed
-) -> Swift.String? {
+) -> Swift::String? {
     let rewriter = IdiomIterationIntentRewriter()
     let rewritten = rewriter.visit(source.tree)
     guard rewriter.changed else { return nil }
     return rewritten.description
 }
 
-internal func idiomIterationIntentIsFixable(_ loop: ForStmtSyntax) -> Swift.Bool {
+internal func idiomIterationIntentIsFixable(_ loop: ForStmtSyntax) -> Swift::Bool {
     guard loop.pattern.is(IdentifierPatternSyntax.self) else { return false }
     guard idiomIsRangeExpression(loop.sequence) else { return false }
     guard !idiomLoopPreservesTypedThrows(loop) else { return false }
@@ -24,7 +24,7 @@ internal func idiomIterationIntentIsFixable(_ loop: ForStmtSyntax) -> Swift.Bool
 
 private func idiomIterationIntentReferencesOwnershipAnnotatedBinding(
     _ loop: ForStmtSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     let names = idiomEnclosingOwnershipAnnotatedParameterNames(Syntax(loop))
     guard !names.isEmpty else { return false }
     return idiomSubtreeReferencesAnyName(names, in: Syntax(loop.body))
@@ -32,7 +32,7 @@ private func idiomIterationIntentReferencesOwnershipAnnotatedBinding(
 
 private func idiomEnclosingOwnershipAnnotatedParameterNames(
     _ node: Syntax
-) -> Swift.Set<Swift.String> {
+) -> Swift::Set<Swift::String> {
     var current: Syntax? = node.parent
     while let candidate = current {
         if let function = candidate.as(FunctionDeclSyntax.self) {
@@ -55,8 +55,8 @@ private func idiomEnclosingOwnershipAnnotatedParameterNames(
 
 private func idiomOwnershipAnnotatedParameterNames(
     _ parameters: FunctionParameterListSyntax
-) -> Swift.Set<Swift.String> {
-    var names: Swift.Set<Swift.String> = []
+) -> Swift::Set<Swift::String> {
+    var names: Swift::Set<Swift::String> = []
     for parameter in parameters {
         guard let attributed = parameter.type.as(AttributedTypeSyntax.self) else { continue }
         for specifier in attributed.specifiers {
@@ -71,9 +71,9 @@ private func idiomOwnershipAnnotatedParameterNames(
 }
 
 private func idiomSubtreeReferencesAnyName(
-    _ names: Swift.Set<Swift.String>,
+    _ names: Swift::Set<Swift::String>,
     in node: Syntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     if node.is(ClosureExprSyntax.self) { return false }
     if node.is(FunctionDeclSyntax.self) { return false }
     if let reference = node.as(DeclReferenceExprSyntax.self) {
@@ -85,7 +85,7 @@ private func idiomSubtreeReferencesAnyName(
     return false
 }
 
-private func idiomIterationIntentDropsComments(_ loop: ForStmtSyntax) -> Swift.Bool {
+private func idiomIterationIntentDropsComments(_ loop: ForStmtSyntax) -> Swift::Bool {
     let dropped: [Trivia] = [
         loop.forKeyword.trailingTrivia,
         loop.pattern.leadingTrivia,
@@ -99,7 +99,7 @@ private func idiomIterationIntentDropsComments(_ loop: ForStmtSyntax) -> Swift.B
     return dropped.contains(where: idiomTriviaHasComment)
 }
 
-private func idiomTriviaHasComment(_ trivia: Trivia) -> Swift.Bool {
+private func idiomTriviaHasComment(_ trivia: Trivia) -> Swift::Bool {
     for piece in trivia {
         switch piece {
         case .spaces, .tabs, .newlines, .carriageReturns, .carriageReturnLineFeeds,
@@ -113,7 +113,7 @@ private func idiomTriviaHasComment(_ trivia: Trivia) -> Swift.Bool {
     return false
 }
 
-private func idiomIterationIntentProducesContent(_ loop: ForStmtSyntax) -> Swift.Bool {
+private func idiomIterationIntentProducesContent(_ loop: ForStmtSyntax) -> Swift::Bool {
     var node: Syntax? = Syntax(loop).parent
     while let current = node {
         if current.is(ClosureExprSyntax.self) { return true }
@@ -135,17 +135,17 @@ private func idiomDeclarationAttributes(_ node: Syntax) -> AttributeListSyntax? 
     return nil
 }
 
-private func idiomAttributesNameABuilder(_ attributes: AttributeListSyntax) -> Swift.Bool {
+private func idiomAttributesNameABuilder(_ attributes: AttributeListSyntax) -> Swift::Bool {
     for element in attributes {
         guard case .attribute(let attribute) = element else { continue }
         let name = attribute.attributeName.trimmedDescription
-        let simple = name.split(separator: ".").last.map(Swift.String.init) ?? name
+        let simple = name.split(separator: ".").last.map(Swift::String.init) ?? name
         if simple.hasSuffix("Builder") { return true }
     }
     return false
 }
 
-private func idiomDeclarationResultIsOpaque(_ node: Syntax) -> Swift.Bool {
+private func idiomDeclarationResultIsOpaque(_ node: Syntax) -> Swift::Bool {
     if let decl = node.as(FunctionDeclSyntax.self) {
         return idiomTypeIsOpaque(decl.signature.returnClause?.type)
     }
@@ -165,12 +165,12 @@ private func idiomDeclarationResultIsOpaque(_ node: Syntax) -> Swift.Bool {
     return false
 }
 
-private func idiomTypeIsOpaque(_ type: TypeSyntax?) -> Swift.Bool {
+private func idiomTypeIsOpaque(_ type: TypeSyntax?) -> Swift::Bool {
     guard let type = type?.as(SomeOrAnyTypeSyntax.self) else { return false }
     return type.someOrAnySpecifier.tokenKind == .keyword(.some)
 }
 
-private func idiomIterationIntentBodyEscapes(_ node: Syntax) -> Swift.Bool {
+private func idiomIterationIntentBodyEscapes(_ node: Syntax) -> Swift::Bool {
     if node.is(BreakStmtSyntax.self) { return true }
     if node.is(ContinueStmtSyntax.self) { return true }
     if node.is(ReturnStmtSyntax.self) { return true }
@@ -237,7 +237,7 @@ internal func idiomIterationIntentCall(for loop: ForStmtSyntax) -> ExprSyntax? {
 }
 
 internal final class IdiomIterationIntentRewriter: SyntaxRewriter {
-    var changed: Swift.Bool = false
+    var changed: Swift::Bool = false
 
     override func visit(_ node: CodeBlockItemSyntax) -> CodeBlockItemSyntax {
         guard case .stmt(let statement) = node.item,

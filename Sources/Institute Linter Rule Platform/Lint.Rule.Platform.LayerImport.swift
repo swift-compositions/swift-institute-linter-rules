@@ -50,7 +50,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let platformLayerImportMessage: Swift.String =
+internal let platformLayerImportMessage: Swift::String =
     "[platform layer import] [PLAT-ARCH-008]: non-platform-stack source "
     + "imports a platform-specific L2-spec or L3-policy module directly. "
     + "Consumers MUST import the L3-unifier surface (`import Kernel`, "
@@ -61,7 +61,7 @@ internal let platformLayerImportMessage: Swift.String =
     + "L3-unifier, `swift-file-system`) exists precisely so the rest of the "
     + "ecosystem doesn't need these imports."
 
-internal let platformLayerImportForbiddenModules: [Swift.String: Swift.String] = [
+internal let platformLayerImportForbiddenModules: [Swift::String: Swift::String] = [
     "Darwin_Kernel_Standard": "swift-darwin-standard",
     "Linux_Kernel_Standard": "swift-linux-standard",
     "Windows_32_Core": "swift-windows-32",
@@ -72,7 +72,7 @@ internal let platformLayerImportForbiddenModules: [Swift.String: Swift.String] =
     "POSIX_Kernel": "swift-posix",
 ]
 
-internal let platformLayerImportPlatformStackPackages: Swift.Set<Swift.String> = [
+internal let platformLayerImportPlatformStackPackages: Swift::Set<Swift::String> = [
     "swift-kernel",
     "swift-cpu",
     "swift-darwin",
@@ -82,7 +82,7 @@ internal let platformLayerImportPlatformStackPackages: Swift.Set<Swift.String> =
     "swift-darwin-standard",
     "swift-linux-standard",
     "swift-windows-32",
-    "swift-windows-standard",  // historical name; renamed to swift-windows-32 2026-04-30
+    "swift-windows-standard",
     "swift-posix",
     "swift-darwin",
     "swift-linux",
@@ -99,43 +99,43 @@ internal let platformLayerImportPlatformStackPackages: Swift.Set<Swift.String> =
 ]
 
 private func platformLayerImportIsInsidePlatformStackPackage(
-    _ filePath: Swift.String
-) -> Swift.Bool {
+    _ filePath: Swift::String
+) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     guard components.count > 1 else { return false }
     return components.dropLast().contains { component in
-        platformLayerImportPlatformStackPackages.contains(Swift.String(component))
+        platformLayerImportPlatformStackPackages.contains(Swift::String(component))
     }
 }
 
-private let platformLayerImportNonMainTargetRoots: [Swift.String] = [
+private let platformLayerImportNonMainTargetRoots: [Swift::String] = [
     "Tests",
     "Experiments",
     "Examples",
 ]
 
-private func platformLayerImportIsOutsideMainTarget(_ filePath: Swift.String) -> Swift.Bool {
+private func platformLayerImportIsOutsideMainTarget(_ filePath: Swift::String) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     guard components.count > 1 else { return false }
     return components.dropLast().contains { component in
-        platformLayerImportNonMainTargetRoots.contains(Swift.String(component))
+        platformLayerImportNonMainTargetRoots.contains(Swift::String(component))
     }
 }
 
-private func platformLayerImportIsPackageManifest(_ filePath: Swift.String) -> Swift.Bool {
+private func platformLayerImportIsPackageManifest(_ filePath: Swift::String) -> Swift::Bool {
     guard let filename = filePath.split(separator: "/", omittingEmptySubsequences: true).last
     else { return false }
     if filename == "Package.swift" { return true }
     return filename.hasPrefix("Package@swift-") && filename.hasSuffix(".swift")
 }
 
-private func platformLayerImportIsInsideHiddenDirectory(_ filePath: Swift.String) -> Swift.Bool {
+private func platformLayerImportIsInsideHiddenDirectory(_ filePath: Swift::String) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     return components.contains { $0.hasPrefix(".") }
 }
 
-internal func platformLayerImportForbiddenPackage(_ pathText: Swift.String) -> Swift.String? {
-    let firstComponent = pathText.split(separator: ".").first.map(Swift.String.init) ?? pathText
+internal func platformLayerImportForbiddenPackage(_ pathText: Swift::String) -> Swift::String? {
+    let firstComponent = pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText
     return platformLayerImportForbiddenModules[firstComponent]
 }
 
@@ -144,7 +144,7 @@ internal final class PlatformLayerImportVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    private var reportedModules: Swift.Set<Swift.String> = []
+    private var reportedModules: Swift::Set<Swift::String> = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -155,7 +155,7 @@ internal final class PlatformLayerImportVisitor: SyntaxVisitor {
 
     override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
         let pathText = node.path.trimmedDescription
-        let firstComponent = pathText.split(separator: ".").first.map(Swift.String.init) ?? pathText
+        let firstComponent = pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText
         guard platformLayerImportForbiddenModules[firstComponent] != nil else {
             return .visitChildren
         }

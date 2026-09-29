@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsFullyQualifiedErrorMessage: Swift.String =
+internal let throwsFullyQualifiedErrorMessage: Swift::String =
     "[fully qualified error in typed throws]: bare `throws(Error)` loses the "
     + "owning domain from the local signature; spell the complete nested type "
     + "path (for example `throws(Algebra.Field<Element>.Error)`)."

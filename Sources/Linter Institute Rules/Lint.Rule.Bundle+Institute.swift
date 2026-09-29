@@ -1,23 +1,23 @@
-public import Institute_Linter_Rule_Architecture
-public import Institute_Linter_Rule_Byte
-public import Institute_Linter_Rule_Cardinal
-public import Institute_Linter_Rule_Closure
-public import Institute_Linter_Rule_Conformance
-public import Institute_Linter_Rule_Foundation
-public import Institute_Linter_Rule_Framework
-public import Institute_Linter_Rule_Idiom
-public import Institute_Linter_Rule_Manifest
-public import Institute_Linter_Rule_Memory
-public import Institute_Linter_Rule_Naming
-public import Institute_Linter_Rule_Platform
-public import Institute_Linter_Rule_RawValue
-public import Institute_Linter_Rule_Structure
-public import Institute_Linter_Rule_Testing
-public import Institute_Linter_Rule_Throws
-public import Institute_Linter_Rule_Try
-public import Institute_Linter_Rule_Unchecked
+internal import Institute_Linter_Rule_Architecture
+internal import Institute_Linter_Rule_Byte
+internal import Institute_Linter_Rule_Cardinal
+internal import Institute_Linter_Rule_Closure
+internal import Institute_Linter_Rule_Conformance
+internal import Institute_Linter_Rule_Foundation
+internal import Institute_Linter_Rule_Framework
+internal import Institute_Linter_Rule_Idiom
+internal import Institute_Linter_Rule_Manifest
+internal import Institute_Linter_Rule_Memory
+internal import Institute_Linter_Rule_Naming
+internal import Institute_Linter_Rule_Platform
+internal import Institute_Linter_Rule_RawValue
+internal import Institute_Linter_Rule_Structure
+internal import Institute_Linter_Rule_Testing
+internal import Institute_Linter_Rule_Throws
+internal import Institute_Linter_Rule_Try
+internal import Institute_Linter_Rule_Unchecked
 public import Lint
-public import Linter_Rules
+internal import Linter_Rules
 
 extension Lint.Rule.Bundle {
     public static let institute: [Lint.Rule.Configuration] =
@@ -59,7 +59,7 @@ extension Lint.Rule.Bundle {
             .enable(.`intermediate binding then return`),
             .enable(.`counter loop iteration`),
             .enable(.`string utf8 scanning`),
-            .enable(.`sli literal`),  // [IDX-019] (/promote-rule 2026-07-06)
+            .enable(.`sli literal`),
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
             .enable(.`path dependency`),
@@ -94,7 +94,7 @@ extension Lint.Rule.Bundle {
             .enable(.`convention c representability`),
             .enable(.`dead case per platform`),
             .enable(.`compound platform namespace root`),
-            .enable(.`optimize suppression attribute`),  // [ISSUE-008] (/promote-rule 2026-07-06)
+            .enable(.`optimize suppression attribute`),
             .enable(.`optionset shell pattern`),
             .enable(.`platform layer import`),
             .enable(.`canimport conditional`),

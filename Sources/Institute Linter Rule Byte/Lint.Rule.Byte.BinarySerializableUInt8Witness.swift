@@ -40,7 +40,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let byteBinarySerializableUInt8WitnessMessage: Swift.String =
+internal let byteBinarySerializableUInt8WitnessMessage: Swift::String =
     "[binary serializable uint8 witness] [API-BYTE-003]: `Binary."
     + "Serializable` / `Binary.Parseable` witness uses `Buffer.Element == "
     + "UInt8` (or `Source.Element == UInt8`). The protocol surface is now "
@@ -48,12 +48,12 @@ internal let byteBinarySerializableUInt8WitnessMessage: Swift.String =
     + "where-clause to `== Byte`. If this is a stdlib-interop forwarder, "
     + "add `@_disfavoredOverload` per [API-BYTE-006]."
 
-private let byteSerializableLikeProtocolPairs: [(host: Swift.String, name: Swift.String)] = [
+private let byteSerializableLikeProtocolPairs: [(host: Swift::String, name: Swift::String)] = [
     ("Binary", "Serializable"),
     ("Binary", "Parseable"),
 ]
 
-private let byteWitnessElementTypeParameterNames: Swift.Set<Swift.String> = [
+private let byteWitnessElementTypeParameterNames: Swift::Set<Swift::String> = [
     "Buffer",
     "Bytes",
     "Source",
@@ -67,7 +67,7 @@ internal final class ByteBinarySerializableUInt8WitnessVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    private var contextStack: [Swift.Bool] = []
+    private var contextStack: [Swift::Bool] = []
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -138,13 +138,13 @@ internal final class ByteBinarySerializableUInt8WitnessVisitor: SyntaxVisitor {
     }
 }
 
-internal let byteWitnessFunctionNames: Swift.Set<Swift.String> = [
+internal let byteWitnessFunctionNames: Swift::Set<Swift::String> = [
     "serialize",
     "parse",
     "init",
 ]
 
-internal func extensionConformsToSerializableLike(_ node: ExtensionDeclSyntax) -> Swift.Bool {
+internal func extensionConformsToSerializableLike(_ node: ExtensionDeclSyntax) -> Swift::Bool {
     if let inheritance = node.inheritanceClause {
         for inherited in inheritance.inheritedTypes {
             if byteTypeMatchesSerializableLike(inherited.type) {
@@ -158,7 +158,7 @@ internal func extensionConformsToSerializableLike(_ node: ExtensionDeclSyntax) -
     return false
 }
 
-private func byteTypeMatchesSerializableLike(_ type: TypeSyntax) -> Swift.Bool {
+private func byteTypeMatchesSerializableLike(_ type: TypeSyntax) -> Swift::Bool {
     guard let memberType = type.as(MemberTypeSyntax.self) else { return false }
     let trailingName = Lint.Syntax.Identifier.unescaped(memberType.name.text)
     guard let rootName = byteRootIdentifierName(memberType.baseType) else { return false }
@@ -169,7 +169,7 @@ private func byteTypeMatchesSerializableLike(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-private func byteRootIdentifierName(_ type: TypeSyntax) -> Swift.String? {
+private func byteRootIdentifierName(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text)
     }
@@ -179,7 +179,7 @@ private func byteRootIdentifierName(_ type: TypeSyntax) -> Swift.String? {
     return nil
 }
 
-internal func byteFunctionHasDisfavoredOverload(_ attributes: AttributeListSyntax) -> Swift.Bool {
+internal func byteFunctionHasDisfavoredOverload(_ attributes: AttributeListSyntax) -> Swift::Bool {
     for element in attributes {
         guard let attribute = element.as(AttributeSyntax.self) else { continue }
         guard let identifier = attribute.attributeName.as(IdentifierTypeSyntax.self) else {
@@ -195,21 +195,21 @@ internal func byteFunctionHasDisfavoredOverload(_ attributes: AttributeListSynta
 private func byteRequirementIsElementEqualsUInt8(
     _ requirement: GenericRequirementSyntax
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     guard let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self) else {
         return false
     }
     let left = sameType.leftType.trimmedDescription
     let right = sameType.rightType.trimmedDescription
-    let leftIsElement: Swift.Bool = {
+    let leftIsElement: Swift::Bool = {
         let parts = left.split(separator: ".")
         guard parts.count == 2 else { return false }
-        guard Lint.Syntax.Identifier.unescaped(Swift.String(parts[1])) == "Element" else {
+        guard Lint.Syntax.Identifier.unescaped(Swift::String(parts[1])) == "Element" else {
             return false
         }
         return byteWitnessElementTypeParameterNames.contains(
-            Lint.Syntax.Identifier.unescaped(Swift.String(parts[0]))
+            Lint.Syntax.Identifier.unescaped(Swift::String(parts[0]))
         )
     }()
     guard leftIsElement else { return false }

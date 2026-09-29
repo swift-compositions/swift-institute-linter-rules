@@ -1,6 +1,6 @@
 internal import SwiftSyntax
 
-internal func throwsInitializerSelector(_ node: InitializerDeclSyntax) -> Swift.String {
+internal func throwsInitializerSelector(_ node: InitializerDeclSyntax) -> Swift::String {
     var selector = "init("
     for parameter in node.signature.parameterClause.parameters {
         selector += parameter.firstName.text
@@ -11,9 +11,9 @@ internal func throwsInitializerSelector(_ node: InitializerDeclSyntax) -> Swift.
 }
 
 internal func throwsIsCanonicalWitnessSignature(
-    protocolSuffix: Swift.String,
+    protocolSuffix: Swift::String,
     parameters: FunctionParameterListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     guard parameters.count == 1, let parameter = parameters.first else { return false }
     let parameterTypeSuffix = throwsLastNameComponent(throwsUnwrappedConstraint(parameter.type))
     switch protocolSuffix {
@@ -38,7 +38,7 @@ internal func throwsInheritanceClause(of node: Syntax) -> InheritanceClauseSynta
     return nil
 }
 
-internal func throwsLastNameComponent(_ type: TypeSyntax) -> Swift.String {
+internal func throwsLastNameComponent(_ type: TypeSyntax) -> Swift::String {
     if let member = type.as(MemberTypeSyntax.self) { return member.name.text }
     if let identifier = type.as(IdentifierTypeSyntax.self) { return identifier.name.text }
     return type.trimmedDescription

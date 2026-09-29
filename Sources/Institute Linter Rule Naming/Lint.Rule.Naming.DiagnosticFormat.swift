@@ -43,7 +43,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let namingDiagnosticFormatMessage: Swift.String =
+internal let namingDiagnosticFormatMessage: Swift::String =
   "[diagnostic message format] [API-NAME-009]: `static let message` does "
   + "not follow the educational-diagnostic format `[<rule_id>] <citation>: "
   + "<description>`. The leading bracket carries the rule id (snake_case or "
@@ -52,18 +52,18 @@ internal let namingDiagnosticFormatMessage: Swift.String =
   + "path (`Research/typed-throws-rationale.md`), and a `: ` separates the "
   + "citation from the description."
 
-internal func namingDiagnosticFormatIsLintRuleSource(_ filePath: Swift.String) -> Swift.Bool {
+internal func namingDiagnosticFormatIsLintRuleSource(_ filePath: Swift::String) -> Swift::Bool {
   let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
   guard let filename = components.last else { return false }
   guard components.dropLast().contains("Sources") else { return false }
   guard !components.contains(where: { $0.hasPrefix(".") }) else { return false }
   guard filename.hasSuffix(".swift") else { return false }
-  let stem = Swift.String(filename.dropLast(".swift".count))
+  let stem = Swift::String(filename.dropLast(".swift".count))
   guard stem.hasPrefix("Lint.Rule.") else { return false }
   return stem.filter { $0 == "." }.count >= 3
 }
 
-internal func namingDiagnosticFormatMatches(_ text: Swift.String) -> Swift.Bool {
+internal func namingDiagnosticFormatMatches(_ text: Swift::String) -> Swift::Bool {
   var bytes = [Byte](utf8: text)[...]
   guard bytes.first?.bitPattern == 0x5B else { return false }
   bytes = bytes.dropFirst()
@@ -92,12 +92,12 @@ internal func namingDiagnosticFormatMatches(_ text: Swift.String) -> Swift.Bool 
   return namingDiagnosticFormatIsWhitespace(after)
 }
 
-private func namingDiagnosticFormatIsWord(_ byte: Byte) -> Swift.Bool {
+private func namingDiagnosticFormatIsWord(_ byte: Byte) -> Swift::Bool {
   (byte.bitPattern >= 0x61 && byte.bitPattern <= 0x7A) || (byte.bitPattern >= 0x41 && byte.bitPattern <= 0x5A)
     || (byte.bitPattern >= 0x30 && byte.bitPattern <= 0x39) || byte.bitPattern == 0x5F
 }
 
-private func namingDiagnosticFormatIsWhitespace(_ byte: Byte) -> Swift.Bool {
+private func namingDiagnosticFormatIsWhitespace(_ byte: Byte) -> Swift::Bool {
   byte.bitPattern == 0x20 || byte.bitPattern == 0x09 || byte.bitPattern == 0x0A || byte.bitPattern == 0x0D
     || byte.bitPattern == 0x0B || byte.bitPattern == 0x0C
 }
@@ -150,12 +150,12 @@ internal final class NamingDiagnosticFormatVisitor: SyntaxVisitor {
 
 internal func namingDiagnosticFormatConcatenatedLiteral(
   _ expression: ExprSyntax
-) -> Swift.String? {
+) -> Swift::String? {
   if let literal = expression.as(StringLiteralExprSyntax.self) {
     return namingDiagnosticFormatLiteralText(literal)
   }
   if let sequence = expression.as(SequenceExprSyntax.self) {
-    var parts: [Swift.String] = []
+    var parts: [Swift::String] = []
     for (index, element) in sequence.elements.enumerated() {
       if index % 2 == 0 {
         guard let literal = element.as(StringLiteralExprSyntax.self) else {
@@ -187,7 +187,7 @@ internal func namingDiagnosticFormatConcatenatedLiteral(
 
 private func namingDiagnosticFormatLiteralText(
   _ literal: StringLiteralExprSyntax
-) -> Swift.String {
+) -> Swift::String {
   var text = ""
   for segment in literal.segments {
     switch segment {

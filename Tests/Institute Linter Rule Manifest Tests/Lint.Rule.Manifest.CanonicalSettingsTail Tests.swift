@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`canonical settings tail Tests` {
   static func observation(
-    _ source: Swift.String,
-    file: Swift.String = "Package.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Package.swift"
   ) -> Lint.Rule.Observation {
     Lint.Rule.`canonical settings tail`.observe(Lint.Source.parsed(from: source, file: file), .warning)
   }
@@ -74,7 +74,7 @@ extension Lint.Rule.`canonical settings tail Tests`.Integration {
 }
 
 extension Lint.Rule.`canonical settings tail Tests`.Integration {
-  static func repair(_ source: Swift.String) -> Lint.Rule.Repair.Proposal {
+  static func repair(_ source: Swift::String) -> Lint.Rule.Repair.Proposal {
     Lint.Rule.`canonical settings tail`.repair(Lint.Source.parsed(from: source, file: "Package.swift"))
   }
 

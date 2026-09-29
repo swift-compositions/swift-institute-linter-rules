@@ -2,7 +2,7 @@ internal import SwiftSyntax
 
 internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
 
-    private static let requiredSettings: [Swift.String] = [
+    private static let requiredSettings: [Swift::String] = [
         ".strictMemorySafety()",
         ".enableUpcomingFeature(\"ExistentialAny\")",
         ".enableUpcomingFeature(\"InternalImportsByDefault\")",
@@ -12,49 +12,49 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
         ".enableUpcomingFeature(\"InferIsolatedConformances\")",
     ]
 
-    private let sourceText: Swift.String
-    private let isL1: Swift.Bool
+    private let sourceText: Swift::String
+    private let isL1: Swift::Bool
     private var packageCalls = 0
     private var languageModeArgumentSeen = false
     private var languageModeValid = false
     private var languageModeUnhandled = false
     private var ordinaryTargetCount = 0
-    private var recognizedSettingsLoop: Swift.String?
-    private var wrongApplePlatforms: Swift.Set<Swift.String> = []
+    private var recognizedSettingsLoop: Swift::String?
+    private var wrongApplePlatforms: Swift::Set<Swift::String> = []
     private var platformShapeUnhandled = false
     private var l1MacroTarget = false
 
-    internal init(_ tree: SourceFileSyntax, filePath: Swift.String) {
+    internal init(_ tree: SourceFileSyntax, filePath: Swift::String) {
         self.sourceText = tree.description
         self.isL1 = filePath.contains("/swift-atoms/") || filePath.contains("/swift-molecules/")
         super.init(viewMode: .sourceAccurate)
         walk(tree)
     }
 
-    internal var toolsVersionIs64: Swift.Bool {
+    internal var toolsVersionIs64: Swift::Bool {
         guard let first = sourceText.split(separator: "\n", omittingEmptySubsequences: false).first
         else { return false }
         return first == "// swift-tools-version: 6.4"
     }
 
-    internal var languageModeIsV6: Swift.Bool {
+    internal var languageModeIsV6: Swift::Bool {
         languageModeArgumentSeen && languageModeValid
     }
 
-    internal var applePlatformsNotAtV27: Swift.Set<Swift.String> {
+    internal var applePlatformsNotAtV27: Swift::Set<Swift::String> {
         wrongApplePlatforms
     }
 
-    internal var hasOrdinaryTargets: Swift.Bool { ordinaryTargetCount > 0 }
+    internal var hasOrdinaryTargets: Swift::Bool { ordinaryTargetCount > 0 }
 
-    internal var hasL1MacroTarget: Swift.Bool { isL1 && l1MacroTarget }
+    internal var hasL1MacroTarget: Swift::Bool { isL1 && l1MacroTarget }
 
-    internal var missingOrdinaryTargetSettings: [Swift.String] {
+    internal var missingOrdinaryTargetSettings: [Swift::String] {
         guard let loop = recognizedSettingsLoop else { return Self.requiredSettings }
         return Self.requiredSettings.filter { !loop.contains($0) }
     }
 
-    internal var unmeasuredReason: Swift.String? {
+    internal var unmeasuredReason: Swift::String? {
         if packageCalls != 1 {
             return "expected exactly one Package initializer; found \(packageCalls)"
         }
@@ -141,7 +141,7 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
             platformShapeUnhandled = true
             return
         }
-        let apple = Swift.Set(["macOS", "iOS", "tvOS", "watchOS", "visionOS"])
+        let apple = Swift::Set(["macOS", "iOS", "tvOS", "watchOS", "visionOS"])
         for element in array.elements {
             guard let call = element.expression.as(FunctionCallExprSyntax.self),
                 let member = call.calledExpression.as(MemberAccessExprSyntax.self)
@@ -163,7 +163,7 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
         }
     }
 
-    private func isNestedInsideDependenciesArgument(_ node: Syntax) -> Swift.Bool {
+    private func isNestedInsideDependenciesArgument(_ node: Syntax) -> Swift::Bool {
         var current = node.parent
         while let candidate = current {
             if let labeled = candidate.as(LabeledExprSyntax.self),
@@ -176,7 +176,7 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
         return false
     }
 
-    private static func compact(_ syntax: some SyntaxProtocol) -> Swift.String {
+    private static func compact(_ syntax: some SyntaxProtocol) -> Swift::String {
         syntax.tokens(viewMode: .sourceAccurate).map(\.text).joined()
     }
 }

@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let tryOptionalMessage: Swift.String =
+internal let tryOptionalMessage: Swift::String =
     "[try optional] feedback_prefer_typed_throws_over_try_optional: "
     + "`try?` swallows the thrown error and returns `nil`, erasing both the error type "
     + "and the error instance. Prefer typed throws (`throws(E)`) so the error path stays "

@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingUnificationTypealiasMessage: Swift.String =
+private let namingUnificationTypealiasMessage: Swift::String =
     "[unification typealias] [API-NAME-004]: typealias renames a "
     + "member type to a different local name. Type unification MUST use the "
     + "canonical type at all call sites; a typealias bridge adds indirection "

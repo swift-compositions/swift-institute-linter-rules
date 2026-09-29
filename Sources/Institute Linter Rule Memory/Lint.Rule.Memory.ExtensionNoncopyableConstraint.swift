@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryExtensionConstraintInexpressibleTypes: Swift.Set<Swift.String> = [
+internal let memoryExtensionConstraintInexpressibleTypes: Swift::Set<Swift::String> = [
     "UnsafePointer",
     "UnsafeMutablePointer",
     "UnsafeRawPointer",
@@ -66,10 +66,10 @@ internal let memoryExtensionConstraintInexpressibleTypes: Swift.Set<Swift.String
 ]
 
 @usableFromInline
-internal let memoryExtensionConstraintInexpressibleQualifiedTypes: Swift.Set<Swift.String> = []
+internal let memoryExtensionConstraintInexpressibleQualifiedTypes: Swift::Set<Swift::String> = []
 
 @usableFromInline
-internal let memoryExtensionNoncopyableConstraintMessage: Swift.String =
+internal let memoryExtensionNoncopyableConstraintMessage: Swift::String =
     "[extension noncopyable constraint] [MEM-COPY-004]: extensions on `~Copyable`-"
     + "aware generic types MUST include explicit `where ... ~Copyable` constraints. "
     + "Without it, the extension is implicitly `where Element: Copyable` and the "
@@ -89,7 +89,7 @@ internal final class MemoryExtensionNoncopyableConstraintVisitor: SyntaxVisitor 
         super.init(viewMode: .sourceAccurate)
     }
 
-    private func extendedTypeLeafName(_ type: TypeSyntax) -> Swift.String? {
+    private func extendedTypeLeafName(_ type: TypeSyntax) -> Swift::String? {
         if let identifier = type.as(IdentifierTypeSyntax.self) {
             return identifier.name.text
         }
@@ -99,7 +99,7 @@ internal final class MemoryExtensionNoncopyableConstraintVisitor: SyntaxVisitor 
         return nil
     }
 
-    private func extendedTypeQualifiedName(_ type: TypeSyntax) -> Swift.String? {
+    private func extendedTypeQualifiedName(_ type: TypeSyntax) -> Swift::String? {
         if let identifier = type.as(IdentifierTypeSyntax.self) {
             return identifier.name.text
         }

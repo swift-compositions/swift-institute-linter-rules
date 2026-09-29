@@ -48,7 +48,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomFatalErrorOutsideTestsMessage: Swift.String =
+internal let idiomFatalErrorOutsideTestsMessage: Swift::String =
     "[fatal error outside tests] [SOURCE-FATAL-ERROR]: `fatalError` traps the "
     + "process; library and executable sources model the failure as a typed "
     + "error or make the state unrepresentable. `fatalError` is admitted only "
@@ -68,7 +68,7 @@ internal final class IdiomFatalErrorOutsideTestsVisitor: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        let isFatalError: Swift.Bool =
+        let isFatalError: Swift::Bool =
             if let reference = node.calledExpression.as(DeclReferenceExprSyntax.self) {
                 reference.baseName.text == "fatalError"
             } else if let member = node.calledExpression.as(MemberAccessExprSyntax.self) {

@@ -28,16 +28,16 @@ extension Lint.Rule {
 
 extension Lint.Rule.`bare string dependency Tests` {
     static func findings(
-        source: Swift.String,
-        file: Swift.String = "Package.swift"
+        source: Swift::String,
+        file: Swift::String = "Package.swift"
     ) -> [Diagnostic.Record] {
         let parsed = Lint.Source.parsed(from: source, file: file)
         return Lint.Rule.`bare string dependency`.observe(parsed, .warning).findings
     }
 
     static func observation(
-        source: Swift.String,
-        file: Swift.String = "Package.swift"
+        source: Swift::String,
+        file: Swift::String = "Package.swift"
     ) -> Lint.Rule.Observation {
         let parsed = Lint.Source.parsed(from: source, file: file)
         return Lint.Rule.`bare string dependency`.observe(parsed, .warning)

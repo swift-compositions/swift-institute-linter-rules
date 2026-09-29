@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let byteUInt8ConformsToByteProtocolMessage: Swift.String =
+internal let byteUInt8ConformsToByteProtocolMessage: Swift::String =
     "[uint8 conforms to byte protocol] [API-BYTE-001]: `UInt8` MUST NOT "
     + "conform to `Byte.\\`Protocol\\``. The stdlib raw arithmetic carrier "
     + "(`UInt8`) and the institute byte-domain twin (`Byte`) are sibling-"
@@ -85,7 +85,7 @@ internal final class ByteUInt8ConformsToByteProtocolVisitor: SyntaxVisitor {
     }
 }
 
-internal func extensionIsOnUInt8(_ type: TypeSyntax) -> Swift.Bool {
+internal func extensionIsOnUInt8(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "UInt8"
     }
@@ -100,7 +100,7 @@ internal func extensionIsOnUInt8(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-private func inheritanceContainsByteProtocol(_ clause: InheritanceClauseSyntax) -> Swift.Bool {
+private func inheritanceContainsByteProtocol(_ clause: InheritanceClauseSyntax) -> Swift::Bool {
     for inherited in clause.inheritedTypes {
         if byteTypeIsByteProtocol(inherited.type) {
             return true
@@ -109,7 +109,7 @@ private func inheritanceContainsByteProtocol(_ clause: InheritanceClauseSyntax) 
     return false
 }
 
-internal func byteTypeIsByteProtocol(_ type: TypeSyntax) -> Swift.Bool {
+internal func byteTypeIsByteProtocol(_ type: TypeSyntax) -> Swift::Bool {
     guard let memberType = type.as(MemberTypeSyntax.self) else { return false }
     let trailingName = Lint.Syntax.Identifier.unescaped(memberType.name.text)
     guard trailingName == "Protocol" else { return false }

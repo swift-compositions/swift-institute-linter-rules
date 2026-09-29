@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingTagMessage: Swift.String =
+private let namingTagMessage: Swift::String =
     "[tag suffix] [API-NAME-010]: phantom-type tags MUST use the concept name "
     + "directly (`enum Cardinal {}`, `struct Millimeter {}`), never a `Tag` suffix."
 

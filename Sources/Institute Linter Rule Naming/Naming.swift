@@ -36,8 +36,8 @@ extension Naming {
 
   internal static func hasAttribute(
     _ attributes: AttributeListSyntax,
-    named name: Swift.String
-  ) -> Swift.Bool {
+    named name: Swift::String
+  ) -> Swift::Bool {
     for attribute in attributes {
       guard case .attribute(let attr) = attribute else { continue }
       let attributeName = attr.attributeName.trimmedDescription
@@ -86,7 +86,7 @@ extension Naming {
     return false
   }
 
-  private static func extendedTypeLeafName(_ type: TypeSyntax) -> Swift.String? {
+  private static func extendedTypeLeafName(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
       return identifier.name.text
     }
@@ -96,8 +96,8 @@ extension Naming {
     return nil
   }
 
-  private static func suiteTypeNames(in root: Syntax) -> Swift.Set<Swift.String> {
-    var names: Swift.Set<Swift.String> = []
+  private static func suiteTypeNames(in root: Syntax) -> Swift::Set<Swift::String> {
+    var names: Swift::Set<Swift::String> = []
     func collect(_ node: Syntax) {
       if let decl = node.as(StructDeclSyntax.self),
         hasAttribute(decl.attributes, named: "Suite")
@@ -145,7 +145,7 @@ extension Naming {
     return false
   }
 
-  internal static func conformances(_ node: Syntax) -> [Swift.String] {
+  internal static func conformances(_ node: Syntax) -> [Swift::String] {
     var current: Syntax? = node.parent
     var immediateExtension: ExtensionDeclSyntax? = nil
     while let candidate = current {
@@ -182,13 +182,13 @@ extension Naming {
   }
 
   fileprivate static func fileScopeConformances(
-    for targetPath: Swift.String,
+    for targetPath: Swift::String,
     origin: Syntax
-  ) -> [Swift.String] {
+  ) -> [Swift::String] {
     var current: Syntax? = origin
     while let candidate = current {
       if let file = candidate.as(SourceFileSyntax.self) {
-        var collected: [Swift.String] = []
+        var collected: [Swift::String] = []
         for statement in file.statements {
           Self.collectConformances(
             from: statement.item,
@@ -206,9 +206,9 @@ extension Naming {
 
   fileprivate static func collectConformances(
     from item: CodeBlockItemSyntax.Item,
-    targetPath: Swift.String,
-    currentPrefix: Swift.String,
-    into collected: inout [Swift.String]
+    targetPath: Swift::String,
+    currentPrefix: Swift::String,
+    into collected: inout [Swift::String]
   ) {
     if let ext = item.as(ExtensionDeclSyntax.self) {
       let extendedType = ext.extendedType.trimmedDescription
@@ -277,9 +277,9 @@ extension Naming {
 
   fileprivate static func collectConformancesFromDecl(
     _ decl: DeclSyntax,
-    targetPath: Swift.String,
-    currentPrefix: Swift.String,
-    into collected: inout [Swift.String]
+    targetPath: Swift::String,
+    currentPrefix: Swift::String,
+    into collected: inout [Swift::String]
   ) {
     if let structDecl = decl.as(StructDeclSyntax.self) {
       Self.collectFromTypeDecl(
@@ -328,12 +328,12 @@ extension Naming {
   }
 
   fileprivate static func collectFromTypeDecl(
-    name: Swift.String,
+    name: Swift::String,
     inheritanceClause: InheritanceClauseSyntax?,
     memberBlock: MemberBlockSyntax,
-    targetPath: Swift.String,
-    currentPrefix: Swift.String,
-    into collected: inout [Swift.String]
+    targetPath: Swift::String,
+    currentPrefix: Swift::String,
+    into collected: inout [Swift::String]
   ) {
     let fullPath =
       currentPrefix.isEmpty
@@ -352,7 +352,7 @@ extension Naming {
     }
   }
 
-  internal static func isProtocolSentinel(_ name: Swift.String) -> Swift.Bool {
+  internal static func isProtocolSentinel(_ name: Swift::String) -> Swift::Bool {
     return name == "Protocol" || name == "`Protocol`"
   }
 
@@ -397,7 +397,7 @@ extension Naming {
     return filePrivateTypeNames(in: ext.root).contains(root)
   }
 
-  private static func extendedTypeRootName(_ type: TypeSyntax) -> Swift.String? {
+  private static func extendedTypeRootName(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
       return identifier.name.text
     }
@@ -407,8 +407,8 @@ extension Naming {
     return nil
   }
 
-  private static func filePrivateTypeNames(in root: Syntax) -> Swift.Set<Swift.String> {
-    var names: Swift.Set<Swift.String> = []
+  private static func filePrivateTypeNames(in root: Syntax) -> Swift::Set<Swift::String> {
+    var names: Swift::Set<Swift::String> = []
     func collect(_ node: Syntax) {
       if let decl = node.as(StructDeclSyntax.self), hasFileprivateOrPrivate(decl.modifiers) {
         names.insert(decl.name.text)
@@ -461,18 +461,18 @@ extension Naming {
 
 extension Naming {
   @inlinable
-  package static func isBackticked(_ token: TokenSyntax) -> Swift.Bool {
+  package static func isBackticked(_ token: TokenSyntax) -> Swift::Bool {
     token.trimmedDescription.hasPrefix("`")
   }
 }
 
-internal func namingIsShorthandGetterAccessorBlock(_ node: Syntax) -> Swift.Bool {
+internal func namingIsShorthandGetterAccessorBlock(_ node: Syntax) -> Swift::Bool {
   guard let block = node.as(AccessorBlockSyntax.self) else { return false }
   if case .getter = block.accessors { return true }
   return false
 }
 
-internal func namingHasStoredInstanceProperty(_ block: MemberBlockSyntax) -> Swift.Bool {
+internal func namingHasStoredInstanceProperty(_ block: MemberBlockSyntax) -> Swift::Bool {
   for member in block.members {
     guard let variable = member.decl.as(VariableDeclSyntax.self) else { continue }
     if variable.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }) {
@@ -485,12 +485,12 @@ internal func namingHasStoredInstanceProperty(_ block: MemberBlockSyntax) -> Swi
   return false
 }
 
-internal func namingHasEnumCase(_ block: MemberBlockSyntax) -> Swift.Bool {
+internal func namingHasEnumCase(_ block: MemberBlockSyntax) -> Swift::Bool {
   for member in block.members where member.decl.is(EnumCaseDeclSyntax.self) { return true }
   return false
 }
 
-internal func namingIsPackageManifest(_ filePath: Swift.String) -> Swift.Bool {
+internal func namingIsPackageManifest(_ filePath: Swift::String) -> Swift::Bool {
   guard let filename = filePath.split(separator: "/", omittingEmptySubsequences: true).last
   else { return false }
   if filename == "Package.swift" { return true }

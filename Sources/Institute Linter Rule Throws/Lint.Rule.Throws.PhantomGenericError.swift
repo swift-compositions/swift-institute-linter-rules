@@ -47,7 +47,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsPhantomGenericErrorMessage: Swift.String =
+internal let throwsPhantomGenericErrorMessage: Swift::String =
     "[phantom generic error in typed throws] [API-ERR-009]: error type is nested "
     + "in a generic type but never uses its parameter — an accidentally-generic "
     + "`@error` SIL result that can trip `FunctionSignatureOpts` under "
@@ -61,7 +61,7 @@ internal let throwsPhantomGenericErrorMessage: Swift.String =
     + "rather than assuming either way."
 
 @usableFromInline
-internal let throwsPhantomGenericErrorUseSiteMessage: Swift.String =
+internal let throwsPhantomGenericErrorUseSiteMessage: Swift::String =
     "[phantom generic error in typed throws] [API-ERR-009]: typed-throws position "
     + "names an error type spelled with the enclosing type's generic arguments "
     + "(`Owner<Param>.Error`). If the error enum is NOT yet hoisted, this is the "
@@ -74,9 +74,9 @@ internal let throwsPhantomGenericErrorUseSiteMessage: Swift.String =
     + "release build rather than assuming: this shape is necessary but not "
     + "sufficient for the crash."
 
-private let throwsPhantomGenericErrorNames: Set<Swift.String> = ["Error", "Failure"]
+private let throwsPhantomGenericErrorNames: Set<Swift::String> = ["Error", "Failure"]
 
-private func throwsPhantomLeafName(of type: TypeSyntax) -> Swift.String? {
+private func throwsPhantomLeafName(of type: TypeSyntax) -> Swift::String? {
     var current = type
     while let optional = current.as(OptionalTypeSyntax.self) { current = optional.wrappedType }
     while let attributed = current.as(AttributedTypeSyntax.self) { current = attributed.baseType }
@@ -85,7 +85,7 @@ private func throwsPhantomLeafName(of type: TypeSyntax) -> Swift.String? {
     return nil
 }
 
-private func throwsPhantomBaseGenericArguments(_ type: TypeSyntax) -> [Swift.String] {
+private func throwsPhantomBaseGenericArguments(_ type: TypeSyntax) -> [Swift::String] {
     var current = type
     while let optional = current.as(OptionalTypeSyntax.self) { current = optional.wrappedType }
     while let attributed = current.as(AttributedTypeSyntax.self) { current = attributed.baseType }
@@ -110,30 +110,30 @@ private func throwsPhantomBaseGenericArguments(_ type: TypeSyntax) -> [Swift.Str
 }
 
 private func throwsPhantomArgumentsAreInScopeParameters(
-    _ arguments: [Swift.String],
-    inScope: Set<Swift.String>
-) -> Swift.Bool {
+    _ arguments: [Swift::String],
+    inScope: Set<Swift::String>
+) -> Swift::Bool {
     for argument in arguments where inScope.contains(argument) { return true }
     return false
 }
 
-private func throwsPhantomDedupKey(_ owner: Swift.String) -> Swift.String {
+private func throwsPhantomDedupKey(_ owner: Swift::String) -> Swift::String {
     let withoutGenerics = owner.prefix { $0 != "<" }
-    let leaf = withoutGenerics.split(separator: ".").last.map(Swift.String.init)
-    return leaf ?? Swift.String(withoutGenerics)
+    let leaf = withoutGenerics.split(separator: ".").last.map(Swift::String.init)
+    return leaf ?? Swift::String(withoutGenerics)
 }
 
 internal func throwsPhantomGenericParameterNames(
     _ clause: GenericParameterClauseSyntax?
-) -> [Swift.String] {
+) -> [Swift::String] {
     guard let clause else { return [] }
     return clause.parameters.map { $0.name.text }
 }
 
 private func throwsPhantomUsesParameterSubstantively(
     _ members: MemberBlockItemListSyntax,
-    parameter: Swift.String
-) -> Swift.Bool {
+    parameter: Swift::String
+) -> Swift::Bool {
     let finder = ThrowsPhantomParameterUseFinder(parameter: parameter)
     for member in members { finder.walk(member) }
     return finder.found
@@ -145,8 +145,8 @@ internal final class ThrowsPhantomGenericErrorVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
 
-    private var reported: Set<Swift.String> = []
-    private var fileGenerics: [Swift.String: [Swift.String]] = [:]
+    private var reported: Set<Swift::String> = []
+    private var fileGenerics: [Swift::String: [Swift::String]] = [:]
     private var collected = false
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
@@ -220,12 +220,12 @@ internal final class ThrowsPhantomGenericErrorVisitor: SyntaxVisitor {
         )
     }
 
-    private func hasCases(_ members: MemberBlockItemListSyntax) -> Swift.Bool {
+    private func hasCases(_ members: MemberBlockItemListSyntax) -> Swift::Bool {
         for member in members where member.decl.is(EnumCaseDeclSyntax.self) { return true }
         return false
     }
 
-    private func enclosingGenericScope(_ node: Syntax) -> (Swift.String?, [Swift.String]) {
+    private func enclosingGenericScope(_ node: Syntax) -> (Swift::String?, [Swift::String]) {
         var current = node.parent
         while let parent = current {
             if let decl = parent.as(StructDeclSyntax.self) {
@@ -246,7 +246,7 @@ internal final class ThrowsPhantomGenericErrorVisitor: SyntaxVisitor {
             }
             if let ext = parent.as(ExtensionDeclSyntax.self) {
                 let path = ext.extendedType.trimmedDescription
-                let leaf = path.split(separator: ".").last.map(Swift.String.init) ?? path
+                let leaf = path.split(separator: ".").last.map(Swift::String.init) ?? path
                 if let parameters = fileGenerics[leaf], !parameters.isEmpty {
                     return (path, parameters)
                 }
@@ -256,8 +256,8 @@ internal final class ThrowsPhantomGenericErrorVisitor: SyntaxVisitor {
         return (nil, [])
     }
 
-    private func inScopeParameters(_ node: Syntax) -> Set<Swift.String> {
-        var names: Set<Swift.String> = []
+    private func inScopeParameters(_ node: Syntax) -> Set<Swift::String> {
+        var names: Set<Swift::String> = []
         var current = node.parent
         while let parent = current {
             if let decl = parent.as(StructDeclSyntax.self) {
@@ -277,7 +277,7 @@ internal final class ThrowsPhantomGenericErrorVisitor: SyntaxVisitor {
             }
             if let ext = parent.as(ExtensionDeclSyntax.self) {
                 let path = ext.extendedType.trimmedDescription
-                let leaf = path.split(separator: ".").last.map(Swift.String.init) ?? path
+                let leaf = path.split(separator: ".").last.map(Swift::String.init) ?? path
                 if let parameters = fileGenerics[leaf] { names.formUnion(parameters) }
             }
             current = parent.parent
@@ -287,8 +287,8 @@ internal final class ThrowsPhantomGenericErrorVisitor: SyntaxVisitor {
 
     private func report(
         at position: AbsolutePosition,
-        owner: Swift.String,
-        message: Swift.String
+        owner: Swift::String,
+        message: Swift::String
     ) {
         guard reported.insert(throwsPhantomDedupKey(owner)).inserted else { return }
         let location = converter.location(for: position)

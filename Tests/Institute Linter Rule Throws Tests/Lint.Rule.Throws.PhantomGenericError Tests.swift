@@ -34,8 +34,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`phantom generic error in typed throws Tests` {
     static func findings(
-        in source: Swift.String,
-        file: Swift.String = "test.swift"
+        in source: Swift::String,
+        file: Swift::String = "test.swift"
     ) -> [Diagnostic
         .Record]
     {
@@ -50,13 +50,13 @@ extension Lint.Rule.`phantom generic error in typed throws Tests` {
     /// `count == 1` assertion pins detector *existence* but not *identity*: swap
     /// the two detectors' predicates and every count stays 1 while every
     /// diagnostic becomes wrong. These assertions close that.
-    enum Detector: Swift.String {
+    enum Detector: Swift::String {
         case declarationSite
         case useSite
     }
 
     /// Detectors that fired, in report order.
-    static func detectors(in source: Swift.String) -> [Detector] {
+    static func detectors(in source: Swift::String) -> [Detector] {
         findings(in: source).map { record in
             record.message.contains("never uses its parameter") ? .declarationSite : .useSite
         }

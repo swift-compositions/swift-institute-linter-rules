@@ -1,23 +1,23 @@
 internal import Lint
 internal import SwiftSyntax
 
-internal func structureIsProtocolSentinelName(_ name: Swift.String) -> Swift.Bool {
+internal func structureIsProtocolSentinelName(_ name: Swift::String) -> Swift::Bool {
     return name == "Protocol" || name == "`Protocol`"
 }
 
-internal let structureSyntaxVisitorFamilyNames: Swift.Set<Swift.String> = [
+internal let structureSyntaxVisitorFamilyNames: Swift::Set<Swift::String> = [
     "SyntaxVisitor",
     "SyntaxAnyVisitor",
     "SyntaxRewriter",
 ]
 
-internal func structureIsShorthandGetterAccessorBlock(_ node: Syntax) -> Swift.Bool {
+internal func structureIsShorthandGetterAccessorBlock(_ node: Syntax) -> Swift::Bool {
     guard let block = node.as(AccessorBlockSyntax.self) else { return false }
     if case .getter = block.accessors { return true }
     return false
 }
 
-internal func structureIsFileSignificant(_ node: some SyntaxProtocol) -> Swift.Bool {
+internal func structureIsFileSignificant(_ node: some SyntaxProtocol) -> Swift::Bool {
     var current: Syntax? = Syntax(node).parent
     while let ancestor = current {
         if ancestor.is(SourceFileSyntax.self) {
@@ -47,7 +47,7 @@ internal func structureIsFileSignificant(_ node: some SyntaxProtocol) -> Swift.B
     return false
 }
 
-internal func structureDottedName(of type: TypeSyntax) -> Swift.String? {
+internal func structureDottedName(of type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text)
     }
@@ -66,11 +66,11 @@ internal func structureDottedName(of type: TypeSyntax) -> Swift.String? {
     return nil
 }
 
-internal func structureExtendsSyntaxVisitor(_ clause: InheritanceClauseSyntax?) -> Swift.Bool {
+internal func structureExtendsSyntaxVisitor(_ clause: InheritanceClauseSyntax?) -> Swift::Bool {
     guard let clause else { return false }
     for inherited in clause.inheritedTypes {
         let type = inherited.type
-        let leaf: Swift.String?
+        let leaf: Swift::String?
         if let identifier = type.as(IdentifierTypeSyntax.self) {
             leaf = identifier.name.text
         } else if let member = type.as(MemberTypeSyntax.self) {
@@ -85,7 +85,7 @@ internal func structureExtendsSyntaxVisitor(_ clause: InheritanceClauseSyntax?) 
     return false
 }
 
-internal let structureStdlibProtocolNames: Swift.Set<Swift.String> = [
+internal let structureStdlibProtocolNames: Swift::Set<Swift::String> = [
     "Equatable", "Hashable", "Comparable", "Identifiable",
     "Copyable", "Escapable", "BitwiseCopyable",
     "Sendable", "SendableMetatype",
@@ -116,17 +116,17 @@ internal let structureStdlibProtocolNames: Swift.Set<Swift.String> = [
     "AnyObject", "RandomNumberGenerator",
 ]
 
-internal func structureIsStdlibConformance(_ conformance: Swift.String) -> Swift.Bool {
+internal func structureIsStdlibConformance(_ conformance: Swift::String) -> Swift::Bool {
     if structureStdlibProtocolNames.contains(conformance) { return true }
     guard conformance.hasPrefix("Swift.") else { return false }
     return structureStdlibProtocolNames.contains(
-        Swift.String(conformance.dropFirst("Swift.".count))
+        Swift::String(conformance.dropFirst("Swift.".count))
     )
 }
 
 internal func structureIsStdlibOnlyConformanceExtension(
     _ extensionDecl: ExtensionDeclSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     guard let clause = extensionDecl.inheritanceClause, !clause.inheritedTypes.isEmpty else {
         return false
     }

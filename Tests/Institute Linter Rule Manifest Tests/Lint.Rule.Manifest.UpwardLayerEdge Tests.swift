@@ -15,13 +15,13 @@ extension Lint.Rule {
 
 extension Lint.Rule.`upward layer edge Tests` {
   static func observation(
-    _ source: Swift.String,
-    file: Swift.String
+    _ source: Swift::String,
+    file: Swift::String
   ) -> Lint.Rule.Observation {
     Lint.Rule.`upward layer edge`.observe(Lint.Source.parsed(from: source, file: file), .warning)
   }
 
-  static func manifest(_ urls: Swift.String...) -> Swift.String {
+  static func manifest(_ urls: Swift::String...) -> Swift::String {
     "let package = Package(name: \"swift-owner\", dependencies: ["
       + urls.map { ".package(url: \"\($0)\", branch: \"main\")" }.joined(separator: ", ")
       + "])"

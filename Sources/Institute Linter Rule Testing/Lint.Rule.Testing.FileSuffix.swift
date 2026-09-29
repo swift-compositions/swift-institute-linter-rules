@@ -36,7 +36,7 @@ extension Lint.Rule {
             else {
                 return []
             }
-            let basename = Swift.String(filename.dropLast(".swift".count))
+            let basename = Swift::String(filename.dropLast(".swift".count))
             let hasExactlyOneSpaceBeforeTests =
                 basename.hasSuffix(" Tests") && !basename.hasSuffix("  Tests")
             guard !hasExactlyOneSpaceBeforeTests else { return [] }
@@ -62,14 +62,14 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal func testingFileSuffixMessage(basename: Swift.String) -> Swift.String {
+internal func testingFileSuffixMessage(basename: Swift::String) -> Swift::String {
     "[test file suffix] [TEST-009]: test file '\(basename).swift' must end in "
         + "' Tests.swift'; rename to '\(testingFileSuffixRename(basename: basename)).swift'"
 }
 
 @usableFromInline
-internal func testingFileSuffixRename(basename: Swift.String) -> Swift.String {
-    func trimmed(_ string: Swift.Substring) -> Swift.Substring {
+internal func testingFileSuffixRename(basename: Swift::String) -> Swift::String {
+    func trimmed(_ string: Swift::Substring) -> Swift::Substring {
         var slice = string
         while slice.last == " " { slice = slice.dropLast() }
         return slice
@@ -111,7 +111,7 @@ internal final class TestingFileSuffixDeclarationFinder: SyntaxVisitor {
 
     private func record(
         attributes: AttributeListSyntax,
-        name: Swift.String,
+        name: Swift::String,
         of node: Syntax
     ) {
         guard first == nil else { return }

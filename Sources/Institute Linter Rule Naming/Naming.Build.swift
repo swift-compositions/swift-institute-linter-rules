@@ -4,7 +4,7 @@ extension Naming {
 
 extension Naming.Build {
     @usableFromInline
-    internal static let methods: Swift.Set<Swift.String> = [
+    internal static let methods: Swift::Set<Swift::String> = [
         "buildExpression",
         "buildBlock",
         "buildPartialBlock",

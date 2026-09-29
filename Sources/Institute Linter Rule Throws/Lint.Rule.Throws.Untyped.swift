@@ -39,7 +39,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsUntypedMessage: Swift.String =
+internal let throwsUntypedMessage: Swift::String =
     "[untyped throws] [API-ERR-001]: bare `throws` erases the error type. Use "
     + "`throws(SpecificError)` so callers know which errors are possible at compile "
     + "time and the error path stays exhaustive. Untyped throws boxes the error as "
@@ -49,7 +49,7 @@ internal let throwsUntypedMessage: Swift.String =
 
 @usableFromInline
 internal let throwsConformanceForcedAllowlist:
-    [(protocolSuffix: Swift.String, method: Swift.String)] = [
+    [(protocolSuffix: Swift::String, method: Swift::String)] = [
         (protocolSuffix: "TestScoping", method: "provideScope"),
         (protocolSuffix: "Encodable", method: "encode"),
         (protocolSuffix: "Decodable", method: "init(from:)"),
@@ -100,10 +100,10 @@ internal final class ThrowsUntypedVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    static func isConformanceForcedUntypedThrows(_ node: ThrowsClauseSyntax) -> Swift.Bool {
-        var enclosingSelector: Swift.String? = nil
+    static func isConformanceForcedUntypedThrows(_ node: ThrowsClauseSyntax) -> Swift::Bool {
+        var enclosingSelector: Swift::String? = nil
         var enclosingSignature: FunctionSignatureSyntax? = nil
-        var inheritedTypeSuffixes: Swift.Set<Swift.String> = []
+        var inheritedTypeSuffixes: Swift::Set<Swift::String> = []
         var cursor: Syntax? = node.parent
         while let current = cursor {
             if enclosingSelector == nil {
@@ -143,8 +143,8 @@ internal final class ThrowsUntypedVisitor: SyntaxVisitor {
         return false
     }
 
-    static func isTestScoped(_ node: ThrowsClauseSyntax) -> Swift.Bool {
-        var suiteExtensionTargets: [Swift.String] = []
+    static func isTestScoped(_ node: ThrowsClauseSyntax) -> Swift::Bool {
+        var suiteExtensionTargets: [Swift::String] = []
         var cursor: Syntax? = node.parent
         var sourceFile: SourceFileSyntax? = nil
         while let current = cursor {
@@ -182,7 +182,7 @@ internal final class ThrowsUntypedVisitor: SyntaxVisitor {
             cursor = current.parent
         }
         guard !suiteExtensionTargets.isEmpty, let file = sourceFile else { return false }
-        var suitePaths: [Swift.String] = []
+        var suitePaths: [Swift::String] = []
         for statement in file.statements {
             Self.collectSuitePaths(from: Syntax(statement.item), prefix: "", into: &suitePaths)
         }
@@ -194,9 +194,9 @@ internal final class ThrowsUntypedVisitor: SyntaxVisitor {
 
     static func hasAttribute(
         _ attributes: AttributeListSyntax,
-        named name: Swift.String
+        named name: Swift::String
     )
-        -> Swift.Bool
+        -> Swift::Bool
     {
         for attribute in attributes {
             guard let attr = attribute.as(AttributeSyntax.self) else { continue }
@@ -209,10 +209,10 @@ internal final class ThrowsUntypedVisitor: SyntaxVisitor {
 
     static func collectSuitePaths(
         from node: Syntax,
-        prefix: Swift.String,
-        into collected: inout [Swift.String]
+        prefix: Swift::String,
+        into collected: inout [Swift::String]
     ) {
-        func joined(_ name: Swift.String) -> Swift.String {
+        func joined(_ name: Swift::String) -> Swift::String {
             prefix.isEmpty ? name : prefix + "." + name
         }
         if let ext = node.as(ExtensionDeclSyntax.self) {
@@ -222,7 +222,7 @@ internal final class ThrowsUntypedVisitor: SyntaxVisitor {
             }
             return
         }
-        var name: Swift.String? = nil
+        var name: Swift::String? = nil
         var attributes: AttributeListSyntax? = nil
         var members: MemberBlockSyntax? = nil
         if let decl = node.as(StructDeclSyntax.self) {

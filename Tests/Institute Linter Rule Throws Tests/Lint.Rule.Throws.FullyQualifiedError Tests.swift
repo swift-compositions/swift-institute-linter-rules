@@ -21,7 +21,7 @@ extension Lint.Rule {
 }
 
 extension Lint.Rule.`fully qualified error in typed throws Tests` {
-    static func findings(in source: Swift.String) -> [Diagnostic.Record] {
+    static func findings(in source: Swift::String) -> [Diagnostic.Record] {
         let parsed = Lint.Source.parsed(from: source, file: "test.swift")
         return Lint.Rule.`fully qualified error in typed throws`
             .observe(parsed, .warning).findings

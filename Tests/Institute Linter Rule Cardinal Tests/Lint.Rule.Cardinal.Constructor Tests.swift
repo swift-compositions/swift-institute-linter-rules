@@ -29,8 +29,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`zero or one literal Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "test.swift"
+    in source: Swift::String,
+    file: Swift::String = "test.swift"
   ) -> [Diagnostic
     .Record]
   {
@@ -40,8 +40,8 @@ extension Lint.Rule.`zero or one literal Tests` {
 
   /// Findings against a run whose brand pre-pass stamped `types`.
   static func findings(
-    in source: Swift.String,
-    types: Swift.Set<Swift.String>
+    in source: Swift::String,
+    types: Swift::Set<Swift::String>
   ) -> [Diagnostic.Record] {
     let parsed = Lint.Source.parsed(from: source, types: types)
     return Lint.Rule.`zero or one literal`.observe(parsed, .warning).findings

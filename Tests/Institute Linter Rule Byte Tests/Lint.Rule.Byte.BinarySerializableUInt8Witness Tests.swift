@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`binary serializable uint8 witness Tests` {
     static func findings(
-        in source: Swift.String,
-        file: Swift.String = "test.swift"
+        in source: Swift::String,
+        file: Swift::String = "test.swift"
     ) -> [Diagnostic
         .Record]
     {

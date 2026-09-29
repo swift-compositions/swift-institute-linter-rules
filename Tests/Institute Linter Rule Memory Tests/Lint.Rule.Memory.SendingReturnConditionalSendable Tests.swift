@@ -29,8 +29,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`sending return conditional sendable state Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "Sources/X/Test.swift"
+    in source: Swift::String,
+    file: Swift::String = "Sources/X/Test.swift"
   )
     -> [Diagnostic.Record]
   {

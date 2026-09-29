@@ -28,8 +28,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`noncopyable error Tests` {
   static func findings(
-    in source: Swift.String,
-    file: Swift.String = "Sources/X/Test.swift"
+    in source: Swift::String,
+    file: Swift::String = "Sources/X/Test.swift"
   )
     -> [Diagnostic.Record]
   {

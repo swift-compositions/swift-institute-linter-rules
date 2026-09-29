@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let xctestImportMessage: Swift.String =
+internal let xctestImportMessage: Swift::String =
     "[xctest import] [TEST-001]: institute tests MUST use Swift Testing, "
     + "not XCTest. Replace `import XCTest` + `XCTestCase` subclasses with "
     + "`import Testing` + `@Test` functions inside `@Suite struct Unit {}` "
@@ -81,7 +81,7 @@ internal final class XCTestImportVisitor: SyntaxVisitor {
     }
 }
 
-private func xctestImportIsXCTestModule(_ pathText: Swift.String) -> Swift.Bool {
-    let firstComponent = pathText.split(separator: ".").first.map(Swift.String.init) ?? pathText
+private func xctestImportIsXCTestModule(_ pathText: Swift::String) -> Swift::Bool {
+    let firstComponent = pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText
     return firstComponent == "XCTest"
 }

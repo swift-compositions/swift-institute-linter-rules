@@ -42,18 +42,18 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsClosureAnnotationMessage: Swift.String =
+internal let throwsClosureAnnotationMessage: Swift::String =
     "[closure typed throws annotation] [API-ERR-004]: closure inside a "
     + "`throws(E)` context contains `try` but lacks an explicit "
     + "`throws(E)` annotation — Swift 6.2 infers `any Error` and erases "
     + "the typed throw."
 
-internal func throwsIsTypedThrows(_ clause: ThrowsClauseSyntax?) -> Swift.Bool {
+internal func throwsIsTypedThrows(_ clause: ThrowsClauseSyntax?) -> Swift::Bool {
     guard let clause else { return false }
     return clause.type != nil
 }
 
-internal func throwsClosureIsInsideExpectThrows(_ node: ClosureExprSyntax) -> Swift.Bool {
+internal func throwsClosureIsInsideExpectThrows(_ node: ClosureExprSyntax) -> Swift::Bool {
     guard let parent = node.parent else { return false }
     guard let macro = parent.as(MacroExpansionExprSyntax.self) else { return false }
     guard macro.macroName.text == "expect" else { return false }
@@ -65,7 +65,7 @@ internal func throwsClosureIsInsideExpectThrows(_ node: ClosureExprSyntax) -> Sw
     return false
 }
 
-internal func throwsClosureTryIsInsideMaterializingDoCatch(_ node: Syntax) -> Swift.Bool {
+internal func throwsClosureTryIsInsideMaterializingDoCatch(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
         if let doStmt = candidate.as(DoStmtSyntax.self) {
@@ -82,12 +82,12 @@ internal func throwsClosureTryIsInsideMaterializingDoCatch(_ node: Syntax) -> Sw
     return false
 }
 
-internal func throwsClosureCatchIsCatchAll(_ clause: CatchClauseSyntax) -> Swift.Bool {
+internal func throwsClosureCatchIsCatchAll(_ clause: CatchClauseSyntax) -> Swift::Bool {
     clause.catchItems.isEmpty
         || clause.catchItems.allSatisfy { $0.pattern == nil && $0.whereClause == nil }
 }
 
-internal func throwsClosureCatchIsNonPropagating(_ clause: CatchClauseSyntax) -> Swift.Bool {
+internal func throwsClosureCatchIsNonPropagating(_ clause: CatchClauseSyntax) -> Swift::Bool {
     let finder = ThrowsClosureCatchPropagationFinder(viewMode: .sourceAccurate)
     finder.walk(clause.body)
     return !finder.foundPropagation
@@ -98,7 +98,7 @@ internal final class ThrowsClosureAnnotationVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    var typedThrowsDepth: Swift.Int = 0
+    var typedThrowsDepth: Swift::Int = 0
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source

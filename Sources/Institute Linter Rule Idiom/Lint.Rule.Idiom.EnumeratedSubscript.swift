@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomEnumeratedSubscriptMessage: Swift.String =
+internal let idiomEnumeratedSubscriptMessage: Swift::String =
     "[enumerated with subscript] [PATTERN-058]: `for (i, _) in "
     + "<seq>.enumerated() { ... <seq>[i] }` works on Array but silently "
     + "breaks on custom Collections whose `Index` is not a 0-based offset "
@@ -46,7 +46,7 @@ internal let idiomEnumeratedSubscriptMessage: Swift.String =
     + "`zip(a, b)`. Suppress with a `// swift-linter:disable:next enumerated with subscript` "
     + "and `// REASON:` continuation for confirmed Array call sites."
 
-internal func idiomLoopIndexName(_ pattern: PatternSyntax) -> Swift.String? {
+internal func idiomLoopIndexName(_ pattern: PatternSyntax) -> Swift::String? {
     guard let tuple = pattern.as(TuplePatternSyntax.self) else { return nil }
     guard tuple.elements.count == 2 else { return nil }
     guard let first = tuple.elements.first?.pattern.as(IdentifierPatternSyntax.self) else {
@@ -55,7 +55,7 @@ internal func idiomLoopIndexName(_ pattern: PatternSyntax) -> Swift.String? {
     return first.identifier.text
 }
 
-internal func idiomNormalizedReceiverPath(_ expression: ExprSyntax) -> Swift.String? {
+internal func idiomNormalizedReceiverPath(_ expression: ExprSyntax) -> Swift::String? {
     if let reference = expression.as(DeclReferenceExprSyntax.self) {
         return reference.baseName.text
     }
@@ -74,7 +74,7 @@ internal func idiomNormalizedReceiverPath(_ expression: ExprSyntax) -> Swift.Str
     return nil
 }
 
-internal func idiomEnumeratedReceiverText(_ sequence: ExprSyntax) -> Swift.String? {
+internal func idiomEnumeratedReceiverText(_ sequence: ExprSyntax) -> Swift::String? {
     guard let call = sequence.as(FunctionCallExprSyntax.self) else { return nil }
     guard let member = call.calledExpression.as(MemberAccessExprSyntax.self) else { return nil }
     guard member.declName.baseName.text == "enumerated" else { return nil }

@@ -40,7 +40,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsSelfErrorInTypedThrowsMessage: Swift.String =
+internal let throwsSelfErrorInTypedThrowsMessage: Swift::String =
     "[typed throws cannot use self error] [API-ERR-002]: `throws(Self.Error)` "
     + "inside a protocol only resolves when the protocol declares "
     + "`associatedtype Error`. Add `associatedtype Error: Swift.Error` to this "
@@ -81,7 +81,7 @@ internal final class ThrowsSelfErrorInTypedThrowsVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func isSelfError(_ type: TypeSyntax) -> Swift.Bool {
+    private func isSelfError(_ type: TypeSyntax) -> Swift::Bool {
         guard let member = type.as(MemberTypeSyntax.self),
             member.name.text == "Error",
             let base = member.baseType.as(IdentifierTypeSyntax.self),
@@ -90,7 +90,7 @@ internal final class ThrowsSelfErrorInTypedThrowsVisitor: SyntaxVisitor {
         return true
     }
 
-    private func shouldFlag(_ node: Syntax) -> Swift.Bool {
+    private func shouldFlag(_ node: Syntax) -> Swift::Bool {
         var current: Syntax? = node.parent
         while let parent = current {
             if let proto = parent.as(ProtocolDeclSyntax.self) {
@@ -109,7 +109,7 @@ internal final class ThrowsSelfErrorInTypedThrowsVisitor: SyntaxVisitor {
         return false
     }
 
-    private func declaresAssociatedError(_ proto: ProtocolDeclSyntax) -> Swift.Bool {
+    private func declaresAssociatedError(_ proto: ProtocolDeclSyntax) -> Swift::Bool {
         for member in proto.memberBlock.members {
             if let associated = member.decl.as(AssociatedTypeDeclSyntax.self),
                 associated.name.text == "Error"

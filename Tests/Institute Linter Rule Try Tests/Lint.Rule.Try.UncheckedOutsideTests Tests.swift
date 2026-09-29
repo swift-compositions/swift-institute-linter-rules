@@ -15,8 +15,8 @@ extension Lint.Rule {
 
 extension Lint.Rule.`unchecked try outside tests Tests` {
   static func findings(
-    _ source: Swift.String,
-    file: Swift.String = "Sources/Fixture/Fixture.swift"
+    _ source: Swift::String,
+    file: Swift::String = "Sources/Fixture/Fixture.swift"
   ) -> [Diagnostic.Record] {
     Lint.Rule.`unchecked try outside tests`
       .observe(Lint.Source.parsed(from: source, file: file), .warning)

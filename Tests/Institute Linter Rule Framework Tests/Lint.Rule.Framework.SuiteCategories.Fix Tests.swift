@@ -83,7 +83,7 @@ extension Lint.Rule.`suite categories fix Tests` {
   static func occurrenceCount(of needle: String, in haystack: String) -> Int {
     haystack.split(separator: "\n", omittingEmptySubsequences: false)
       .map { line in line.drop { $0 == " " || $0 == "\t" }.reversed() }
-      .map { reversed in Swift.String(reversed.drop { $0 == " " || $0 == "\t" }.reversed()) }
+      .map { reversed in Swift::String(reversed.drop { $0 == " " || $0 == "\t" }.reversed()) }
       .filter { $0 == needle }
       .count
   }

@@ -46,31 +46,31 @@ extension Lint.Rule {
     )
 }
 
-private let foundationIntegrationTargetSuffix: Swift.String = " Foundation Integration"
+private let foundationIntegrationTargetSuffix: Swift::String = " Foundation Integration"
 
 private func foundationImportIsInsideFoundationIntegrationTarget(
-    _ filePath: Swift.String
-) -> Swift.Bool {
+    _ filePath: Swift::String
+) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     guard components.count > 1 else { return false }
     return components.dropLast().contains { $0.hasSuffix(foundationIntegrationTargetSuffix) }
 }
 
-private let foundationImportNonMainTargetRoots: [Swift.String] = [
+private let foundationImportNonMainTargetRoots: [Swift::String] = [
     "Tests",
     "Experiments",
     "Examples",
 ]
 
-private func foundationImportIsOutsideMainTarget(_ filePath: Swift.String) -> Swift.Bool {
+private func foundationImportIsOutsideMainTarget(_ filePath: Swift::String) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
     guard components.count > 1 else { return false }
     return components.dropLast().contains { component in
-        foundationImportNonMainTargetRoots.contains(Swift.String(component))
+        foundationImportNonMainTargetRoots.contains(Swift::String(component))
     }
 }
 
-private func foundationImportIsPackageManifest(_ filePath: Swift.String) -> Swift.Bool {
+private func foundationImportIsPackageManifest(_ filePath: Swift::String) -> Swift::Bool {
     guard let filename = filePath.split(separator: "/", omittingEmptySubsequences: true).last
     else { return false }
     if filename == "Package.swift" { return true }
@@ -78,7 +78,7 @@ private func foundationImportIsPackageManifest(_ filePath: Swift.String) -> Swif
 }
 
 @usableFromInline
-internal let foundationImportMessage: Swift.String =
+internal let foundationImportMessage: Swift::String =
     "[foundation import] [ARCH-LAYER-007]: no package's main target may import "
     + "the Foundation module family (`Foundation`, `FoundationEssentials`, "
     + "`FoundationNetworking`, `FoundationXML`) — at ANY of the five layers, not "
@@ -124,14 +124,14 @@ internal final class FoundationImportVisitor: SyntaxVisitor {
     }
 }
 
-private let foundationModuleFamily: Swift.Set<Swift.String> = [
+private let foundationModuleFamily: Swift::Set<Swift::String> = [
     "Foundation",
     "FoundationEssentials",
     "FoundationNetworking",
     "FoundationXML",
 ]
 
-private func foundationImportIsFoundationModule(_ pathText: Swift.String) -> Swift.Bool {
-    let firstComponent = pathText.split(separator: ".").first.map(Swift.String.init) ?? pathText
+private func foundationImportIsFoundationModule(_ pathText: Swift::String) -> Swift::Bool {
+    let firstComponent = pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText
     return foundationModuleFamily.contains(firstComponent)
 }

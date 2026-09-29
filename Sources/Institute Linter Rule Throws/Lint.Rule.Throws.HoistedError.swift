@@ -38,13 +38,13 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let throwsHoistedErrorMessage: Swift.String =
+internal let throwsHoistedErrorMessage: Swift::String =
     "[hoisted error in public throws] [API-ERR-007]: typed-throws positions "
     + "MUST reference the canonical domain path, never a `__`-prefixed "
     + "hoisting workaround. Suppress the rule locally where an older "
     + "toolchain still makes the workaround strictly necessary."
 
-private func hoistedLeafIdentifier(of type: TypeSyntax) -> Swift.String? {
+private func hoistedLeafIdentifier(of type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) { return identifier.name.text }
     if let member = type.as(MemberTypeSyntax.self) { return member.name.text }
     return nil

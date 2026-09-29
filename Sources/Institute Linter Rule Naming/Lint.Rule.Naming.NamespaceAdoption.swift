@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingNamespaceAdoptionMessage: Swift.String =
+private let namingNamespaceAdoptionMessage: Swift::String =
     "[namespace adoption typealias] [API-NAME-004a]: same-leaf typealias is "
     + "the namespace-adoption shape. Confirm the higher-layer namespace "
     + "declares ≥ 5 sibling types / extensions / methods on the adopted "
@@ -49,7 +49,7 @@ private let namingNamespaceAdoptionMessage: Swift.String =
 private func namingIsParameterizedAdoption(
     _ node: TypeAliasDeclSyntax,
     member: MemberTypeSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     guard let lhsParameters = node.genericParameterClause?.parameters,
         !lhsParameters.isEmpty
     else { return false }
@@ -57,7 +57,7 @@ private func namingIsParameterizedAdoption(
         !rhsArguments.isEmpty
     else { return false }
 
-    var lhsParameterNames: Swift.Set<Swift.String> = []
+    var lhsParameterNames: Swift::Set<Swift::String> = []
     for parameter in lhsParameters { lhsParameterNames.insert(parameter.name.text) }
 
     var forwardsAParameter = false

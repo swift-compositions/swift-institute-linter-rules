@@ -5,14 +5,14 @@ internal final class MemoryErrorNoncopyableVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
-    let extensionConformances: [Swift.String: Swift.Set<Swift.String>]
+    let extensionConformances: [Swift::String: Swift::Set<Swift::String>]
     var matches: [Diagnostic.Record] = []
 
     init(
         source: Source.File,
         severity: Diagnostic.Severity,
         converter: SourceLocationConverter,
-        extensionConformances: [Swift.String: Swift.Set<Swift.String>]
+        extensionConformances: [Swift::String: Swift::Set<Swift::String>]
     ) {
         self.source = source
         self.severity = severity

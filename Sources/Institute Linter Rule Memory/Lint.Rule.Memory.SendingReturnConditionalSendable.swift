@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let memorySendingReturnConditionalSendableMessage: Swift.String =
+private let memorySendingReturnConditionalSendableMessage: Swift::String =
     "[sending return conditional sendable state]: this type's `@unchecked "
     + "Sendable` conformance is conditional on a generic parameter that "
     + "this return type mentions under a `sending` specifier. Region "
@@ -55,16 +55,16 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
     let converter: SourceLocationConverter
     private var matches: [Diagnostic.Record] = []
 
-    private var enclosingPath: [Swift.String] = []
-    private var extensionPushCounts: [Swift.Int] = []
+    private var enclosingPath: [Swift::String] = []
+    private var extensionPushCounts: [Swift::Int] = []
 
-    private var genericParamsByPath: [Swift.String: Swift.Set<Swift.String>] = [:]
-    private var gatedParamsByPath: [Swift.String: Swift.Set<Swift.String>] = [:]
+    private var genericParamsByPath: [Swift::String: Swift::Set<Swift::String>] = [:]
+    private var gatedParamsByPath: [Swift::String: Swift::Set<Swift::String>] = [:]
 
     private struct Candidate {
-        let path: Swift.String
+        let path: Swift::String
         let position: AbsolutePosition
-        let mentionedNames: Swift.Set<Swift.String>
+        let mentionedNames: Swift::Set<Swift::String>
     }
     private var candidates: [Candidate] = []
 
@@ -75,7 +75,7 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
         super.init(viewMode: .sourceAccurate)
     }
 
-    private var currentPath: Swift.String { enclosingPath.joined(separator: ".") }
+    private var currentPath: Swift::String { enclosingPath.joined(separator: ".") }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         enclosingPath.append(Lint.Syntax.Identifier.unescaped(node.name.text))
@@ -181,17 +181,17 @@ internal final class MemorySendingReturnConditionalSendableVisitor: SyntaxVisito
 private func sendingConditionalGenericParamNames(
     _ clause: GenericParameterClauseSyntax?
 )
-    -> Swift.Set<Swift.String>
+    -> Swift::Set<Swift::String>
 {
     guard let clause else { return [] }
-    var names: Swift.Set<Swift.String> = []
+    var names: Swift::Set<Swift::String> = []
     for parameter in clause.parameters {
         names.insert(Lint.Syntax.Identifier.unescaped(parameter.name.text))
     }
     return names
 }
 
-private func sendingConditionalQualifiedPathComponents(_ type: TypeSyntax) -> [Swift.String]? {
+private func sendingConditionalQualifiedPathComponents(_ type: TypeSyntax) -> [Swift::String]? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return [Lint.Syntax.Identifier.unescaped(identifier.name.text)]
     }
@@ -208,7 +208,7 @@ private func sendingConditionalQualifiedPathComponents(_ type: TypeSyntax) -> [S
 private func sendingConditionalHasUncheckedSendable(
     _ clause: InheritanceClauseSyntax?
 )
-    -> Swift.Bool
+    -> Swift::Bool
 {
     guard let clause else { return false }
     for inherited in clause.inheritedTypes {
@@ -224,7 +224,7 @@ private func sendingConditionalHasUncheckedSendable(
     return false
 }
 
-private func sendingConditionalIsSendableLeaf(_ type: TypeSyntax) -> Swift.Bool {
+private func sendingConditionalIsSendableLeaf(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return Lint.Syntax.Identifier.unescaped(identifier.name.text) == "Sendable"
     }
@@ -237,10 +237,10 @@ private func sendingConditionalIsSendableLeaf(_ type: TypeSyntax) -> Swift.Bool 
 private func sendingConditionalGatedGenericParamNames(
     _ clause: GenericWhereClauseSyntax?
 )
-    -> Swift.Set<Swift.String>
+    -> Swift::Set<Swift::String>
 {
     guard let clause else { return [] }
-    var names: Swift.Set<Swift.String> = []
+    var names: Swift::Set<Swift::String> = []
     for requirement in clause.requirements {
         guard let conformance = requirement.requirement.as(ConformanceRequirementSyntax.self) else {
             continue
@@ -254,7 +254,7 @@ private func sendingConditionalGatedGenericParamNames(
 private func sendingConditionalIsPublicOrPackageEffective(
     _ node: Syntax,
     modifiers: DeclModifierListSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     if sendingConditionalHasPublicOrPackage(modifiers) {
         return true
     }
@@ -268,7 +268,7 @@ private func sendingConditionalIsPublicOrPackageEffective(
     return false
 }
 
-private func sendingConditionalHasPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Swift.Bool
+private func sendingConditionalHasPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Swift::Bool
 {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
@@ -279,7 +279,7 @@ private func sendingConditionalHasPublicOrPackage(_ modifiers: DeclModifierListS
     return false
 }
 
-private func sendingConditionalHasSendingSpecifier(_ type: AttributedTypeSyntax) -> Swift.Bool {
+private func sendingConditionalHasSendingSpecifier(_ type: AttributedTypeSyntax) -> Swift::Bool {
     for specifier in type.specifiers {
         guard let simple = specifier.as(SimpleTypeSpecifierSyntax.self) else { continue }
         if simple.specifier.tokenKind == .keyword(.sending) {
@@ -292,9 +292,9 @@ private func sendingConditionalHasSendingSpecifier(_ type: AttributedTypeSyntax)
 private func sendingConditionalMentionedIdentifierNames(
     _ type: TypeSyntax
 )
-    -> Swift.Set<Swift.String>
+    -> Swift::Set<Swift::String>
 {
-    var names: Swift.Set<Swift.String> = []
+    var names: Swift::Set<Swift::String> = []
     func walk(_ type: TypeSyntax) {
         if let identifier = type.as(IdentifierTypeSyntax.self) {
             names.insert(Lint.Syntax.Identifier.unescaped(identifier.name.text))

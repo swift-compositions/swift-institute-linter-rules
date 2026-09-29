@@ -1,7 +1,7 @@
 internal import SwiftSyntax
 
 internal final class ThrowsPhantomGenericDeclCollector: SyntaxVisitor {
-    var generics: [Swift.String: [Swift.String]] = [:]
+    var generics: [Swift::String: [Swift::String]] = [:]
 
     init() { super.init(viewMode: .sourceAccurate) }
 
@@ -22,7 +22,7 @@ internal final class ThrowsPhantomGenericDeclCollector: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func record(_ name: Swift.String, _ clause: GenericParameterClauseSyntax?) {
+    private func record(_ name: Swift::String, _ clause: GenericParameterClauseSyntax?) {
         let parameters = throwsPhantomGenericParameterNames(clause)
         if !parameters.isEmpty { generics[name] = parameters }
     }

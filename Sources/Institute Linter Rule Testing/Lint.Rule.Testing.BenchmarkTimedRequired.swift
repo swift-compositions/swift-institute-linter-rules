@@ -18,7 +18,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let testingBenchmarkTimedRequiredMessage: Swift.String =
+internal let testingBenchmarkTimedRequiredMessage: Swift::String =
     "[benchmark timed required] [BENCH-003]: `@Test` functions inside a "
     + "`Performance` suite MUST carry the `.timed()` trait. Without it, the "
     + "performance test runs once with no measurement structure. Where the "
@@ -27,7 +27,7 @@ internal let testingBenchmarkTimedRequiredMessage: Swift.String =
     + "Benchmarks/ package and mark this suite with a `[BENCH-003]` variant "
     + "citation comment to exempt it."
 
-internal func testingBenchmarkAttributeMentionsTimed(_ attribute: AttributeSyntax) -> Swift.Bool {
+internal func testingBenchmarkAttributeMentionsTimed(_ attribute: AttributeSyntax) -> Swift::Bool {
     guard case .argumentList(let arguments) = attribute.arguments else { return false }
     for argument in arguments {
         guard let call = argument.expression.as(FunctionCallExprSyntax.self) else { continue }
@@ -44,8 +44,8 @@ internal final class TestingBenchmarkTimedRequiredVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    var inPerformanceStructDepth: Swift.Int = 0
-    var variantExemptDepth: Swift.Int = 0
+    var inPerformanceStructDepth: Swift::Int = 0
+    var variantExemptDepth: Swift::Int = 0
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source
@@ -79,7 +79,7 @@ internal final class TestingBenchmarkTimedRequiredVisitor: SyntaxVisitor {
 
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         if let last = node.extendedType.trimmedDescription.split(separator: ".").last,
-            Swift.String(last) == "Performance"
+            Swift::String(last) == "Performance"
         {
             inPerformanceStructDepth += 1
             if citesVariant(node.leadingTrivia) { variantExemptDepth += 1 }
@@ -88,14 +88,14 @@ internal final class TestingBenchmarkTimedRequiredVisitor: SyntaxVisitor {
     }
     override func visitPost(_ node: ExtensionDeclSyntax) {
         if let last = node.extendedType.trimmedDescription.split(separator: ".").last,
-            Swift.String(last) == "Performance"
+            Swift::String(last) == "Performance"
         {
             inPerformanceStructDepth -= 1
             if citesVariant(node.leadingTrivia) { variantExemptDepth -= 1 }
         }
     }
 
-    private func citesVariant(_ trivia: Trivia) -> Swift.Bool {
+    private func citesVariant(_ trivia: Trivia) -> Swift::Bool {
         for piece in trivia {
             switch piece {
             case .lineComment(let text), .blockComment(let text),

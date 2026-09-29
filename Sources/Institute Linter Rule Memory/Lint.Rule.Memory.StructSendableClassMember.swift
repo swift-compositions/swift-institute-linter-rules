@@ -41,7 +41,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryStructSendableClassMemberMessage: Swift.String =
+internal let memoryStructSendableClassMemberMessage: Swift::String =
   "[sendable struct with class member] [IMPL-076]: `struct: @unchecked Sendable` "
   + "wrapping a class-typed stored property asserts a safety property the "
   + "compiler cannot check. If the wrapped class is itself `Sendable`, the "
@@ -50,12 +50,12 @@ internal let memoryStructSendableClassMemberMessage: Swift.String =
   + "value type, or move the mutable state behind an actor or a `Mutex`."
 
 @usableFromInline
-internal let memoryStructSendableClassMemberKnownClassNames: Swift.Set<Swift.String> = [
+internal let memoryStructSendableClassMemberKnownClassNames: Swift::Set<Swift::String> = [
   "NSObject", "Thread", "DispatchQueue", "AnyObject",
 ]
 
 internal final class MemoryStructSendableClassMemberClassCollector: SyntaxVisitor {
-  var names: Swift.Set<Swift.String> = []
+  var names: Swift::Set<Swift::String> = []
 
   override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
     names.insert(node.name.text)
@@ -83,16 +83,16 @@ internal final class MemoryStructSendableClassMemberClassCollector: SyntaxVisito
 }
 
 internal func memoryStructSendableClassMemberIsClassType(
-  _ name: Swift.String,
-  in declared: Swift.Set<Swift.String>
-) -> Swift.Bool {
+  _ name: Swift::String,
+  in declared: Swift::Set<Swift::String>
+) -> Swift::Bool {
   declared.contains(name) || memoryStructSendableClassMemberKnownClassNames.contains(name)
 }
 
 internal func memoryStructSendableClassMemberUncheckedSendable(
   _ clause: InheritanceClauseSyntax?
 )
-  -> Swift.Bool
+  -> Swift::Bool
 {
   guard let clause else { return false }
   for inherited in clause.inheritedTypes {
@@ -124,7 +124,7 @@ internal func memoryStructSendableClassMemberUncheckedSendable(
   return false
 }
 
-internal func memoryStructSendableClassMemberIsComputed(_ node: VariableDeclSyntax) -> Swift.Bool {
+internal func memoryStructSendableClassMemberIsComputed(_ node: VariableDeclSyntax) -> Swift::Bool {
   for binding in node.bindings {
     if let accessors = binding.accessorBlock {
       switch accessors.accessors {

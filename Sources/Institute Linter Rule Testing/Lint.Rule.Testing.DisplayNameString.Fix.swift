@@ -3,7 +3,7 @@ internal import SwiftSyntax
 
 internal func testingDisplayNameStringFixed(
     _ source: borrowing Lint.Source.Parsed
-) -> Swift.String? {
+) -> Swift::String? {
     let rewriter = TestingDisplayNameStringRewriter()
     let rewritten = rewriter.visit(source.tree)
     guard rewriter.changed else { return nil }
@@ -11,13 +11,13 @@ internal func testingDisplayNameStringFixed(
 }
 
 internal final class TestingDisplayNameStringRewriter: SyntaxRewriter {
-    var changed: Swift.Bool = false
+    var changed: Swift::Bool = false
 
     private func fixed(
         name: TokenSyntax,
         attributes: AttributeListSyntax
     ) -> AttributeListSyntax {
-        var elements = Swift.Array(attributes)
+        var elements = Swift::Array(attributes)
         for index in elements.indices {
             guard case .attribute(let attribute) = elements[index] else { continue }
             guard let rewritten = fixed(name: name, attribute: attribute) else { continue }
@@ -43,7 +43,7 @@ internal final class TestingDisplayNameStringRewriter: SyntaxRewriter {
             return nil
         }
 
-        let remaining = Swift.Array(arguments.dropFirst())
+        let remaining = Swift::Array(arguments.dropFirst())
         if remaining.isEmpty {
             return removingOnlyArgument(argument, from: attribute)
         }

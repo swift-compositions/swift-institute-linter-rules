@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let memoryBorrowingSelfShortCircuitMessage: Swift.String =
+internal let memoryBorrowingSelfShortCircuitMessage: Swift::String =
     "[borrowing self short circuit] [IMPL-094]: operator overload "
     + "with `borrowing Self` parameters uses `&&` / `||` in its body — "
     + "Swift 6.3 rejects chained property access across the short-"
@@ -49,7 +49,7 @@ internal let memoryBorrowingSelfShortCircuitMessage: Swift.String =
 
 internal func memoryBorrowingSelfShortCircuitIsBorrowingSelf(
     _ parameter: FunctionParameterSyntax
-) -> Swift.Bool {
+) -> Swift::Bool {
     var current = parameter.type
     guard let attributed = current.as(AttributedTypeSyntax.self) else {
         return false
@@ -90,7 +90,7 @@ internal final class MemoryBorrowingSelfShortCircuitVisitor: SyntaxVisitor {
         guard node.name.tokenKind == .binaryOperator(node.name.text) else {
             return .visitChildren
         }
-        var borrowingSelfNames: Swift.Set<Swift.String> = []
+        var borrowingSelfNames: Swift::Set<Swift::String> = []
         for parameter in node.signature.parameterClause.parameters {
             if memoryBorrowingSelfShortCircuitIsBorrowingSelf(parameter) {
                 let name = parameter.secondName?.text ?? parameter.firstName.text

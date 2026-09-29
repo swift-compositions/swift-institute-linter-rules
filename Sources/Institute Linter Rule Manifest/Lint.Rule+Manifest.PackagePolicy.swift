@@ -57,7 +57,7 @@ extension Lint.Rule {
       )
       var findings: [Diagnostic.Record] = []
 
-      func require(_ condition: Swift.Bool, _ message: Swift.String) {
+      func require(_ condition: Swift::Bool, _ message: Swift::String) {
         guard !condition else { return }
         findings.append(
           Diagnostic.Record(

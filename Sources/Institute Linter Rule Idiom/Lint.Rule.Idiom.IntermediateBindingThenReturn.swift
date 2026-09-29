@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomIntermediateBindingThenReturnMessage: Swift.String =
+internal let idiomIntermediateBindingThenReturnMessage: Swift::String =
   "[intermediate binding then return] [IMPL-EXPR-001]: `let <name> = "
   + "<expr>; return <name>` adds mechanism. Return the expression "
   + "directly: `return <expr>`. The binding is justified only when the "

@@ -5,14 +5,14 @@ internal final class MemoryStructSendableClassMemberVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
-    let declaredClassNames: Swift.Set<Swift.String>
+    let declaredClassNames: Swift::Set<Swift::String>
     var matches: [Diagnostic.Record] = []
 
     init(
         source: Source.File,
         severity: Diagnostic.Severity,
         converter: SourceLocationConverter,
-        declaredClassNames: Swift.Set<Swift.String>
+        declaredClassNames: Swift::Set<Swift::String>
     ) {
         self.source = source
         self.severity = severity

@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingNestedTagMessage: Swift.String =
+private let namingNestedTagMessage: Swift::String =
     "[nested tag] [API-NAME-010a]: empty `Tag` sub-type nested inside another type "
     + "— the surrounding namespace MUST play the phantom role directly. "
     + "Use `Property<Order, T>` / `Tagged<Order, T>` instead of "
@@ -90,7 +90,7 @@ internal final class NamingNestedTagVisitor: SyntaxVisitor {
     }
 }
 
-private func nestedTagIsNested(_ node: Syntax) -> Swift.Bool {
+private func nestedTagIsNested(_ node: Syntax) -> Swift::Bool {
     var current: Syntax? = node.parent
     while let candidate = current {
         if candidate.is(StructDeclSyntax.self) { return true }

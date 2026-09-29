@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let idiomBoundedIndexMessage: Swift.String =
+internal let idiomBoundedIndexMessage: Swift::String =
     "[bounded index static capacity] [IMPL-050]: subscript on a "
     + "static-capacity type (`<let N: Int>`) takes a raw `Int` index — "
     + "the capacity bound is dropped from the type system. Use "
@@ -46,7 +46,7 @@ internal let idiomBoundedIndexMessage: Swift.String =
     + "authoring time. Per [IMPL-052], unbounded variants MUST NOT "
     + "co-exist alongside bounded ones — bounded is the sole public API."
 
-internal func idiomHasValueGenericParameter(_ clause: GenericParameterClauseSyntax?) -> Swift.Bool {
+internal func idiomHasValueGenericParameter(_ clause: GenericParameterClauseSyntax?) -> Swift::Bool {
     guard let clause else { return false }
     for parameter in clause.parameters {
         if let specifier = parameter.specifier,
@@ -58,7 +58,7 @@ internal func idiomHasValueGenericParameter(_ clause: GenericParameterClauseSynt
     return false
 }
 
-internal func idiomIsRawIntType(_ type: TypeSyntax) -> Swift.Bool {
+internal func idiomIsRawIntType(_ type: TypeSyntax) -> Swift::Bool {
     var current = type
     while let optional = current.as(OptionalTypeSyntax.self) {
         current = optional.wrappedType
@@ -89,7 +89,7 @@ internal final class IdiomBoundedIndexVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
-    var valueGenericDepth: Swift.Int = 0
+    var valueGenericDepth: Swift::Int = 0
 
     init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
         self.source = source

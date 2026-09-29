@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let byteUInt8AsciiExtensionMessage: Swift.String =
+internal let byteUInt8AsciiExtensionMessage: Swift::String =
     "[uint8 ascii extension] [API-BYTE-005]: `extension UInt8` declares "
     + "members under the `.ascii` namespace (or extends `UInt8.ASCII` "
     + "directly). The `UInt8+ASCII.swift` wrapper is phased out in Wave 4 "
@@ -90,7 +90,7 @@ internal final class ByteUInt8AsciiExtensionVisitor: SyntaxVisitor {
     }
 }
 
-private func extensionExtendsUInt8DotASCII(_ type: TypeSyntax) -> Swift.Bool {
+private func extensionExtendsUInt8DotASCII(_ type: TypeSyntax) -> Swift::Bool {
     guard let memberType = type.as(MemberTypeSyntax.self) else { return false }
     let trailing = Lint.Syntax.Identifier.unescaped(memberType.name.text)
     guard trailing == "ASCII" else { return false }
@@ -108,7 +108,7 @@ private func extensionExtendsUInt8DotASCII(_ type: TypeSyntax) -> Swift.Bool {
     return false
 }
 
-private func memberBlockDeclaresAsciiNamespaceMember(_ block: MemberBlockSyntax) -> Swift.Bool {
+private func memberBlockDeclaresAsciiNamespaceMember(_ block: MemberBlockSyntax) -> Swift::Bool {
     for member in block.members {
         if let variable = member.decl.as(VariableDeclSyntax.self) {
             for binding in variable.bindings {

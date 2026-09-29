@@ -1,10 +1,10 @@
 internal import SwiftSyntax
 
 internal final class ThrowsPhantomParameterUseFinder: SyntaxVisitor {
-    let parameter: Swift.String
+    let parameter: Swift::String
     var found = false
 
-    init(parameter: Swift.String) {
+    init(parameter: Swift::String) {
         self.parameter = parameter
         super.init(viewMode: .sourceAccurate)
     }

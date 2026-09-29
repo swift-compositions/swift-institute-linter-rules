@@ -2,7 +2,7 @@ internal import SwiftSyntax
 
 internal final class ThrowsRethrowsTryFinder: SyntaxVisitor {
     var positions: [AbsolutePosition] = []
-    var closureDepth: Swift.Int = -1
+    var closureDepth: Swift::Int = -1
     override func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
         guard node.questionOrExclamationMark == nil else {
             return .visitChildren

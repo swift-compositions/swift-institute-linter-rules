@@ -38,7 +38,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let closureLifecycleOrderMessage: Swift.String =
+internal let closureLifecycleOrderMessage: Swift::String =
   "[lifecycle order] [API-IMPL-013]: closure parameters "
   + "MUST follow lifecycle order setup → body → completion / teardown. "
   + "A closure parameter of a later tier (a setup-tier label like "
@@ -48,7 +48,7 @@ internal let closureLifecycleOrderMessage: Swift.String =
   + "parameter of an earlier tier — reorder so setup precedes body "
   + "precedes completion."
 
-internal let setupTierLabels: Swift.Set<Swift.String> = [
+internal let setupTierLabels: Swift::Set<Swift::String> = [
   "setup",
   "prepare",
   "onStart",
@@ -57,7 +57,7 @@ internal let setupTierLabels: Swift.Set<Swift.String> = [
   "arrange",
 ]
 
-internal let completionTierLabels: Swift.Set<Swift.String> = [
+internal let completionTierLabels: Swift::Set<Swift::String> = [
   "completion",
   "onError",
   "onComplete",
@@ -71,7 +71,7 @@ internal let completionTierLabels: Swift.Set<Swift.String> = [
   "dispose",
 ]
 
-internal let bodyTierLabels: Swift.Set<Swift.String> = [
+internal let bodyTierLabels: Swift::Set<Swift::String> = [
   "body",
   "perform",
   "operation",

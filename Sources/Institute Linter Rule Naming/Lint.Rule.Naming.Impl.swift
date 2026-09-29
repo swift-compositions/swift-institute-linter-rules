@@ -37,7 +37,7 @@ extension Lint.Rule {
     )
 }
 
-private let namingImplMessage: Swift.String =
+private let namingImplMessage: Swift::String =
     "[variable named impl] [API-NAME-012]: do not bind a local as `impl` "
     + "or `_impl` — it hides the type's identity. Use the type's own name lowercased "
     + "(e.g., `let actor = IO.Blocking.Actor(...)`, `let resolver = Manifest.Resolver(...)`) "

@@ -3,10 +3,10 @@ internal import SwiftSyntax
 
 internal func manifestAccessorBodies(
   in file: SourceFileSyntax,
-  extendedTypes: Swift.Set<Swift.String>,
-  static requiredStatic: Swift.Bool
-) -> [Swift.String: ExprSyntax] {
-  var bodies: [Swift.String: ExprSyntax] = [:]
+  extendedTypes: Swift::Set<Swift::String>,
+  static requiredStatic: Swift::Bool
+) -> [Swift::String: ExprSyntax] {
+  var bodies: [Swift::String: ExprSyntax] = [:]
   for statement in Lint.Syntax.Conditional.statements(file.statements) {
     guard let extensionDecl = statement.item.as(ExtensionDeclSyntax.self),
       extendedTypes.contains(extensionDecl.extendedType.trimmedDescription)
@@ -44,12 +44,12 @@ private func manifestAccessorExpression(_ binding: PatternBindingSyntax) -> Expr
 
 internal func manifestResolvedString(
   _ expression: ExprSyntax,
-  staticAccessors: [Swift.String: ExprSyntax],
-  instanceAccessors: [Swift.String: ExprSyntax],
-  receiver: Swift.String? = nil,
-  visited: Swift.Set<Swift.String> = [],
-  unhandledSourceShape: inout Swift.String?
-) -> Swift.String? {
+  staticAccessors: [Swift::String: ExprSyntax],
+  instanceAccessors: [Swift::String: ExprSyntax],
+  receiver: Swift::String? = nil,
+  visited: Swift::Set<Swift::String> = [],
+  unhandledSourceShape: inout Swift::String?
+) -> Swift::String? {
   if let literal = expression.as(StringLiteralExprSyntax.self) {
     return manifestStringLiteralText(literal)
   }
@@ -164,7 +164,7 @@ internal func manifestResolvedString(
   return nil
 }
 
-internal func manifestStringLiteralText(_ literal: StringLiteralExprSyntax) -> Swift.String? {
+internal func manifestStringLiteralText(_ literal: StringLiteralExprSyntax) -> Swift::String? {
   guard literal.segments.count == 1,
     let segment = literal.segments.first,
     let stringSegment = segment.as(StringSegmentSyntax.self)

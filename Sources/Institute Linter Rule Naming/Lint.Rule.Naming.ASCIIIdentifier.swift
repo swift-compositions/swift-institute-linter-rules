@@ -48,7 +48,7 @@ extension Lint.Rule {
 }
 
 @usableFromInline
-internal let namingASCIIIdentifierMessage: Swift.String =
+internal let namingASCIIIdentifierMessage: Swift::String =
     "[ascii identifier] [SOURCE-ENGLISH-IDENTIFIER]: declared names are English "
     + "and ASCII-only; non-ASCII text belongs in string literals, not identifiers."
 
@@ -89,9 +89,9 @@ internal final class NamingASCIIIdentifierVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func declares(_ token: TokenSyntax) -> Swift.Bool {
+    private func declares(_ token: TokenSyntax) -> Swift::Bool {
         guard let parent = token.parent else { return false }
-        return if let named = parent.asProtocol(NamedDeclSyntax.self) {
+        return if let named = parent.asProtocol((any NamedDeclSyntax).self) {
             named.name.id == token.id
         } else if let pattern = parent.as(IdentifierPatternSyntax.self) {
             pattern.identifier.id == token.id
