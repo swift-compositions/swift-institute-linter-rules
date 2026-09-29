@@ -63,6 +63,7 @@ extension Lint.Rule.Bundle {
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
             .enable(.`path dependency`),
+            .enable(.`default trait`),
             .enable(.`package policy revision 1`),
             .enable(.`manifest naming grammar`),
             .enable(.`path name grammar`),

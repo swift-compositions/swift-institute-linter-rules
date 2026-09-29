@@ -55,6 +55,7 @@ private let allDeclaredRuleIDs: Swift.Set<Swift.String> = [
   // Naming grammar pair (#65, principal directive 2026-08-09).
   "manifest naming grammar",
   "path dependency",
+  "default trait",
   "path name grammar",
   "compound platform namespace root",
   "compound suite name",
