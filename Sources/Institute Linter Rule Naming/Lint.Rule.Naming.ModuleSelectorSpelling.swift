@@ -42,6 +42,25 @@ extension Lint.Rule {
             )
             visitor.walk(source.tree)
             return visitor.matches
+        },
+        repair: { source in
+            let modules = NamingModuleSelectorImports(viewMode: .sourceAccurate)
+            modules.walk(source.tree)
+            let visitor = NamingModuleSelectorSpellingVisitor(
+                source: source.file,
+                severity: .warning,
+                converter: source.converter,
+                modules: modules.names
+            )
+            visitor.walk(source.tree)
+            guard !visitor.periods.isEmpty else { return .unchanged }
+            var bytes = Swift.Array(source.tree.description.utf8)
+            for offset in visitor.periods.sorted(by: >) {
+                bytes.replaceSubrange(offset..<offset + 1, with: "::".utf8)
+            }
+            return .edits([
+                .rewrite(path: source.path, contents: Swift.String(decoding: bytes, as: Swift.UTF8.self))
+            ])
         }
     )
 }
@@ -69,6 +88,7 @@ internal final class NamingModuleSelectorSpellingVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     let modules: Swift.Set<Swift.String>
     var matches: [Diagnostic.Record] = []
+    var periods: [Swift.Int] = []
 
     init(
         source: Source.File,
@@ -89,6 +109,7 @@ internal final class NamingModuleSelectorSpellingVisitor: SyntaxVisitor {
             modules.contains(base.name.text)
         {
             emit(at: node.positionAfterSkippingLeadingTrivia)
+            periods.append(node.period.positionAfterSkippingLeadingTrivia.utf8Offset)
         }
         return .visitChildren
     }
@@ -98,6 +119,7 @@ internal final class NamingModuleSelectorSpellingVisitor: SyntaxVisitor {
             modules.contains(base.baseName.text)
         {
             emit(at: node.positionAfterSkippingLeadingTrivia)
+            periods.append(node.period.positionAfterSkippingLeadingTrivia.utf8Offset)
         }
         return .visitChildren
     }

@@ -79,3 +79,46 @@ extension Lint.Rule.`module selector spelling Tests`.Integration {
     #expect(findings.count == 3)
   }
 }
+
+extension Lint.Rule.`module selector spelling Tests`.Integration {
+  static func repaired(_ source: Swift.String) -> Swift.String? {
+    let proposal = Lint.Rule.`module selector spelling`.repair(
+      Lint.Source.parsed(from: source, file: "Sources/Fixture/Fixture.swift")
+    )
+    guard case .edits(let edits) = proposal, case .rewrite(_, let contents) = edits.first else {
+      return nil
+    }
+    return contents
+  }
+
+  @Test
+  func `repair spells module qualification with a selector`() {
+    let repaired = Self.repaired(
+      """
+      internal import Institute_Fixture_Core
+      func f(_ value: Swift.Int, index: Swift.String.Index?) -> Swift.String {
+          Swift.print(Institute_Fixture_Core.Value.self)
+          return ""
+      }
+      """
+    )
+    #expect(
+      repaired == """
+        internal import Institute_Fixture_Core
+        func f(_ value: Swift::Int, index: Swift::String.Index?) -> Swift::String {
+            Swift::print(Institute_Fixture_Core::Value.self)
+            return ""
+        }
+        """
+    )
+    #expect(repaired.map { Lint.Rule.`module selector spelling Tests`.findings($0).isEmpty } == true)
+  }
+
+  @Test
+  func `repair leaves selector spelling unchanged`() {
+    let proposal = Lint.Rule.`module selector spelling`.repair(
+      Lint.Source.parsed(from: "let value: Swift::Int = 0", file: "Sources/Fixture/Fixture.swift")
+    )
+    #expect(proposal == .unchanged)
+  }
+}
