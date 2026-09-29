@@ -40,7 +40,7 @@ extension Lint.Rule.Bundle {
             .enable(.`nested tag`),
             .enable(.`phantom suppression`),
             .enable(.`unification typealias`),
-            .enable(.`diagnostic message format`),
+            .enable(.`diagnostic message format`, severity: .error),
             .enable(.`foundation import`),
             .enable(.`xctest import`),
             .enable(.`uint8 conforms to byte protocol`),
