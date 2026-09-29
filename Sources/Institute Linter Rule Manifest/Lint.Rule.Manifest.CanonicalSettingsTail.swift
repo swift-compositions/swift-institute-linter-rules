@@ -61,11 +61,24 @@ extension Lint.Rule {
             severity: severity,
             identifier: "canonical settings tail",
             message: "[canonical settings tail] [PACKAGE-SETTINGS-TAIL]: \(reason); "
-              + "regenerate it with swift-linter's Scripts/settings-tail.py."
+              + "this rule's repair rewrites it to the canonical shape."
           )
         ],
         coverage: .measured
       )
+    },
+    repair: { source in
+      let text = source.tree.description
+      let tail = text.range(of: manifestCanonicalSettingsTailHead).map { Swift.String(text[$0.lowerBound...]) }
+      return if manifestCanonicalSettingsTailNormalized(tail)
+        == manifestCanonicalSettingsTailNormalized(manifestCanonicalSettingsTail)
+      {
+        .unchanged
+      } else if let contents = manifestCanonicalSettingsTailRewrite(text) {
+        .edits([.rewrite(path: source.path, contents: contents)])
+      } else {
+        .refused(.ambiguousRepair("code follows the settings loop, or the loop is unbalanced"))
+      }
     }
   )
 }
@@ -92,4 +105,28 @@ internal let manifestCanonicalSettingsTail: Swift.String = """
 
 internal func manifestCanonicalSettingsTailNormalized(_ text: Swift.String?) -> Swift.String? {
   text.map { $0.split(whereSeparator: \.isWhitespace).joined(separator: " ") }
+}
+
+internal func manifestCanonicalSettingsTailRewrite(_ text: Swift.String) -> Swift.String? {
+  guard let head = text.range(of: manifestCanonicalSettingsTailHead) else {
+    return Swift.String(text.reversed().drop(while: \.isWhitespace).reversed())
+      + "\n\n" + manifestCanonicalSettingsTail
+  }
+  var depth = 0
+  for index in text[head.lowerBound...].indices {
+    switch text[index] {
+    case "{":
+      depth += 1
+    case "}":
+      depth -= 1
+      if depth == 0 {
+        return text[text.index(after: index)...].allSatisfy(\.isWhitespace)
+          ? Swift.String(text[..<head.lowerBound]) + manifestCanonicalSettingsTail
+          : nil
+      }
+    default:
+      break
+    }
+  }
+  return nil
 }

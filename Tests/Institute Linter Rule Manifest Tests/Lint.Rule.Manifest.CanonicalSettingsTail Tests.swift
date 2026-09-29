@@ -72,3 +72,48 @@ extension Lint.Rule.`canonical settings tail Tests`.Integration {
     #expect(observation.findings.count == 1)
   }
 }
+
+extension Lint.Rule.`canonical settings tail Tests`.Integration {
+  static func repair(_ source: Swift.String) -> Lint.Rule.Repair.Proposal {
+    Lint.Rule.`canonical settings tail`.repair(Lint.Source.parsed(from: source, file: "Package.swift"))
+  }
+
+  @Test
+  func `repair replaces a drifted tail with the canonical one`() {
+    let proposal = Self.repair(
+      "let package = Package(name: \"Fixture\")\n\nfor target in package.targets {\n    target.swiftSettings = []\n}\n"
+    )
+    guard case .edits(let edits) = proposal, case .rewrite(_, let contents) = edits.first else {
+      Issue.record("expected a rewrite, got \(proposal)")
+      return
+    }
+    #expect(contents == "let package = Package(name: \"Fixture\")\n\n" + manifestCanonicalSettingsTail)
+    #expect(Lint.Rule.`canonical settings tail Tests`.observation(contents).findings.isEmpty)
+  }
+
+  @Test
+  func `repair appends the tail to a manifest without one`() {
+    let proposal = Self.repair("let package = Package(name: \"Fixture\")\n\n\n")
+    guard case .edits(let edits) = proposal, case .rewrite(_, let contents) = edits.first else {
+      Issue.record("expected a rewrite, got \(proposal)")
+      return
+    }
+    #expect(contents == "let package = Package(name: \"Fixture\")\n\n" + manifestCanonicalSettingsTail)
+  }
+
+  @Test
+  func `repair leaves a canonical manifest unchanged`() {
+    #expect(Self.repair("let package = Package(name: \"Fixture\")\n\n" + manifestCanonicalSettingsTail) == .unchanged)
+  }
+
+  @Test
+  func `repair refuses when code follows the loop`() {
+    let proposal = Self.repair(
+      "let package = Package(name: \"Fixture\")\nfor target in package.targets {\n}\nlet extra = 1\n"
+    )
+    guard case .refused = proposal else {
+      Issue.record("expected a refusal, got \(proposal)")
+      return
+    }
+  }
+}
