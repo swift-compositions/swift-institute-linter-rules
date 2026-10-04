@@ -36,7 +36,8 @@ extension Lint.Rule {
         id: "path dependency outside manifest",
         source: "let dependency = Package.Dependency.package(path: \"../swift-owner\")",
         path: "Sources/Fixture/Fixture.swift",
-        expectation: .clean
+        expectation: .clean,
+        applicability: .inapplicable
       ),
     ],
     observe: { source, severity in

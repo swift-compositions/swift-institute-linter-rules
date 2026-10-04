@@ -31,7 +31,8 @@ extension Lint.Rule {
         id: "test target naming outside manifest",
         source: "let target = Target.testTarget(name: \"FixtureTests\")",
         path: "Sources/Fixture/Fixture.swift",
-        expectation: .clean
+        expectation: .clean,
+        applicability: .inapplicable
       ),
     ],
     observe: { source, severity in

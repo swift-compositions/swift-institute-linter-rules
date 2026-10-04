@@ -31,7 +31,8 @@ extension Lint.Rule {
         id: "default trait outside manifest",
         source: "let trait = Trait.default(enabledTraits: [\"Parser\"])",
         path: "Sources/Fixture/Fixture.swift",
-        expectation: .clean
+        expectation: .clean,
+        applicability: .inapplicable
       ),
     ],
     observe: { source, severity in

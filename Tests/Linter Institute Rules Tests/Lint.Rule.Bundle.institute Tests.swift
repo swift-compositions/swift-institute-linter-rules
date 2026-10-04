@@ -11,6 +11,7 @@
 
 import Lint
 import Linter_Rules
+import Linter_Rules_Test_Support
 import Testing
 
 @testable import Linter_Institute_Rules
@@ -259,5 +260,23 @@ extension `Lint Rule Bundle institute Tests`.`Id integrity` {
       collisions.isEmpty,
       "Institute-tier id(s) collide with the universal tier — an upstream rename could produce this without either side's own test suite noticing: \(collisions.sorted())"
     )
+  }
+}
+
+extension `Lint Rule Bundle institute Tests`.`Composition` {
+  @Test
+  func `every control declares the applicability its rule observes`() {
+    for entry in Lint.Rule.Bundle.institute {
+      for control in entry.rule.controls {
+        let observation = entry.rule.observe(
+          Lint.Source.parsed(from: control.source, file: control.path.underlying),
+          .warning
+        )
+        #expect(
+          observation.applicability == control.applicability,
+          "\(entry.rule.id.underlying): control \(control.id.underlying) declares \(control.applicability), the rule observes \(observation.applicability)"
+        )
+      }
+    }
   }
 }
