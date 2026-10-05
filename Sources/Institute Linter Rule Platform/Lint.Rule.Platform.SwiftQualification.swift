@@ -34,12 +34,24 @@ extension Lint.Rule {
                 id: "swift protocol qualification foreign module sequence",
                 source: "func consume(_ values: some Other::Sequence<Int>) {}",
                 path: "Sources/Platform Core/ForeignSequence.swift",
-                expectation: .findings(1)
+                expectation: .clean
             ),
             .init(
                 id: "swift protocol qualification foreign module error",
                 source: "func handle<E: Other::Error>(_ error: E) {}",
                 path: "Sources/Platform Core/ForeignError.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "swift protocol qualification declared foreign dotted error",
+                source: "enum Other { protocol Error {} }\nfunc handle<E: Other.Error>(_ error: E) {}",
+                path: "Sources/Platform Core/DeclaredForeignError.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "swift protocol qualification bare error",
+                source: "func handle<E: Error>(_ error: E) {}",
+                path: "Sources/Platform Core/BareError.swift",
                 expectation: .findings(1)
             ),
             .init(
@@ -158,9 +170,7 @@ internal func platformSwiftQualificationBareShadowedLeaves(
         }
         if let identifier = current.as(IdentifierTypeSyntax.self) {
             let name = identifier.name.text
-            if platformSwiftQualificationShadowedProtocols.contains(name),
-                identifier.moduleSelector?.moduleName.text != "Swift"
-            {
+            if platformSwiftQualificationShadowedProtocols.contains(name), identifier.moduleSelector == nil {
                 results.append(
                     (name: name, position: identifier.name.positionAfterSkippingLeadingTrivia)
                 )
