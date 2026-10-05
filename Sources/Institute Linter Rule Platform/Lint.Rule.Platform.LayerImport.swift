@@ -19,15 +19,51 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
-                id: "platform layer import iso 9945 spec namespace",
+                id: "platform layer import iso 9945 utility namespace",
                 source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet name: ISO_9945.Utility.Name? = nil",
                 path: "Sources/Consumer Core/UtilityImport.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "platform layer import iso 9945 glob namespace",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Glob\nlet glob = ISO_9945.Glob.self",
+                path: "Sources/Consumer Core/GlobImport.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "platform layer import iso 9945 incidental kernel text",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\n// ISO_9945.Kernel is not used here\nlet note = \"ISO_9945.Kernel\"\nlet name: ISO_9945.Utility.Name? = nil",
+                path: "Sources/Consumer Core/IncidentalText.swift",
                 expectation: .clean
             ),
             .init(
                 id: "platform layer import iso 9945 kernel use",
                 source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet kernel: ISO_9945.Kernel? = nil",
                 path: "Sources/Consumer Core/KernelUse.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "platform layer import iso 9945 kernel use with whitespace",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet name: ISO_9945.Utility.Name? = nil\nlet kernel = ISO_9945\n    .Kernel.self",
+                path: "Sources/Consumer Core/KernelWhitespace.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "platform layer import iso 9945 kernel use with module selector",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet kernel: ISO_9945_Core::ISO_9945.Kernel? = nil",
+                path: "Sources/Consumer Core/KernelSelector.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "platform layer import iso 9945 utility import without use",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet value = 1",
+                path: "Sources/Consumer Core/UnusedUtility.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "platform layer import iso 9945 unrelated core member",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet name: ISO_9945.Utility.Name? = nil\nlet other: ISO_9945.Errno? = nil",
+                path: "Sources/Consumer Core/UnrelatedCore.swift",
                 expectation: .findings(1)
             ),
             .init(
@@ -58,7 +94,7 @@ extension Lint.Rule {
                 converter: source.converter,
                 exempt: platformLayerImportSpecNamespaceExemption(
                     imports: imports.modules,
-                    text: source.tree.description
+                    members: imports.namespaceMembers
                 )
             )
             visitor.walk(source.tree)
@@ -152,27 +188,44 @@ private func platformLayerImportIsInsideHiddenDirectory(_ filePath: Swift::Strin
     return components.contains { $0.hasPrefix(".") }
 }
 
-internal let platformLayerImportSpecNamespaceModules: Swift::Set<Swift::String> = [
-    "ISO_9945_Utility",
-    "ISO_9945_Glob",
+internal let platformLayerImportSpecNamespaceModules: [Swift::String: Swift::String] = [
+    "Utility": "ISO_9945_Utility",
+    "Glob": "ISO_9945_Glob",
 ]
 
 internal func platformLayerImportSpecNamespaceExemption(
     imports: Swift::Set<Swift::String>,
-    text: Swift::String
+    members: Swift::Set<Swift::String>
 ) -> Swift::Set<Swift::String> {
-    imports.isDisjoint(with: platformLayerImportSpecNamespaceModules) || text.contains("ISO_9945.Kernel")
-        ? []
-        : ["ISO_9945_Core"]
+    let specUse = !members.isEmpty
+        && members.allSatisfy { member in
+            platformLayerImportSpecNamespaceModules[member].map { imports.contains($0) } ?? false
+        }
+    return specUse ? ["ISO_9945_Core"] : []
 }
 
 internal final class PlatformLayerImportCollector: SyntaxVisitor {
     var modules: Swift::Set<Swift::String> = []
+    var namespaceMembers: Swift::Set<Swift::String> = []
 
     override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
         let pathText = node.path.trimmedDescription
         modules.insert(pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText)
         return .skipChildren
+    }
+
+    override func visit(_ node: MemberTypeSyntax) -> SyntaxVisitorContinueKind {
+        if node.baseType.as(IdentifierTypeSyntax.self)?.name.text == "ISO_9945" {
+            namespaceMembers.insert(node.name.text)
+        }
+        return .visitChildren
+    }
+
+    override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
+        if node.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "ISO_9945" {
+            namespaceMembers.insert(node.declName.baseName.text)
+        }
+        return .visitChildren
     }
 }
 
