@@ -19,6 +19,18 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "platform layer import iso 9945 spec namespace",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet name: ISO_9945.Utility.Name? = nil",
+                path: "Sources/Consumer Core/UtilityImport.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "platform layer import iso 9945 kernel use",
+                source: "public import ISO_9945_Core\npublic import ISO_9945_Utility\nlet kernel: ISO_9945.Kernel? = nil",
+                path: "Sources/Consumer Core/KernelUse.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "platform layer import test boundary",
                 source: "import POSIX_Kernel",
                 path: "Tests/Consumer Tests/PolicyFixture.swift",
@@ -38,10 +50,16 @@ extension Lint.Rule {
             guard !platformLayerImportIsInsideHiddenDirectory(source.file.filePath) else {
                 return []
             }
+            let imports = PlatformLayerImportCollector(viewMode: .sourceAccurate)
+            imports.walk(source.tree)
             let visitor = PlatformLayerImportVisitor(
                 source: source.file,
                 severity: severity,
-                converter: source.converter
+                converter: source.converter,
+                exempt: platformLayerImportSpecNamespaceExemption(
+                    imports: imports.modules,
+                    text: source.tree.description
+                )
             )
             visitor.walk(source.tree)
             return visitor.matches
@@ -134,6 +152,30 @@ private func platformLayerImportIsInsideHiddenDirectory(_ filePath: Swift::Strin
     return components.contains { $0.hasPrefix(".") }
 }
 
+internal let platformLayerImportSpecNamespaceModules: Swift::Set<Swift::String> = [
+    "ISO_9945_Utility",
+    "ISO_9945_Glob",
+]
+
+internal func platformLayerImportSpecNamespaceExemption(
+    imports: Swift::Set<Swift::String>,
+    text: Swift::String
+) -> Swift::Set<Swift::String> {
+    imports.isDisjoint(with: platformLayerImportSpecNamespaceModules) || text.contains("ISO_9945.Kernel")
+        ? []
+        : ["ISO_9945_Core"]
+}
+
+internal final class PlatformLayerImportCollector: SyntaxVisitor {
+    var modules: Swift::Set<Swift::String> = []
+
+    override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
+        let pathText = node.path.trimmedDescription
+        modules.insert(pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText)
+        return .skipChildren
+    }
+}
+
 internal func platformLayerImportForbiddenPackage(_ pathText: Swift::String) -> Swift::String? {
     let firstComponent = pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText
     return platformLayerImportForbiddenModules[firstComponent]
@@ -144,19 +186,28 @@ internal final class PlatformLayerImportVisitor: SyntaxVisitor {
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
+    let exempt: Swift::Set<Swift::String>
     private var reportedModules: Swift::Set<Swift::String> = []
 
-    init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
+    init(
+        source: Source.File,
+        severity: Diagnostic.Severity,
+        converter: SourceLocationConverter,
+        exempt: Swift::Set<Swift::String>
+    ) {
         self.source = source
         self.severity = severity
         self.converter = converter
+        self.exempt = exempt
         super.init(viewMode: .sourceAccurate)
     }
 
     override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
         let pathText = node.path.trimmedDescription
         let firstComponent = pathText.split(separator: ".").first.map(Swift::String.init) ?? pathText
-        guard platformLayerImportForbiddenModules[firstComponent] != nil else {
+        guard platformLayerImportForbiddenModules[firstComponent] != nil,
+            !exempt.contains(firstComponent)
+        else {
             return .visitChildren
         }
         guard !reportedModules.contains(firstComponent) else {

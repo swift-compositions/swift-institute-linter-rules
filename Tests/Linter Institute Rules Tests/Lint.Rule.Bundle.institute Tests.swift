@@ -279,4 +279,20 @@ extension `Lint Rule Bundle institute Tests`.`Composition` {
       }
     }
   }
+
+  @Test
+  func `every applicable control yields its declared finding count`() {
+    for entry in Lint.Rule.Bundle.institute {
+      for control in entry.rule.controls where control.applicability == .applicable {
+        let observation = entry.rule.observe(
+          Lint.Source.parsed(from: control.source, file: control.path.underlying),
+          .warning
+        )
+        #expect(
+          observation.findings.count == control.expectation.count,
+          "\(entry.rule.id.underlying): control \(control.id.underlying) expects \(control.expectation.count) findings, the rule observes \(observation.findings.count)"
+        )
+      }
+    }
+  }
 }

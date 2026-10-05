@@ -19,6 +19,12 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "swift protocol qualification module selector",
+                source: "func consume(_ values: some Swift::Sequence<Int>) {}",
+                path: "Sources/Platform Core/SelectorSequence.swift",
+                expectation: .clean
+            ),
+            .init(
                 id: "swift protocol qualification stdlib extension boundary",
                 source: "extension Array { func consume(_ values: some Sequence<Int>) {} }",
                 path: "Sources/Platform Core/ArrayExtension.swift",
@@ -99,7 +105,7 @@ internal func platformSwiftQualificationIsInsideStdlibExtension(_ node: Syntax) 
 @usableFromInline
 internal let platformSwiftQualificationMessage: Swift::String =
     "[swift protocol qualification] [PLAT-ARCH-022]: stdlib-shadowing "
-    + "protocol reference is unqualified. Use `Swift.<Protocol>` form "
+    + "protocol reference is unqualified. Use `Swift::<Protocol>` (or `Swift.<Protocol>`) form "
     + "(e.g., `some Swift.Sequence<UInt8>` not `some Sequence<UInt8>`; "
     + "`<E: Swift.Error>` not `<E: Error>`). Shadowing namespaces "
     + "(`swift-sequence.Sequence`, per-package `Module.Error`) "
@@ -134,7 +140,7 @@ internal func platformSwiftQualificationBareShadowedLeaves(
         }
         if let identifier = current.as(IdentifierTypeSyntax.self) {
             let name = identifier.name.text
-            if platformSwiftQualificationShadowedProtocols.contains(name) {
+            if platformSwiftQualificationShadowedProtocols.contains(name), identifier.moduleSelector == nil {
                 results.append(
                     (name: name, position: identifier.name.positionAfterSkippingLeadingTrivia)
                 )

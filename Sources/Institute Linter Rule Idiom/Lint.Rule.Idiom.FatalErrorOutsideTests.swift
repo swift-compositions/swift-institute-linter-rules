@@ -25,6 +25,36 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "fatal error outside tests required never body witness",
+                source: "struct Leaf { var body: Never { fatalError(\"leaf\") } }",
+                path: "Sources/Idiom Consumer/Leaf.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "fatal error outside tests never body explicit getter",
+                source: "struct Leaf { public var body: Swift.Never { get { fatalError() } } }",
+                path: "Sources/Idiom Consumer/Leaf.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "fatal error outside tests body of another type",
+                source: "struct Leaf { var body: Int { fatalError() } }",
+                path: "Sources/Idiom Consumer/Leaf.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "fatal error outside tests never property not named body",
+                source: "struct Leaf { var other: Never { fatalError() } }",
+                path: "Sources/Idiom Consumer/Leaf.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "fatal error outside tests never body with more statements",
+                source: "struct Leaf { var body: Never { log(); fatalError() } }",
+                path: "Sources/Idiom Consumer/Leaf.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "fatal error outside tests member",
                 source: "func f() { logger.fatalError(\"message\") }",
                 path: "Sources/Idiom Consumer/Log.swift",
@@ -77,7 +107,7 @@ internal final class IdiomFatalErrorOutsideTestsVisitor: SyntaxVisitor {
             } else {
                 false
             }
-        guard isFatalError else { return .visitChildren }
+        guard isFatalError, !Self.isRequiredNeverBodyWitness(node) else { return .visitChildren }
         let location = converter.location(for: node.positionAfterSkippingLeadingTrivia)
         matches.append(
             Diagnostic.Record(
@@ -93,5 +123,38 @@ internal final class IdiomFatalErrorOutsideTestsVisitor: SyntaxVisitor {
             )
         )
         return .visitChildren
+    }
+
+    private static func isRequiredNeverBodyWitness(_ node: FunctionCallExprSyntax) -> Swift::Bool {
+        guard let item = node.parent?.as(CodeBlockItemSyntax.self),
+            let items = item.parent?.as(CodeBlockItemListSyntax.self),
+            items.count == 1
+        else { return false }
+        let block: AccessorBlockSyntax? =
+            if let block = items.parent?.as(AccessorBlockSyntax.self) {
+                block
+            } else if let body = items.parent?.as(CodeBlockSyntax.self),
+                let accessor = body.parent?.as(AccessorDeclSyntax.self),
+                accessor.accessorSpecifier.tokenKind == .keyword(.get),
+                let list = accessor.parent?.as(AccessorDeclListSyntax.self),
+                list.count == 1
+            {
+                list.parent?.as(AccessorBlockSyntax.self)
+            } else {
+                nil
+            }
+        guard let binding = block?.parent?.as(PatternBindingSyntax.self),
+            binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "body",
+            let type = binding.typeAnnotation?.type
+        else { return false }
+        return if let identifier = type.as(IdentifierTypeSyntax.self) {
+            identifier.name.text == "Never"
+                && (identifier.moduleSelector.map { $0.moduleName.text == "Swift" } ?? true)
+        } else if let member = type.as(MemberTypeSyntax.self) {
+            member.name.text == "Never"
+                && member.baseType.as(IdentifierTypeSyntax.self)?.name.text == "Swift"
+        } else {
+            false
+        }
     }
 }
