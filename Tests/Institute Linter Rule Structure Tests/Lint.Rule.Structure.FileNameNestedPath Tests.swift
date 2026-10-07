@@ -197,6 +197,75 @@ extension Lint.Rule.`file name nested path Tests`.Edge {
     )
     #expect(findings.isEmpty)
   }
+
+  @Test
+  func `cascade-suppression file with only non-stdlib conformance extensions is suppressed`() {
+    let source = """
+      public struct Iterator {}
+      extension Iterator: Iterating {}
+      extension Iterator: Cursoring {}
+      """
+    let findings = Lint.Rule.`file name nested path Tests`.findings(
+      in: source,
+      file: "Sources/X/Wrong.swift"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `cascade-suppression file with only where-clause extensions is suppressed`() {
+    let source = """
+      public struct Iterator<Element> {}
+      extension Iterator where Element: Comparable {}
+      extension Iterator where Element: Hashable {}
+      """
+    let findings = Lint.Rule.`file name nested path Tests`.findings(
+      in: source,
+      file: "Sources/X/Wrong.swift"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `a stdlib conformance under a where clause discriminates and is suppressed`() {
+    let source = """
+      public struct Iterator<Element> {}
+      extension Iterator: Equatable where Element: Equatable {}
+      """
+    let findings = Lint.Rule.`file name nested path Tests`.findings(
+      in: source,
+      file: "Sources/X/Wrong.swift"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `a stdlib conformance alongside a non-stdlib one in one clause discriminates and is suppressed`() {
+    let source = """
+      public struct Iterator {}
+      extension Iterator: Sendable, Iterating {}
+      """
+    let findings = Lint.Rule.`file name nested path Tests`.findings(
+      in: source,
+      file: "Sources/X/Wrong.swift"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `the wrapping extension is not counted and discriminated others are suppressed`() {
+    let source = """
+      extension Array {
+          public struct Iterator {}
+      }
+      extension Array.Iterator: Iterating {}
+      """
+    let findings = Lint.Rule.`file name nested path Tests`.findings(
+      in: source,
+      file: "Sources/X/Wrong.swift"
+    )
+    #expect(findings.isEmpty)
+  }
 }
 
 // MARK: - Exemption (007-shaped basenames not firing)
@@ -329,6 +398,26 @@ extension Lint.Rule.`file name nested path Tests`.`Near Miss` {
       file: "Sources/X/Wrong.swift"
     )
     #expect(findings.count == 1)
+  }
+
+  @Test
+  func `the wrapping extension is not counted and a bare member-only other still fires`() {
+    let source = """
+      extension Array {
+          public struct Iterator {}
+      }
+      extension Array.Iterator {
+          func helper() {}
+      }
+      """
+    let findings = Lint.Rule.`file name nested path Tests`.findings(
+      in: source,
+      file: "Sources/X/Wrong.swift"
+    )
+    #expect(findings.count == 1)
+    if findings.count == 1 {
+      #expect(findings[0].message.contains("Array.Iterator"))
+    }
   }
 
   @Test
