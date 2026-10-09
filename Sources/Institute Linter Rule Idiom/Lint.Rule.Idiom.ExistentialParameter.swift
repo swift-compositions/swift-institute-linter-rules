@@ -25,6 +25,24 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "existential parameter encodable witness",
+                source: "extension Box: Encodable { func encode(to encoder: any Encoder) throws {} }",
+                path: "Sources/Idiom Consumer/Box.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "existential parameter decodable witness",
+                source: "extension Box: Decodable { init(from decoder: any Decoder) throws {} }",
+                path: "Sources/Idiom Consumer/Box.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "existential parameter encoder outside witness",
+                source: "func log(_ encoder: any Encoder) {}",
+                path: "Sources/Idiom Consumer/Log.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "existential parameter test",
                 source: "func render(_ view: any View) {}",
                 path: "Tests/Idiom Consumer Tests/Render.swift",
@@ -67,6 +85,9 @@ internal final class IdiomExistentialParameterVisitor: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
+        guard !IdiomExistentialParameterCodableWitness.matches(node) else {
+            return .visitChildren
+        }
         let finder = IdiomExistentialParameterFinder(viewMode: .sourceAccurate)
         finder.walk(node.type)
         for position in finder.positions {
@@ -86,6 +107,49 @@ internal final class IdiomExistentialParameterVisitor: SyntaxVisitor {
             )
         }
         return .visitChildren
+    }
+}
+
+internal enum IdiomExistentialParameterCodableWitness {
+    static func matches(_ parameter: FunctionParameterSyntax) -> Bool {
+        guard let list = parameter.parent?.as(FunctionParameterListSyntax.self), list.count == 1,
+            let signature = list.parent?.parent?.as(FunctionSignatureSyntax.self),
+            let type = parameter.type.as(SomeOrAnyTypeSyntax.self),
+            type.someOrAnySpecifier.tokenKind == .keyword(.any)
+        else {
+            return false
+        }
+        let label = parameter.firstName.text
+        let constraint = type.constraint.trimmedDescription
+        return switch signature.parent {
+        case let function? where function.as(FunctionDeclSyntax.self)?.name.text == "encode":
+            label == "to" && ["Encoder", "Swift.Encoder", "Swift::Encoder"].contains(constraint)
+                && Self.conforms(function, to: "Encodable")
+        case let initializer? where initializer.is(InitializerDeclSyntax.self):
+            label == "from" && ["Decoder", "Swift.Decoder", "Swift::Decoder"].contains(constraint)
+                && Self.conforms(initializer, to: "Decodable")
+        default:
+            false
+        }
+    }
+
+    static func conforms(_ member: Syntax, to requirement: Swift::String) -> Bool {
+        let accepted: Set<Swift::String> = [
+            requirement, "Swift.\(requirement)", "Swift::\(requirement)",
+            "Codable", "Swift.Codable", "Swift::Codable",
+        ]
+        guard
+            let group = sequence(first: member, next: \.parent)
+                .dropFirst()
+                .lazy
+                .compactMap({ $0.asProtocol((any DeclGroupSyntax).self) })
+                .first
+        else {
+            return false
+        }
+        return group.inheritanceClause?.inheritedTypes.contains {
+            accepted.contains($0.type.trimmedDescription)
+        } ?? false
     }
 }
 

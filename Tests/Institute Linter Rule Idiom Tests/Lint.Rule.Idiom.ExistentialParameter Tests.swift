@@ -84,3 +84,68 @@ extension Lint.Rule.`existential parameter Tests`.Integration {
     #expect(findings.isEmpty)
   }
 }
+
+extension Lint.Rule.`existential parameter Tests`.`Edge Case` {
+  @Test
+  func `Codable requirement witnesses are admitted`() {
+    let findings = Lint.Rule.`existential parameter Tests`.findings(
+      """
+      extension Box: Encodable {
+        public func encode(to encoder: any Encoder) throws(any Error) {}
+      }
+      extension Box: Decodable {
+        public init(from decoder: any Swift.Decoder) throws(any Error) {}
+      }
+      """
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `Encoder and Decoder outside the Codable witnesses are still flagged`() {
+    let findings = Lint.Rule.`existential parameter Tests`.findings(
+      """
+      func log(_ encoder: any Encoder) {}
+      func encode(to sink: any Sink) {}
+      func encode(to encoder: any Encoder, options: Int) {}
+      init(decoder: any Decoder) {}
+      init(from source: any Source) {}
+      static func make(from decoder: any Decoder) {}
+      """
+    )
+    #expect(findings.count == 6)
+  }
+
+  @Test
+  func `witness shapes are flagged without a Codable conformance on the enclosing declaration`() {
+    let findings = Lint.Rule.`existential parameter Tests`.findings(
+      """
+      extension Box {
+        func encode(to encoder: any Encoder) throws {}
+      }
+      extension Box: Hashable {
+        init(from decoder: any Decoder) throws {}
+      }
+      extension Box: Encodable {
+        init(from decoder: any Decoder) throws {}
+      }
+      func encode(to encoder: any Encoder) {}
+      """
+    )
+    #expect(findings.count == 4)
+  }
+
+  @Test
+  func `nested CodingKeys do not hide the enclosing conformance`() {
+    let findings = Lint.Rule.`existential parameter Tests`.findings(
+      """
+      extension Box: Swift.Codable {
+        private enum CodingKeys: String, CodingKey { case value }
+        public init(from decoder: any Swift.Decoder) throws {}
+        public func encode(to encoder: any Swift.Encoder) throws {}
+      }
+      """
+    )
+    #expect(findings.isEmpty)
+  }
+}
