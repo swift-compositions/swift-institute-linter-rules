@@ -276,3 +276,50 @@ extension Lint.Rule.`bare string dependency Tests`.Integration {
         #expect(findings.count == 1)
     }
 }
+
+extension Lint.Rule.`bare string dependency Tests`.`Edge Case` {
+    @Test
+    func `a manifest that does not parse is unmeasured, not clean`() {
+        let observation = Lint.Rule.`bare string dependency Tests`.observation(
+            source: """
+                let package = Package(name: "A", targets: [.target(name: "A")])
+                let package = Package(
+                """
+        )
+        #expect(observation.findings.isEmpty)
+        #expect(observation.coverage == .unmeasured(.unsupportedSourceShape("the manifest does not parse")))
+    }
+
+    @Test
+    func `two Package initializers are unmeasured`() {
+        let observation = Lint.Rule.`bare string dependency Tests`.observation(
+            source: """
+                let package = Package(name: "A", targets: [.target(name: "A", dependencies: ["B"])])
+                let other = Package(name: "B")
+                """
+        )
+        #expect(observation.findings.isEmpty)
+        #expect(
+            observation.coverage
+                == .unmeasured(.unsupportedSourceShape("expected at most one Package initializer; found 2"))
+        )
+    }
+
+    @Test
+    func `a valid manifest with one Package initializer is still measured`() {
+        let violating = Lint.Rule.`bare string dependency Tests`.observation(
+            source: """
+                let package = Package(name: "A", targets: [.target(name: "A", dependencies: ["B"])])
+                """
+        )
+        #expect(violating.coverage == .measured)
+        #expect(violating.findings.count == 1)
+        let clean = Lint.Rule.`bare string dependency Tests`.observation(
+            source: """
+                let package = Package(name: "A", targets: [.target(name: "A", dependencies: [.target(name: "B")])])
+                """
+        )
+        #expect(clean.coverage == .measured)
+        #expect(clean.findings.isEmpty)
+    }
+}
