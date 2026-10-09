@@ -51,6 +51,12 @@ extension Lint.Rule {
           applicability: .inapplicable
         )
       }
+      if let shape = manifestUnmeasurableShape(source.tree) {
+        return Lint.Rule.Observation(
+          findings: [],
+          coverage: .unmeasured(.unsupportedSourceShape(shape))
+        )
+      }
       let visitor = ManifestBareStringDependencyVisitor(
         source: source.file,
         severity: severity,
@@ -76,6 +82,28 @@ internal func manifestIsPackageManifest(_ filePath: Swift::String) -> Swift::Boo
   }
   return filename == "Package.swift"
     || (filename.hasPrefix("Package@swift-") && filename.hasSuffix(".swift"))
+}
+
+internal func manifestUnmeasurableShape(_ tree: SourceFileSyntax) -> Swift::String? {
+  guard !tree.hasError else {
+    return "the manifest does not parse"
+  }
+  let counter = ManifestPackageInitializerCounter(viewMode: .sourceAccurate)
+  counter.walk(tree)
+  return counter.count > 1
+    ? "expected at most one Package initializer; found \(counter.count)"
+    : nil
+}
+
+internal final class ManifestPackageInitializerCounter: SyntaxVisitor {
+  var count = 0
+
+  override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    if node.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "Package" {
+      count += 1
+    }
+    return .visitChildren
+  }
 }
 
 private let manifestTargetTreeNames: Swift::Set<Swift::Substring> = ["Sources", "Plugins"]
