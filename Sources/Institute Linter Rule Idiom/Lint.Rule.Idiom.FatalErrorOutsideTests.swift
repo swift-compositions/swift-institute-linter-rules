@@ -28,31 +28,31 @@ extension Lint.Rule {
                 id: "fatal error outside tests parsing leaf witness",
                 source: "struct Leaf: Parsing { var body: Never { fatalError(\"leaf\") } }",
                 path: "Sources/Idiom Consumer/Leaf.swift",
-                expectation: .clean
+                expectation: .findings(1)
             ),
             .init(
                 id: "fatal error outside tests qualified generic coding leaf witness",
                 source: "extension Example { struct Coder: Library.Utility.Coding<Int, Failure> { var body: Never { borrowing get { return fatalError(\"leaf\") } } } }",
                 path: "Sources/Idiom Consumer/Leaf.swift",
-                expectation: .clean
+                expectation: .findings(1)
             ),
             .init(
                 id: "fatal error outside tests same-file conforming extension",
                 source: "struct Leaf {}\nextension Leaf: Serializing { var body: Swift.Never { get { fatalError() } } }",
                 path: "Sources/Idiom Consumer/Leaf.swift",
-                expectation: .clean
+                expectation: .findings(1)
             ),
             .init(
                 id: "fatal error outside tests declaration conformance with extension witness",
                 source: "struct Leaf: Parsing {}\nextension Leaf { var body: Never { fatalError() } }",
                 path: "Sources/Idiom Consumer/Leaf.swift",
-                expectation: .clean
+                expectation: .findings(1)
             ),
             .init(
                 id: "fatal error outside tests qualified extension conformance with extension witness",
                 source: "enum A { struct Leaf {} }\nextension A.Leaf: Parsing {}\nextension A.Leaf { var body: Never { fatalError() } }",
                 path: "Sources/Idiom Consumer/Leaf.swift",
-                expectation: .clean
+                expectation: .findings(1)
             ),
             .init(
                 id: "fatal error outside tests same name in another namespace",
@@ -97,6 +97,30 @@ extension Lint.Rule {
                 expectation: .findings(1)
             ),
             .init(
+                id: "fatal error outside tests leaf protocol default",
+                source: "extension Parsing where Self: ~Copyable, Body == Never { public var body: Never { borrowing get { fatalError(\"leaf\") } } }",
+                path: "Sources/Idiom Consumer/Parsing.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "fatal error outside tests module-qualified leaf protocol default",
+                source: "extension Coder::Coding where Body == Swift.Never { var body: Never { fatalError() } }",
+                path: "Sources/Idiom Consumer/Coding.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "fatal error outside tests protocol default without Never body constraint",
+                source: "extension Parsing { var body: Never { fatalError() } }",
+                path: "Sources/Idiom Consumer/Parsing.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "fatal error outside tests Never body default of another protocol",
+                source: "extension Rendering where Body == Never { var body: Never { fatalError() } }",
+                path: "Sources/Idiom Consumer/Rendering.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "fatal error outside tests member",
                 source: "func f() { logger.fatalError(\"message\") }",
                 path: "Sources/Idiom Consumer/Log.swift",
@@ -108,13 +132,10 @@ extension Lint.Rule {
             guard path.hasPrefix("Sources/") || path.contains("/Sources/") else {
                 return []
             }
-            let conformances = IdiomLeafConformanceCollector(viewMode: .sourceAccurate)
-            conformances.walk(source.tree)
             let visitor = IdiomFatalErrorOutsideTestsVisitor(
                 source: source.file,
                 severity: severity,
-                converter: source.converter,
-                conformingTypes: conformances.conformingTypes
+                converter: source.converter
             )
             visitor.walk(source.tree)
             return visitor.matches
@@ -133,19 +154,16 @@ internal final class IdiomFatalErrorOutsideTestsVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
-    let conformingTypes: Swift::Set<Swift::String>
     var matches: [Diagnostic.Record] = []
 
     init(
         source: Source.File,
         severity: Diagnostic.Severity,
-        converter: SourceLocationConverter,
-        conformingTypes: Swift::Set<Swift::String>
+        converter: SourceLocationConverter
     ) {
         self.source = source
         self.severity = severity
         self.converter = converter
-        self.conformingTypes = conformingTypes
         super.init(viewMode: .sourceAccurate)
     }
 
@@ -159,7 +177,7 @@ internal final class IdiomFatalErrorOutsideTestsVisitor: SyntaxVisitor {
             } else {
                 false
             }
-        guard isFatalError, !isRequiredNeverBodyWitness(node) else { return .visitChildren }
+        guard isFatalError, !isLeafProtocolDefaultBody(node) else { return .visitChildren }
         let location = converter.location(for: node.positionAfterSkippingLeadingTrivia)
         matches.append(
             Diagnostic.Record(
@@ -177,7 +195,7 @@ internal final class IdiomFatalErrorOutsideTestsVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
-    private func isRequiredNeverBodyWitness(_ node: FunctionCallExprSyntax) -> Swift::Bool {
+    private func isLeafProtocolDefaultBody(_ node: FunctionCallExprSyntax) -> Swift::Bool {
         let statement: Syntax? =
             if let returned = node.parent?.as(ReturnStmtSyntax.self) {
                 Syntax(returned)
@@ -206,7 +224,7 @@ internal final class IdiomFatalErrorOutsideTestsVisitor: SyntaxVisitor {
             let type = binding.typeAnnotation?.type,
             idiomIsNever(type)
         else { return false }
-        return idiomEnclosingLeafConformer(of: Syntax(binding), conformingTypes: conformingTypes)
+        return idiomIsLeafProtocolNeverDefault(enclosing: Syntax(binding))
     }
 }
 
@@ -222,10 +240,6 @@ internal func idiomLastTypeName(_ type: TypeSyntax) -> Swift::String? {
     }
 }
 
-internal func idiomInheritsLeafProtocol(_ clause: InheritanceClauseSyntax?) -> Swift::Bool {
-    clause?.inheritedTypes.contains { idiomLastTypeName($0.type).map(idiomLeafProtocols.contains) ?? false } ?? false
-}
-
 internal func idiomIsNever(_ type: TypeSyntax) -> Swift::Bool {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         identifier.name.text == "Never"
@@ -238,121 +252,28 @@ internal func idiomIsNever(_ type: TypeSyntax) -> Swift::Bool {
     }
 }
 
-internal func idiomQualifiedName(_ type: TypeSyntax) -> Swift::String? {
-    if let identifier = type.as(IdentifierTypeSyntax.self),
-        identifier.genericArgumentClause == nil,
-        identifier.moduleSelector == nil
-    {
-        identifier.name.text
-    } else if let member = type.as(MemberTypeSyntax.self),
-        member.genericArgumentClause == nil,
-        let base = idiomQualifiedName(member.baseType)
-    {
-        base + "." + member.name.text
-    } else {
-        nil
-    }
-}
-
-internal func idiomScopeName(of node: Syntax) -> Swift::String? {
-    if let decl = node.as(StructDeclSyntax.self) {
-        idiomScopePrefix(of: node).map { $0 + decl.name.text }
-    } else if let decl = node.as(EnumDeclSyntax.self) {
-        idiomScopePrefix(of: node).map { $0 + decl.name.text }
-    } else if let decl = node.as(ClassDeclSyntax.self) {
-        idiomScopePrefix(of: node).map { $0 + decl.name.text }
-    } else if let decl = node.as(ActorDeclSyntax.self) {
-        idiomScopePrefix(of: node).map { $0 + decl.name.text }
-    } else if let decl = node.as(ExtensionDeclSyntax.self) {
-        idiomQualifiedName(decl.extendedType)
-    } else {
-        nil
-    }
-}
-
-internal func idiomScopePrefix(of node: Syntax) -> Swift::String? {
+internal func idiomIsLeafProtocolNeverDefault(enclosing node: Syntax) -> Swift::Bool {
     var current = node.parent
     while let candidate = current {
+        if let extensionDecl = candidate.as(ExtensionDeclSyntax.self) {
+            guard let name = idiomLastTypeName(extensionDecl.extendedType), idiomLeafProtocols.contains(name) else {
+                return false
+            }
+            return extensionDecl.genericWhereClause?.requirements.contains { element in
+                guard let sameType = element.requirement.as(SameTypeRequirementSyntax.self),
+                    let left = sameType.leftType.as(TypeSyntax.self),
+                    let right = sameType.rightType.as(TypeSyntax.self)
+                else { return false }
+                return idiomLastTypeName(left) == "Body" && idiomIsNever(right)
+            } ?? false
+        }
         if candidate.is(StructDeclSyntax.self) || candidate.is(EnumDeclSyntax.self)
             || candidate.is(ClassDeclSyntax.self) || candidate.is(ActorDeclSyntax.self)
-            || candidate.is(ExtensionDeclSyntax.self)
+            || candidate.is(ProtocolDeclSyntax.self)
         {
-            return idiomScopeName(of: candidate).map { $0 + "." }
-        }
-        if candidate.is(ProtocolDeclSyntax.self) || candidate.is(FunctionDeclSyntax.self)
-            || candidate.is(ClosureExprSyntax.self)
-        {
-            return nil
-        }
-        current = candidate.parent
-    }
-    return ""
-}
-
-internal func idiomInheritanceClause(of node: Syntax) -> InheritanceClauseSyntax? {
-    if let decl = node.as(StructDeclSyntax.self) {
-        decl.inheritanceClause
-    } else if let decl = node.as(EnumDeclSyntax.self) {
-        decl.inheritanceClause
-    } else if let decl = node.as(ClassDeclSyntax.self) {
-        decl.inheritanceClause
-    } else if let decl = node.as(ActorDeclSyntax.self) {
-        decl.inheritanceClause
-    } else if let decl = node.as(ExtensionDeclSyntax.self) {
-        decl.inheritanceClause
-    } else {
-        nil
-    }
-}
-
-internal func idiomEnclosingLeafConformer(
-    of node: Syntax,
-    conformingTypes: Swift::Set<Swift::String>
-) -> Swift::Bool {
-    var current = node.parent
-    while let candidate = current {
-        if candidate.is(StructDeclSyntax.self) || candidate.is(EnumDeclSyntax.self)
-            || candidate.is(ClassDeclSyntax.self) || candidate.is(ActorDeclSyntax.self)
-            || candidate.is(ExtensionDeclSyntax.self)
-        {
-            return idiomScopeName(of: candidate).map(conformingTypes.contains) ?? false
+            return false
         }
         current = candidate.parent
     }
     return false
-}
-
-internal final class IdiomLeafConformanceCollector: SyntaxVisitor {
-    var conformingTypes: Swift::Set<Swift::String> = []
-
-    private func record(_ node: Syntax) {
-        if idiomInheritsLeafProtocol(idiomInheritanceClause(of: node)), let name = idiomScopeName(of: node) {
-            conformingTypes.insert(name)
-        }
-    }
-
-    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        record(Syntax(node))
-        return .visitChildren
-    }
-
-    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        record(Syntax(node))
-        return .visitChildren
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        record(Syntax(node))
-        return .visitChildren
-    }
-
-    override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
-        record(Syntax(node))
-        return .visitChildren
-    }
-
-    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        record(Syntax(node))
-        return .visitChildren
-    }
 }
