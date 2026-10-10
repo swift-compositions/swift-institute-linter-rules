@@ -251,3 +251,17 @@ extension Lint.Rule.`test file suffix Tests`.Integration {
         #expect(conforming.isEmpty)
     }
 }
+
+extension Lint.Rule.`test file suffix Tests`.Unit {
+    @Test(arguments: ["", "./", "././"])
+    func `relative path prefixes retain rule coverage`(prefix: String) {
+        let path = prefix + "Tests/Example Tests/Example.swift"
+        #expect(Lint.Rule.`test file suffix Tests`.findings(source: "@Test func example() {}", file: path).count == 1)
+    }
+
+    @Test(arguments: [".build/", "./.build/"])
+    func `relative path prefixes retain hidden directory exclusion`(prefix: String) {
+        let path = prefix + "Tests/Example Tests/Example.swift"
+        #expect(Lint.Rule.`test file suffix Tests`.findings(source: "@Test func example() {}", file: path).isEmpty)
+    }
+}

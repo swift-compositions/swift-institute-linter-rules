@@ -7,6 +7,18 @@ extension Lint.Rule {
         default: .warning,
         controls: [
             .init(
+                id: "platform layer import relative root",
+                source: "import POSIX_Kernel",
+                path: "./Sources/Consumer Core/Example.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "platform layer import hidden directory",
+                source: "import POSIX_Kernel",
+                path: "./.build/Sources/Consumer Core/Example.swift",
+                expectation: .clean
+            ),
+            .init(
                 id: "platform layer import direct policy module",
                 source: "import POSIX_Kernel",
                 path: "Sources/Consumer Core/DirectPolicyImport.swift",
@@ -185,7 +197,7 @@ private func platformLayerImportIsPackageManifest(_ filePath: Swift::String) -> 
 
 private func platformLayerImportIsInsideHiddenDirectory(_ filePath: Swift::String) -> Swift::Bool {
     let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
-    return components.contains { $0.hasPrefix(".") }
+    return components.contains { $0 != "." && $0.hasPrefix(".") }
 }
 
 internal let platformLayerImportSpecNamespaceModules: [Swift::String: Swift::String] = [

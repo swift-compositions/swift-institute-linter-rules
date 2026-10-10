@@ -339,3 +339,17 @@ extension Lint.Rule.`platform layer import Tests`.`Scope gates` {
     }
   }
 }
+
+extension Lint.Rule.`platform layer import Tests`.Unit {
+    @Test(arguments: ["", "./", "././"])
+    func `relative path prefixes retain rule coverage`(prefix: String) {
+        let path = prefix + "Sources/Consumer Core/Example.swift"
+        #expect(Lint.Rule.`platform layer import Tests`.findings(in: "import POSIX_Kernel", file: path).count == 1)
+    }
+
+    @Test(arguments: [".build/", "./.build/"])
+    func `relative path prefixes retain hidden directory exclusion`(prefix: String) {
+        let path = prefix + "Sources/Consumer Core/Example.swift"
+        #expect(Lint.Rule.`platform layer import Tests`.findings(in: "import POSIX_Kernel", file: path).isEmpty)
+    }
+}

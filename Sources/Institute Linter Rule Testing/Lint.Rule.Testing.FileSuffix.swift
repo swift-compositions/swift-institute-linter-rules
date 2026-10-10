@@ -7,6 +7,18 @@ extension Lint.Rule {
         default: .warning,
         controls: [
             .init(
+                id: "test file suffix relative root",
+                source: "@Test func example() {}",
+                path: "./Tests/Example Tests/Example.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "test file suffix hidden directory",
+                source: "@Test func example() {}",
+                path: "./.build/Tests/Example Tests/Example.swift",
+                expectation: .clean
+            ),
+            .init(
                 id: "test file suffix joined suffix",
                 source: "@Suite struct ValueTests {}",
                 path: "Tests/Testing Tests/ValueTests.swift",
@@ -29,7 +41,7 @@ extension Lint.Rule {
             let filePath = source.file.filePath
             let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
             guard components.contains("Tests") else { return [] }
-            guard !components.contains(where: { $0.hasPrefix(".") }) else { return [] }
+            guard !components.contains(where: { $0 != "." && $0.hasPrefix(".") }) else { return [] }
             guard
                 let filename = components.last,
                 filename.hasSuffix(".swift")

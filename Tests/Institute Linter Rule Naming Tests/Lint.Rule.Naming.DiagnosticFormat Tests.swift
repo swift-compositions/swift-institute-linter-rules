@@ -378,3 +378,17 @@ extension Lint.Rule.`diagnostic message format Tests`.`Detection scope` {
     #expect(findings.count == 1)
   }
 }
+
+extension Lint.Rule.`diagnostic message format Tests`.Unit {
+    @Test(arguments: ["", "./", "././"])
+    func `relative path prefixes retain rule coverage`(prefix: String) {
+        let path = prefix + "Sources/Rules/Lint.Rule.Demo.Example.swift"
+        #expect(Lint.Rule.`diagnostic message format Tests`.findings(in: "enum Demo { static let message = \"prefer typed throws\" }", file: path).count == 1)
+    }
+
+    @Test(arguments: [".build/", "./.build/"])
+    func `relative path prefixes retain hidden directory exclusion`(prefix: String) {
+        let path = prefix + "Sources/Rules/Lint.Rule.Demo.Example.swift"
+        #expect(Lint.Rule.`diagnostic message format Tests`.findings(in: "enum Demo { static let message = \"prefer typed throws\" }", file: path).isEmpty)
+    }
+}

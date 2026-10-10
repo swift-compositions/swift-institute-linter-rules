@@ -7,6 +7,18 @@ extension Lint.Rule {
     id: "diagnostic message format",
     default: .warning,
     controls: [
+            .init(
+                id: "diagnostic message format relative root",
+                source: "enum Demo { static let message = \"prefer typed throws\" }",
+                path: "./Sources/Rules/Lint.Rule.Demo.Example.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "diagnostic message format hidden directory",
+                source: "enum Demo { static let message = \"prefer typed throws\" }",
+                path: "./.build/Sources/Rules/Lint.Rule.Demo.Example.swift",
+                expectation: .clean
+            ),
       .init(
         id: "diagnostic message format malformed",
         source: "enum Demo { static let message = \"prefer typed throws\" }",
@@ -56,7 +68,7 @@ internal func namingDiagnosticFormatIsLintRuleSource(_ filePath: Swift::String) 
   let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
   guard let filename = components.last else { return false }
   guard components.dropLast().contains("Sources") else { return false }
-  guard !components.contains(where: { $0.hasPrefix(".") }) else { return false }
+  guard !components.contains(where: { $0 != "." && $0.hasPrefix(".") }) else { return false }
   guard filename.hasSuffix(".swift") else { return false }
   let stem = Swift::String(filename.dropLast(".swift".count))
   guard stem.hasPrefix("Lint.Rule.") else { return false }
