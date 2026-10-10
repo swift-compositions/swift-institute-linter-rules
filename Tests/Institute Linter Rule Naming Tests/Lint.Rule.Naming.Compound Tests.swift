@@ -34,6 +34,42 @@ extension Lint.Rule.`compound identifier Tests` {
 }
 
 extension Lint.Rule.`compound identifier Tests`.Unit {
+  @Test(arguments: ["struct", "class", "enum", "actor"])
+  func `dependency key witness properties declared on conforming types`(_ kind: String) {
+    let source = "public \(kind) Example: Dependency.Key { public static var liveValue: Int { 0 } }"
+    #expect(Lint.Rule.`compound identifier Tests`.findings(in: source).isEmpty)
+  }
+
+  @Test(arguments: ["Dependency.Key", "Dependency::Dependency.Key"])
+  func `dependency key witness properties preserve required names`(_ conformance: String) {
+    let source = """
+      extension Example: \(conformance) {
+        public static var liveValue: Int { 0 }
+        public static var testValue: Int { 0 }
+      }
+      """
+    #expect(Lint.Rule.`compound identifier Tests`.findings(in: source).isEmpty)
+  }
+
+  @Test(arguments: ["Sendable", "Other.Key", "Key"])
+  func `dependency key witness names are not generally exempt`(_ conformance: String) {
+    let source = "extension Example: \(conformance) { public static var liveValue: Int { 0 } }"
+    #expect(Lint.Rule.`compound identifier Tests`.findings(in: source).count == 1)
+  }
+
+  @Test
+  func `dependency key witness exemption excludes instance properties functions and unrelated members`() {
+    let source = """
+      extension Example: Dependency.Key {
+        public var liveValue: Int { 0 }
+        public static func testValue() {}
+        public static var cachedValue: Int { 0 }
+        public struct Nested { public static var liveValue: Int { 0 } }
+      }
+      """
+    #expect(Lint.Rule.`compound identifier Tests`.findings(in: source).count == 4)
+  }
+
   @Test
   func `func openWrite is flagged`() {
     let source = "public func openWrite() {}"

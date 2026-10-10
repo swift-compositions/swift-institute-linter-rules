@@ -7,6 +7,18 @@ extension Lint.Rule {
     default: .warning,
     controls: [
       .init(
+        id: "compound identifier dependency key witnesses",
+        source: "extension Example: Dependency.Key { public static var liveValue: Int { 0 }; public static var testValue: Int { 0 } }",
+        path: "Sources/Naming Core/Key.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "compound identifier unrelated key",
+        source: "extension Example: Other.Key { public static var liveValue: Int { 0 } }",
+        path: "Sources/Naming Core/Key.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "compound identifier public compound",
         source: "public func openWrite() {}",
         path: "Sources/Naming Core/Compound.swift",
@@ -44,7 +56,7 @@ private let namingCompoundMessage: Swift::String =
   + "**Default disposition**: refactor to nested accessors — "
   + "`instance.open.write { }` not `instance.openWrite { }`; "
   + "`dir.walk.files()` not `dir.walkFiles()`. "
-  + "**Already exempt** (rule does not fire): boolean prefixes "
+  + "**Already exempt** (rule does not fire): static `Dependency.Key.liveValue` / `testValue` witnesses on the conforming owner; boolean prefixes "
   + "(`is`/`has`/`should`/`will`/`did`/`can`/`must`); declarations below "
   + "`package` visibility, because they are not consumer-observable API; swift-testing "
   + "scaffolding — declarations carrying `@Test`/`@Suite` and members of a "
@@ -256,6 +268,12 @@ internal final class NamingCompoundVisitor: SyntaxVisitor {
       guard isCompoundIdentifier(name) else {
         continue
       }
+      if (name == "liveValue" || name == "testValue"),
+        node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) || $0.name.tokenKind == .keyword(.class) }),
+        isDependencyKeyWitness(Syntax(node))
+      {
+        continue
+      }
       if let entry = namingCompoundProtocolWitnessMethodCitations[name] {
         if !entry.conformanceGated {
           continue
@@ -267,6 +285,37 @@ internal final class NamingCompoundVisitor: SyntaxVisitor {
       emit(at: pattern.identifier.positionAfterSkippingLeadingTrivia)
     }
     return .visitChildren
+  }
+
+  // Dependency.Key.liveValue / Dependency.Key.testValue are required static witnesses:
+  // https://github.com/swift-atoms/swift-dependency/blob/main/Sources/Dependency/Dependency.Key.swift
+  // Match the qualified conformance on the immediate owner, never an unrelated `Key`.
+  private func isDependencyKeyWitness(_ node: Syntax) -> Bool {
+    var current = node.parent
+    while let candidate = current {
+      let clause: InheritanceClauseSyntax?
+      if let owner = candidate.as(ExtensionDeclSyntax.self) {
+        clause = owner.inheritanceClause
+      } else if let owner = candidate.as(StructDeclSyntax.self) {
+        clause = owner.inheritanceClause
+      } else if let owner = candidate.as(ClassDeclSyntax.self) {
+        clause = owner.inheritanceClause
+      } else if let owner = candidate.as(EnumDeclSyntax.self) {
+        clause = owner.inheritanceClause
+      } else if let owner = candidate.as(ActorDeclSyntax.self) {
+        clause = owner.inheritanceClause
+      } else if candidate.is(ProtocolDeclSyntax.self) {
+        return false
+      } else {
+        current = candidate.parent
+        continue
+      }
+      return clause?.inheritedTypes.contains {
+        let name = $0.type.trimmedDescription.filter { !$0.isWhitespace && $0 != "`" }
+        return name == "Dependency.Key" || name == "Dependency::Dependency.Key"
+      } ?? false
+    }
+    return false
   }
 
   private func isInsideFunctionLikeContext(_ node: Syntax) -> Bool {

@@ -53,6 +53,26 @@ extension Lint.Rule.`comment in source Tests`.Unit {
 }
 
 extension Lint.Rule.`comment in source Tests`.`Edge Case` {
+  @Test(arguments: ["\n", "\r\n"])
+  func `suppression reason metadata is retained`(_ newline: String) {
+    let source = "// swift-linter:disable:next example" + newline
+      + "  // REASON: The SDK requires this signature." + newline + "let value = 1"
+    #expect(Lint.Rule.`comment in source Tests`.findings(source).isEmpty)
+    #expect(Lint.Rule.`comment in source`.repair(
+      Lint.Source.parsed(from: source, file: "Sources/Fixture/Fixture.swift")
+    ) == .unchanged)
+  }
+
+  @Test(arguments: [
+    "// REASON: Unassociated comment.\nlet value = 1",
+    "// swift-linter:disable:next example\n\n// REASON: Detached.\nlet value = 1",
+    "// swift-linter:disable:next example\n// REASON:   \nlet value = 1",
+    "// swift-linter:enable example\n// REASON: Not a suppression.\nlet value = 1",
+  ])
+  func `suppression reason metadata exemption rejects ordinary comments`(_ source: String) {
+    #expect(Lint.Rule.`comment in source Tests`.findings(source).count == 1)
+  }
+
   @Test
   func `swift-linter directives are admitted`() {
     let findings = Lint.Rule.`comment in source Tests`.findings(
@@ -88,6 +108,24 @@ extension Lint.Rule.`comment in source Tests`.`Edge Case` {
 }
 
 extension Lint.Rule.`comment in source Tests`.Integration {
+  @Test
+  func `repair preserves trailing directive metadata while removing ordinary comments`() {
+    let source = """
+      // Remove this note.
+      let value = 1 // swift-linter:disable:line example
+      // REASON: SDK contract.
+      // Remove this other note.
+      let other = 2
+      """
+    let expected = """
+      let value = 1 // swift-linter:disable:line example
+      // REASON: SDK contract.
+      let other = 2
+      """
+    #expect(Self.repaired(source) == expected)
+    #expect(Lint.Rule.`comment in source Tests`.findings(expected).isEmpty)
+  }
+
   @Test
   func `a license header is flagged line by line`() {
     let findings = Lint.Rule.`comment in source Tests`.findings(

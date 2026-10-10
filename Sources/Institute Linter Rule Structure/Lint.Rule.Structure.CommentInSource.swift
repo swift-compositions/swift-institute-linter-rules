@@ -7,6 +7,18 @@ extension Lint.Rule {
     default: .warning,
     controls: [
       .init(
+        id: "comment in source required reason",
+        source: "// swift-linter:disable:next example\n// REASON: SDK contract.\nlet value = 1",
+        path: "Sources/Structure Core/Value.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "comment in source unassociated reason",
+        source: "// REASON: Ordinary comment.\nlet value = 1",
+        path: "Sources/Structure Core/Value.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "comment in source line",
         source: "// Implementation note\nstruct Value {}",
         path: "Sources/Structure Core/Value.swift",
@@ -51,7 +63,8 @@ extension Lint.Rule {
       let visitor = StructureCommentInSourceVisitor(
         source: source.file,
         severity: severity,
-        converter: source.converter
+        converter: source.converter,
+        metadata: structureCommentInSourceMetadata(source.tree, converter: source.converter)
       )
       visitor.walk(source.tree)
       return visitor.matches
@@ -62,7 +75,9 @@ extension Lint.Rule {
         return .unchanged
       }
       let original = source.tree.description
-      let contents = StructureCommentInSourceRewriter(viewMode: .sourceAccurate)
+      let contents = StructureCommentInSourceRewriter(
+        metadata: structureCommentInSourceMetadata(source.tree, converter: source.converter)
+      )
         .rewrite(Syntax(source.tree)).description
       return contents == original
         ? .unchanged
@@ -75,15 +90,17 @@ extension Lint.Rule {
 internal let structureCommentInSourceMessage: Swift::String =
   "[comment in source] [SOURCE-NO-COMMENTS]: sources carry no `//`, `///` or "
   + "`/* */` comments; names, types and tests carry the meaning. Only "
-  + "`// swift-linter:` directives are admitted."
+  + "`// swift-linter:` directives and their required adjacent `// REASON:` metadata are admitted."
 
 internal final class StructureCommentInSourceVisitor: SyntaxVisitor {
   let source: Source.File
   let severity: Diagnostic.Severity
   let converter: SourceLocationConverter
   var matches: [Diagnostic.Record] = []
+  let metadata: Set<Int>
 
-  init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
+  init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter, metadata: Set<Int>) {
+    self.metadata = metadata
     self.source = source
     self.severity = severity
     self.converter = converter
@@ -106,7 +123,7 @@ internal final class StructureCommentInSourceVisitor: SyntaxVisitor {
         case .docLineComment(let text), .blockComment(let text), .docBlockComment(let text): text
         default: nil
         }
-      guard let text, !text.hasPrefix("// swift-linter:") else { continue }
+      guard let text, !text.hasPrefix("// swift-linter:"), !metadata.contains(position.utf8Offset) else { continue }
       let location = converter.location(for: position)
       matches.append(
         Diagnostic.Record(
@@ -126,16 +143,25 @@ internal final class StructureCommentInSourceVisitor: SyntaxVisitor {
 }
 
 internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
-  override func visit(_ token: TokenSyntax) -> TokenSyntax {
-    token
-      .with(\.leadingTrivia, stripped(token.leadingTrivia, leading: true))
-      .with(\.trailingTrivia, stripped(token.trailingTrivia, leading: false))
+  let metadata: Set<Int>
+
+  init(metadata: Set<Int>) {
+    self.metadata = metadata
+    super.init(viewMode: .sourceAccurate)
   }
 
-  private func stripped(_ trivia: Trivia, leading: Swift::Bool) -> Trivia {
+  override func visit(_ token: TokenSyntax) -> TokenSyntax {
+    token
+      .with(\.leadingTrivia, stripped(token.leadingTrivia, leading: true, from: token.position))
+      .with(\.trailingTrivia, stripped(token.trailingTrivia, leading: false, from: token.endPositionBeforeTrailingTrivia))
+  }
+
+  private func stripped(_ trivia: Trivia, leading: Swift::Bool, from start: AbsolutePosition) -> Trivia {
+    var position = start
     var pieces: [TriviaPiece] = []
     var skipNewline = false
     for piece in trivia {
+      defer { position = position.advanced(by: piece.sourceLength.utf8Length) }
       if skipNewline {
         skipNewline = false
         switch piece {
@@ -149,7 +175,7 @@ internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
           break
         }
       }
-      guard structureCommentInSourceIsRemovable(piece) else {
+      guard !metadata.contains(position.utf8Offset), structureCommentInSourceIsRemovable(piece) else {
         pieces.append(piece)
         continue
       }
@@ -177,4 +203,33 @@ extension TriviaPiece {
     default: false
     }
   }
+}
+
+internal func structureCommentInSourceMetadata(
+  _ tree: SourceFileSyntax,
+  converter: SourceLocationConverter
+) -> Set<Int> {
+  var comments: [(text: String, position: AbsolutePosition, line: Int)] = []
+  for token in tree.tokens(viewMode: .sourceAccurate) {
+    for (trivia, start) in [(token.leadingTrivia, token.position), (token.trailingTrivia, token.endPositionBeforeTrailingTrivia)] {
+      var position = start
+      for piece in trivia {
+        defer { position = position.advanced(by: piece.sourceLength.utf8Length) }
+        guard case .lineComment(let text) = piece else { continue }
+        comments.append((text, position, converter.location(for: position).line))
+      }
+    }
+  }
+  var metadata: Set<Int> = []
+  let prefixes = ["// swift-linter:disable:next ", "// swift-linter:disable:line "]
+  for (directive, reason) in zip(comments, comments.dropFirst()) {
+    guard reason.line == directive.line + 1,
+      let prefix = prefixes.first(where: directive.text.hasPrefix),
+      directive.text.dropFirst(prefix.count).contains(where: { !$0.isWhitespace }),
+      reason.text.hasPrefix("// REASON:"),
+      reason.text.dropFirst("// REASON:".count).contains(where: { !$0.isWhitespace })
+    else { continue }
+    metadata.insert(reason.position.utf8Offset)
+  }
+  return metadata
 }
