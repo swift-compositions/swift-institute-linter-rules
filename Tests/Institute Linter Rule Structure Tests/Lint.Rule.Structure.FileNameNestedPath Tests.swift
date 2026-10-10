@@ -39,6 +39,19 @@ extension Lint.Rule.`file name nested path Tests` {
   }
 }
 
+extension Lint.Rule.`file name nested path Tests`.Unit {
+  @Test(arguments: [
+    ("public struct `repeat` {}", "repeat.swift"),
+    ("extension Effect.Handled { public protocol `Protocol` {} }", "Effect.Handled.Protocol.swift"),
+    ("public enum `Type` { public struct `repeat` {} }", "Type.repeat.swift"),
+    ("extension Example.`Type` { public struct `repeat` {} }", "Example.Type.repeat.swift"),
+  ])
+  func `escaped identifiers use their names in file paths`(_ source: String, _ name: String) {
+    #expect(Lint.Rule.`file name nested path Tests`.findings(in: source, file: "Sources/X/" + name).isEmpty)
+    #expect(Lint.Rule.`file name nested path Tests`.findings(in: source, file: "Sources/X/Wrong.swift").count == 1)
+  }
+}
+
 // MARK: - Positive (mismatched basename)
 
 extension Lint.Rule.`file name nested path Tests`.Positive {

@@ -7,6 +7,18 @@ extension Lint.Rule {
     default: .warning,
     controls: [
       .init(
+        id: "file name nested path escaped protocol",
+        source: "extension Effect.Handled { public protocol `Protocol` {} }",
+        path: "Sources/Structure Core/Effect.Handled.Protocol.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "file name nested path mismatched escaped protocol",
+        source: "extension Effect.Handled { public protocol `Protocol` {} }",
+        path: "Sources/Structure Core/Effect.Handled.Wrong.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "file name nested path mismatched basename",
         source: "enum Array { struct Dynamic {} }",
         path: "Sources/Structure Core/Array.swift",
@@ -84,7 +96,7 @@ private func structureFileNameNestedPathFindings(
     : "\(primary.extensionPrefix).\(resolvedOwnPath)"
 
   if let protocolDecl = primary.node.as(ProtocolDeclSyntax.self) {
-    let protocolName = protocolDecl.name.text
+    let protocolName = Lint.Syntax.Identifier.unescaped(protocolDecl.name.text)
     for extensionDecl in collector.topLevelExtensions {
       guard
         let carrierPath = structureDottedName(
@@ -153,19 +165,19 @@ private func structureFileNameNestedPathResolve(_ node: DeclSyntax) -> Swift::St
   var nestedTypes: [DeclSyntax] = []
   for member in enumDecl.memberBlock.members {
     if member.decl.is(EnumCaseDeclSyntax.self) {
-      return enumDecl.name.text
+      return Lint.Syntax.Identifier.unescaped(enumDecl.name.text)
     }
     if member.decl.is(TypeAliasDeclSyntax.self) { continue }
     if structureFileNameNestedPathIsPrimaryTypeDecl(member.decl) {
       nestedTypes.append(member.decl)
       continue
     }
-    return enumDecl.name.text
+    return Lint.Syntax.Identifier.unescaped(enumDecl.name.text)
   }
   guard nestedTypes.count == 1 else {
-    return enumDecl.name.text
+    return Lint.Syntax.Identifier.unescaped(enumDecl.name.text)
   }
-  return "\(enumDecl.name.text).\(structureFileNameNestedPathResolve(nestedTypes[0]))"
+  return "\(Lint.Syntax.Identifier.unescaped(enumDecl.name.text)).\(structureFileNameNestedPathResolve(nestedTypes[0]))"
 }
 
 private func structureFileNameNestedPathIsPrimaryTypeDecl(_ declaration: DeclSyntax) -> Swift::Bool {
@@ -177,11 +189,11 @@ private func structureFileNameNestedPathIsPrimaryTypeDecl(_ declaration: DeclSyn
 }
 
 private func structureFileNameNestedPathOwnName(_ node: DeclSyntax) -> Swift::String? {
-  if let d = node.as(StructDeclSyntax.self) { return d.name.text }
-  if let d = node.as(ClassDeclSyntax.self) { return d.name.text }
-  if let d = node.as(ActorDeclSyntax.self) { return d.name.text }
-  if let d = node.as(ProtocolDeclSyntax.self) { return d.name.text }
-  if let d = node.as(EnumDeclSyntax.self) { return d.name.text }
+  if let d = node.as(StructDeclSyntax.self) { return Lint.Syntax.Identifier.unescaped(d.name.text) }
+  if let d = node.as(ClassDeclSyntax.self) { return Lint.Syntax.Identifier.unescaped(d.name.text) }
+  if let d = node.as(ActorDeclSyntax.self) { return Lint.Syntax.Identifier.unescaped(d.name.text) }
+  if let d = node.as(ProtocolDeclSyntax.self) { return Lint.Syntax.Identifier.unescaped(d.name.text) }
+  if let d = node.as(EnumDeclSyntax.self) { return Lint.Syntax.Identifier.unescaped(d.name.text) }
   return nil
 }
 
