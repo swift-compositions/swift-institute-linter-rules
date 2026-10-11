@@ -13,6 +13,60 @@ extension Lint.Rule {
                 expectation: .findings(1)
             ),
             .init(
+                id: "foundation import public import",
+                source: "public import Foundation",
+                path: "Sources/Foundation Core/PublicImport.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "foundation import exported import",
+                source: "@_exported import Foundation",
+                path: "Sources/Foundation Core/ExportedImport.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "foundation import networking module",
+                source: "import FoundationNetworking",
+                path: "Sources/Foundation Core/NetworkingImport.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "foundation import xml module",
+                source: "import FoundationXML",
+                path: "Sources/Foundation Core/XMLImport.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "foundation import essentials module",
+                source: "import FoundationEssentials",
+                path: "Sources/Foundation Core/EssentialsImport.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "foundation import scoped declaration import",
+                source: "import struct Foundation.Date",
+                path: "Sources/Foundation Core/ScopedImport.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "foundation import test target",
+                source: "import Foundation",
+                path: "Tests/Foundation Core Tests/FoundationImport.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "foundation import nested package test target",
+                source: "import Foundation",
+                path: "Nested/Tests/Foundation Core Tests/FoundationImport.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "foundation import package manifest",
+                source: "import Foundation",
+                path: "Package.swift",
+                expectation: .clean
+            ),
+            .init(
                 id: "foundation import unrelated module",
                 source: "import Binary",
                 path: "Sources/Foundation Core/BinaryPrimitivesImport.swift",
