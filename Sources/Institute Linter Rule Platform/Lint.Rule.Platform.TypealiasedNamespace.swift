@@ -7,6 +7,12 @@ extension Lint.Rule {
     default: .note,
     controls: [
       .init(
+        id: "typealiased namespace bridge module selector",
+        source: "public typealias Span = Swift::Span",
+        path: "Sources/Platform Core/Span.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "typealiased namespace bridge matching leaf",
         source: "typealias Socket = Foundation.Socket",
         path: "Sources/Platform Core/SocketBridge.swift",
@@ -64,10 +70,17 @@ internal final class PlatformTypealiasedNamespaceVisitor: SyntaxVisitor {
 
   override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
     let aliasName = node.name.text
-    guard let member = node.initializer.value.as(MemberTypeSyntax.self) else {
-      return .visitChildren
-    }
-    guard member.name.text == aliasName else { return .visitChildren }
+    let targetLeaf: Swift::String? =
+      if let member = node.initializer.value.as(MemberTypeSyntax.self) {
+        member.name.text
+      } else if let identifier = node.initializer.value.as(IdentifierTypeSyntax.self),
+        identifier.moduleSelector != nil
+      {
+        identifier.name.text
+      } else {
+        nil
+      }
+    guard targetLeaf == aliasName else { return .visitChildren }
     if isInsideConformingExtension(Syntax(node)) {
       return .visitChildren
     }

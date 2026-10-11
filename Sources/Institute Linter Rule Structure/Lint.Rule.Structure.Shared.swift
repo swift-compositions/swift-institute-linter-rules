@@ -49,7 +49,8 @@ internal func structureIsFileSignificant(_ node: some SyntaxProtocol) -> Swift::
 
 internal func structureDottedName(of type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
-        return Lint.Syntax.Identifier.unescaped(identifier.name.text)
+        let name = Lint.Syntax.Identifier.unescaped(identifier.name.text)
+        return identifier.moduleSelector.map { "\($0.moduleName.text).\(name)" } ?? name
     }
     if let member = type.as(MemberTypeSyntax.self) {
         guard let baseName = structureDottedName(of: member.baseType) else {

@@ -7,6 +7,12 @@ extension Lint.Rule {
         default: .note,
         controls: [
             .init(
+                id: "namespace adoption typealias module selector",
+                source: "public typealias Span = Swift::Span",
+                path: "Sources/Naming Core/Span.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "namespace adoption typealias same leaf",
                 source: "public typealias Event = Kernel.Event",
                 path: "Sources/Naming Core/SameLeaf.swift",
@@ -46,14 +52,26 @@ private let namingNamespaceAdoptionMessage: Swift::String =
     + "generic typealias forwarding its parameter(s) while binding the "
     + "enclosing Self-type into the underlying generic — does not fire.)"
 
+private func namingQualifiedAliasTarget(
+    _ type: TypeSyntax
+) -> (leaf: Swift::String, arguments: GenericArgumentClauseSyntax?)? {
+    if let member = type.as(MemberTypeSyntax.self) {
+        return (member.name.text, member.genericArgumentClause)
+    }
+    if let identifier = type.as(IdentifierTypeSyntax.self), identifier.moduleSelector != nil {
+        return (identifier.name.text, identifier.genericArgumentClause)
+    }
+    return nil
+}
+
 private func namingIsParameterizedAdoption(
     _ node: TypeAliasDeclSyntax,
-    member: MemberTypeSyntax
+    arguments: GenericArgumentClauseSyntax?
 ) -> Swift::Bool {
     guard let lhsParameters = node.genericParameterClause?.parameters,
         !lhsParameters.isEmpty
     else { return false }
-    guard let rhsArguments = member.genericArgumentClause?.arguments,
+    guard let rhsArguments = arguments?.arguments,
         !rhsArguments.isEmpty
     else { return false }
 
@@ -90,15 +108,14 @@ internal final class NamingNamespaceAdoptionVisitor: SyntaxVisitor {
 
     override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
         let lhsName = node.name.text
-        guard let member = node.initializer.value.as(MemberTypeSyntax.self) else {
+        guard let target = namingQualifiedAliasTarget(node.initializer.value) else {
             return .visitChildren
         }
-        let rhsLeaf = member.name.text
-        guard rhsLeaf == lhsName else { return .visitChildren }
+        guard target.leaf == lhsName else { return .visitChildren }
         if Naming.isInsideConformingContext(Syntax(node)) {
             return .visitChildren
         }
-        if namingIsParameterizedAdoption(node, member: member) {
+        if namingIsParameterizedAdoption(node, arguments: target.arguments) {
             return .visitChildren
         }
         let location = converter.location(
