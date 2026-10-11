@@ -7,6 +7,18 @@ extension Lint.Rule {
     default: .warning,
     controls: [
       .init(
+        id: "file name nested path own module selector",
+        source: "extension Cyclic::Cyclic.Group { public struct Modulus { public let value: Int } }",
+        path: "Sources/Cyclic/Cyclic.Group.Modulus.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "file name nested path stdlib module selector",
+        source: "extension Swift::String { public struct Coder { public let value: Int } }",
+        path: "Sources/Coder/Swift.String.Coder.swift",
+        expectation: .clean
+      ),
+      .init(
         id: "file name nested path mismatched basename",
         source: "enum Array { struct Dynamic {} }",
         path: "Sources/Structure Core/Array.swift",

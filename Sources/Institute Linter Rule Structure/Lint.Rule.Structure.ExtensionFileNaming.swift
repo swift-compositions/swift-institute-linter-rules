@@ -7,6 +7,12 @@ extension Lint.Rule {
     default: .warning,
     controls: [
       .init(
+        id: "extension file naming own module selector",
+        source: "extension Cyclic::Cyclic.Group { func iterate() {} }",
+        path: "Sources/Structure Core/Cyclic.Group.swift",
+        expectation: .clean
+      ),
+      .init(
         id: "extension file naming module selector own file",
         source: "extension Swift::Array { func iterate() {} }",
         path: "Sources/Structure Core/Swift.Array.swift",
@@ -170,7 +176,7 @@ private func structureExtensionFileNamingFindings(
   if basename == base {
     return []
   }
-  if collector.extensions.allSatisfy({ $0.extendedType.trimmedDescription.replacing("::", with: ".") == basename }) {
+  if collector.extensions.allSatisfy({ structureModuleSpelling($0.extendedType.trimmedDescription) == basename }) {
     return []
   }
   if structureExtensionFileNamingIsConversionOwned(

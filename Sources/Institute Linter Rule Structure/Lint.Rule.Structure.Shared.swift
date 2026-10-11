@@ -50,7 +50,7 @@ internal func structureIsFileSignificant(_ node: some SyntaxProtocol) -> Swift::
 internal func structureDottedName(of type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         let name = Lint.Syntax.Identifier.unescaped(identifier.name.text)
-        return identifier.moduleSelector.map { "\($0.moduleName.text).\(name)" } ?? name
+        return identifier.moduleSelector?.moduleName.text == "Swift" ? "Swift.\(name)" : name
     }
     if let member = type.as(MemberTypeSyntax.self) {
         guard let baseName = structureDottedName(of: member.baseType) else {
@@ -135,4 +135,8 @@ internal func structureIsStdlibOnlyConformanceExtension(
         guard let name = structureDottedName(of: inherited.type) else { return false }
         return structureIsStdlibConformance(Lint.Syntax.Identifier.unescaped(name))
     }
+}
+
+internal func structureModuleSpelling(_ text: Swift::String) -> Swift::String {
+    text.replacing("Swift::", with: "Swift.").replacing(#/[A-Za-z_][A-Za-z0-9_]*::/#, with: "")
 }
