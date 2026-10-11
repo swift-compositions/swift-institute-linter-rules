@@ -21,6 +21,15 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "manifest naming grammar reported once at the declaration",
+                source: "let package = Package(name: \"swift-example\", targets: ["
+                    + ".target(name: \"QueueDoubleEnded\"), "
+                    + ".target(name: \"Consumer\", dependencies: [.target(name: \"QueueDoubleEnded\")]), "
+                    + ".testTarget(name: \"Consumer Tests\", dependencies: [.target(name: \"QueueDoubleEnded\")])])",
+                path: "Package.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "manifest naming grammar upstream product",
                 source: "let package = Package(name: \"swift-example\", "
                     + "targets: [.target(name: \"Consumer\", dependencies: "
@@ -101,6 +110,17 @@ private let namingManifestTargetFactories: Swift::Set<Swift::String> = [
     "target", "testTarget", "executableTarget", "macro", "plugin", "systemLibrary",
 ]
 
+private func namingManifestIsInsideDependencies(_ node: Syntax) -> Swift::Bool {
+    var current = node.parent
+    while let candidate = current {
+        if let labeled = candidate.as(LabeledExprSyntax.self), labeled.label?.text == "dependencies" {
+            return true
+        }
+        current = candidate.parent
+    }
+    return false
+}
+
 internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
@@ -135,7 +155,8 @@ internal final class NamingManifestGrammarVisitor: SyntaxVisitor {
             return .visitChildren
         }
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-            namingManifestDeclaringFactories.contains(member.declName.baseName.text)
+            namingManifestDeclaringFactories.contains(member.declName.baseName.text),
+            !namingManifestIsInsideDependencies(Syntax(node))
         else { return .visitChildren }
         var declaredName: Swift::String?
         for argument in node.arguments where argument.label?.text == "name" {

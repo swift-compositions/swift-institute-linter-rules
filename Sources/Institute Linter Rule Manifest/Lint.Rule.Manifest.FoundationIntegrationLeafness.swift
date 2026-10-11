@@ -49,6 +49,28 @@ extension Lint.Rule {
         expectation: .clean
       ),
       .init(
+        id: "foundation integration leaf target tested by its own test target",
+        source: "let package = Package(products: ["
+          + ".library(name: \"Example Foundation Integration\", "
+          + "targets: [\"Example Foundation Integration\"])], targets: ["
+          + ".target(name: \"Example Foundation Integration\"), "
+          + ".testTarget(name: \"Example Foundation Integration Tests\", "
+          + "dependencies: [\"Example Foundation Integration\"])])",
+        path: "Package.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "foundation integration leaf target depended on by a library target",
+        source: "let package = Package(products: ["
+          + ".library(name: \"Example Foundation Integration\", "
+          + "targets: [\"Example Foundation Integration\"])], targets: ["
+          + ".target(name: \"Example Foundation Integration\"), "
+          + ".target(name: \"Example\", dependencies: [\"Example Foundation Integration\"]), "
+          + ".testTarget(name: \"Example Tests\", dependencies: [\"Example\"])])",
+        path: "Package.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "foundation integration leaf target typed name missing product",
         source: "extension String { static let integration: Self = "
           + "\"Example Foundation Integration\" }; "
@@ -240,6 +262,9 @@ internal final class ManifestFoundationIntegrationLeafnessVisitor: SyntaxVisitor
         }
       }
     }
+    let isTestTarget =
+      node.calledExpression.as(MemberAccessExprSyntax.self)?.declName.baseName.text == "testTarget"
+    guard !isTestTarget else { return }
     dependencyEdgesByDepender[name, default: []].formUnion(referenced)
   }
 

@@ -13,6 +13,24 @@ extension Lint.Rule {
         expectation: .findings(1)
       ),
       .init(
+        id: "dead case per platform string vocabulary",
+        source: "public enum Platform: String { case macOS = \"macos\"; case linux = \"linux\" }",
+        path: "Sources/Platform Core/Platform.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "dead case per platform integer raw value",
+        source: "public enum Encoding: UInt8 { case posix; case windows }",
+        path: "Sources/Platform Core/PlatformEncoding.swift",
+        expectation: .findings(1)
+      ),
+      .init(
+        id: "dead case per platform string conformance not first",
+        source: "public enum Encoding: Sendable, CustomStringConvertible { case posix; case windows }",
+        path: "Sources/Platform Core/PlatformEncoding.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "dead case per platform domain alternatives",
         source: "public enum URLScheme { case http; case https }",
         path: "Sources/Platform Core/DomainAlternatives.swift",
@@ -67,6 +85,13 @@ internal func platformDeadCasePerPlatformMatchesPlatformPair(_ cases: [Swift::St
   return false
 }
 
+internal func platformDeadCasePerPlatformIsStringVocabulary(_ node: EnumDeclSyntax) -> Swift::Bool {
+  guard let rawType = node.inheritanceClause?.inheritedTypes.first?.type.trimmedDescription else {
+    return false
+  }
+  return rawType == "String" || rawType == "Swift.String" || rawType == "Swift::String"
+}
+
 internal final class PlatformDeadCasePerPlatformVisitor: SyntaxVisitor {
   let source: Source.File
   let severity: Diagnostic.Severity
@@ -82,6 +107,9 @@ internal final class PlatformDeadCasePerPlatformVisitor: SyntaxVisitor {
 
   override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
     guard platformIsPublicAPIEffective(Syntax(node), modifiers: node.modifiers) else {
+      return .visitChildren
+    }
+    guard !platformDeadCasePerPlatformIsStringVocabulary(node) else {
       return .visitChildren
     }
     var caseNames: [Swift::String] = []

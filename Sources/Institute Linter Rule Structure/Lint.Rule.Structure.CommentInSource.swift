@@ -31,6 +31,24 @@ extension Lint.Rule {
         expectation: .clean
       ),
       .init(
+        id: "comment in source directive reason",
+        source: "func f() {\n    // swift-linter:disable:next do throws for typed catch\n    // REASON: Task.sleep throws untyped\n    try await Task.sleep(for: .seconds(1))\n}",
+        path: "Sources/Structure Core/Value.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "comment in source reason without directive",
+        source: "// REASON: no directive above\nstruct Value {}",
+        path: "Sources/Structure Core/Value.swift",
+        expectation: .findings(1)
+      ),
+      .init(
+        id: "comment in source reason after a blank line",
+        source: "// swift-linter:disable:next comment in source\n\n// REASON: detached\nstruct Value {}",
+        path: "Sources/Structure Core/Value.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "comment in source string",
         source: "let text = \"// not a comment\"",
         path: "Sources/Structure Core/Value.swift",
@@ -98,8 +116,10 @@ internal final class StructureCommentInSourceVisitor: SyntaxVisitor {
 
   private func scan(_ trivia: Trivia, from start: AbsolutePosition) {
     var position = start
-    for piece in trivia {
+    let admitted = structureCommentInSourceAdmittedReasonIndices(trivia)
+    for (index, piece) in trivia.enumerated() {
       defer { position = position.advanced(by: piece.sourceLength.utf8Length) }
+      guard !admitted.contains(index) else { continue }
       let text: Swift::String? =
         switch piece {
         case .lineComment(let text): text
@@ -135,7 +155,8 @@ internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
   private func stripped(_ trivia: Trivia, leading: Swift::Bool) -> Trivia {
     var pieces: [TriviaPiece] = []
     var skipNewline = false
-    for piece in trivia {
+    let admitted = structureCommentInSourceAdmittedReasonIndices(trivia)
+    for (index, piece) in trivia.enumerated() {
       if skipNewline {
         skipNewline = false
         switch piece {
@@ -149,7 +170,7 @@ internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
           break
         }
       }
-      guard structureCommentInSourceIsRemovable(piece) else {
+      guard structureCommentInSourceIsRemovable(piece), !admitted.contains(index) else {
         pieces.append(piece)
         continue
       }
@@ -160,6 +181,27 @@ internal final class StructureCommentInSourceRewriter: SyntaxRewriter {
     }
     return Trivia(pieces: pieces)
   }
+}
+
+internal func structureCommentInSourceAdmittedReasonIndices(_ trivia: Trivia) -> Swift::Set<Swift::Int> {
+  let pieces = Array(trivia)
+  var admitted: Swift::Set<Swift::Int> = []
+  for (index, piece) in pieces.enumerated() {
+    guard case .lineComment(let text) = piece, text.hasPrefix("// REASON:") else { continue }
+    var cursor = index - 1
+    while cursor >= 0, pieces[cursor].isSpaceOrTab { cursor -= 1 }
+    guard cursor >= 0 else { continue }
+    switch pieces[cursor] {
+    case .newlines(1), .carriageReturnLineFeeds(1): cursor -= 1
+    default: continue
+    }
+    while cursor >= 0, pieces[cursor].isSpaceOrTab { cursor -= 1 }
+    guard cursor >= 0, case .lineComment(let directive) = pieces[cursor],
+      directive.hasPrefix("// swift-linter:disable:")
+    else { continue }
+    admitted.insert(index)
+  }
+  return admitted
 }
 
 internal func structureCommentInSourceIsRemovable(_ piece: TriviaPiece) -> Swift::Bool {

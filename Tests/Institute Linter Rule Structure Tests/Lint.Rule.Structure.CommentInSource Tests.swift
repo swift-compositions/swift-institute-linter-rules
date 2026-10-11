@@ -154,3 +154,27 @@ extension Lint.Rule.`comment in source Tests`.Integration {
     #expect(repaired.map { Lint.Rule.`comment in source Tests`.findings($0).isEmpty } == true)
   }
 }
+
+extension Lint.Rule.`comment in source Tests`.Integration {
+  @Test
+  func `repair keeps the reason line of a suppression directive`() {
+    let repaired = Self.repaired(
+      """
+      func f() async {
+          // swift-linter:disable:next do throws for typed catch
+          // REASON: Task.sleep throws untyped
+          try? await Task.sleep(for: .seconds(1)) // trailing
+      }
+      """
+    )
+    #expect(
+      repaired == """
+        func f() async {
+            // swift-linter:disable:next do throws for typed catch
+            // REASON: Task.sleep throws untyped
+            try? await Task.sleep(for: .seconds(1))
+        }
+        """
+    )
+  }
+}

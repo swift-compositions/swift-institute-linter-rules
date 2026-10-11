@@ -35,7 +35,7 @@ extension Naming.Visitor {
     guard let clause else { return [] }
     var names: [Swift::String] = []
     for inherited in clause.inheritedTypes {
-      let type = inherited.type
+      let type = inherited.type.as(AttributedTypeSyntax.self)?.baseType ?? inherited.type
       if let identifier = type.as(IdentifierTypeSyntax.self) {
         names.append(identifier.name.text)
       } else if let member = type.as(MemberTypeSyntax.self) {

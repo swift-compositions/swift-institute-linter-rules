@@ -19,6 +19,18 @@ extension Lint.Rule {
         expectation: .clean
       ),
       .init(
+        id: "compound identifier dependency key witness",
+        source: "extension Balance: @retroactive Dependency.Key { public static var liveValue: Client { .live }; public static let testValue: Client = liveValue }",
+        path: "Sources/Naming Core/Balance.swift",
+        expectation: .clean
+      ),
+      .init(
+        id: "compound identifier dependency key name without conformance",
+        source: "extension Balance { public static var liveValue: Client { .live } }",
+        path: "Sources/Naming Core/Balance.swift",
+        expectation: .findings(1)
+      ),
+      .init(
         id: "compound identifier boolean prefix",
         source: "public var isEmpty: Bool { false }",
         path: "Sources/Naming Core/BooleanPrefix.swift",
@@ -158,6 +170,9 @@ private let namingCompoundProtocolWitnessMethodCitations:
       "Swift.AtomicRepresentable.decodeAtomicRepresentation(_:)", true
     ),
     "makeIterator": ("Swift.Sequence.makeIterator()", true),
+    "liveValue": ("Dependency.Key.liveValue (swift-dependency)", true),
+    "testValue": ("Dependency.Key.testValue (swift-dependency)", true),
+    "previewValue": ("Dependency.Key.previewValue (swift-dependency)", true),
     "displayName": ("Identity.OAuth.Provider.displayName", true),
     "requiresTokenStorage": ("Identity.OAuth.Provider.requiresTokenStorage", true),
     "supportsRefresh": ("Identity.OAuth.Provider.supportsRefresh", true),

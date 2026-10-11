@@ -14,6 +14,20 @@ extension Lint.Rule {
                 expectation: .findings(1)
             ),
             .init(
+                id: "convention c representability imported c structs",
+                source: "public typealias Handler = @convention(c) "
+                    + "(Int32, UnsafeMutablePointer<siginfo_t>?, UnsafeMutableRawPointer?) -> Void\n"
+                    + "public typealias Sleep = @convention(c) (UnsafeMutablePointer<timespec>?) -> Void",
+                path: "Sources/Platform Core/SignalHandler.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "convention c representability unqualified swift struct",
+                source: "let callback: @convention(c) (UnsafeMutablePointer<Information>?) -> Void",
+                path: "Sources/Platform Core/SwiftStructCallback.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "convention c representability primitive pointer",
                 source: "let callback: @convention(c) (UnsafeMutablePointer<Int32>?) -> Void",
                 path: "Sources/Platform Core/PrimitiveCallback.swift",
@@ -98,6 +112,7 @@ internal func platformConventionCRepresentabilityIsUnsafePointerToUserType(
     else { return false }
     if platformConventionCRepresentabilityIsCInteropReference(argumentType) { return false }
     if platformConventionCRepresentabilityIsStdlibPrimitive(argumentType) { return false }
+    if platformConventionCRepresentabilityIsImportedCSpelling(argumentType) { return false }
     return true
 }
 
@@ -108,6 +123,18 @@ private func platformConventionCRepresentabilityIsStdlibPrimitive(
 {
     guard let identifier = type.as(IdentifierTypeSyntax.self) else { return false }
     return platformConventionCRepresentabilityStdlibPrimitiveNames.contains(identifier.name.text)
+}
+
+private func platformConventionCRepresentabilityIsImportedCSpelling(
+    _ type: TypeSyntax
+)
+    -> Swift::Bool
+{
+    guard let identifier = type.as(IdentifierTypeSyntax.self),
+        identifier.genericArgumentClause == nil,
+        let first = identifier.name.text.first
+    else { return false }
+    return first.isLowercase
 }
 
 private let platformConventionCRepresentabilityStdlibPrimitiveNames: Swift::Set<Swift::String> = [

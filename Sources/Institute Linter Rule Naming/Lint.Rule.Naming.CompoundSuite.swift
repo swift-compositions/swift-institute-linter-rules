@@ -19,6 +19,36 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "compound suite name canonical categories in domain test",
+                source: "extension Foo { @Suite struct Test { @Suite struct Unit {}; @Suite struct `Edge Case` {}; @Suite struct Integration {}; @Suite(.serialized) struct Performance {} } }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "compound suite name category in test extension",
+                source: "extension Foo.Test { @Suite struct Unit {} }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "compound suite name noncanonical category in domain test",
+                source: "extension Foo { @Suite struct Test { @Suite struct EdgeCase {} } }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "compound suite name category outside a domain test",
+                source: "@Suite struct Unit {}\nextension Foo { @Suite struct Unit {} }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .findings(2)
+            ),
+            .init(
+                id: "compound suite name category in a test suite without a domain",
+                source: "@Suite struct Test { @Suite struct Unit {} }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .findings(2)
+            ),
+            .init(
                 id: "compound suite name narrative suite",
                 source: "@Suite struct `Memory Buffer Tests` {}",
                 path: "Sources/Naming Core/NarrativeSuite.swift",
@@ -62,6 +92,28 @@ private func compoundSuiteHasDomain(_ node: Syntax) -> Swift::Bool {
         || declaration.is(ActorDeclSyntax.self)
 }
 
+private let compoundSuiteCategories: Swift::Set<Swift::String> = [
+    "Unit", "Edge Case", "Integration", "Performance",
+]
+
+private func compoundSuiteIsCategoryOfDomainTest(_ node: Syntax, name: TokenSyntax) -> Swift::Bool {
+    guard compoundSuiteCategories.contains(Lint.Syntax.Identifier.unescaped(name.text)),
+        node.parent?.is(MemberBlockItemSyntax.self) == true,
+        let container = node.parent?.parent?.parent?.parent
+    else { return false }
+    if let testSuite = container.as(StructDeclSyntax.self) {
+        return Lint.Syntax.Identifier.unescaped(testSuite.name.text) == "Test"
+            && compoundSuiteHasSuiteAttribute(testSuite.attributes)
+            && compoundSuiteHasDomain(container)
+    }
+    if let testExtension = container.as(ExtensionDeclSyntax.self),
+        let member = testExtension.extendedType.as(MemberTypeSyntax.self)
+    {
+        return Lint.Syntax.Identifier.unescaped(member.name.text) == "Test"
+    }
+    return false
+}
+
 internal final class NamingCompoundSuiteVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
@@ -80,6 +132,7 @@ internal final class NamingCompoundSuiteVisitor: SyntaxVisitor {
         guard Lint.Syntax.Identifier.unescaped(name.text) != "Test"
             || !compoundSuiteHasDomain(node)
         else { return }
+        guard !compoundSuiteIsCategoryOfDomainTest(node, name: name) else { return }
         let location = converter.location(for: name.positionAfterSkippingLeadingTrivia)
         matches.append(
             Diagnostic.Record(
