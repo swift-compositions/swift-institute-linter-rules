@@ -312,6 +312,8 @@ extension `Lint Rule Bundle institute Tests`.`Severity` {
     "architecture namespace shape",
     "binary serializable uint8 witness",
     "byte conforms to arithmetic protocol",
+    "convention c representability",
+    "dead case per platform",
     "platform layer import",
     "sendable struct with class member",
     "suppression reason required",
