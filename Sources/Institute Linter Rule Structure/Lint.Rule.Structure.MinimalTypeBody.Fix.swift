@@ -185,6 +185,7 @@ internal final class StructureMinimalTypeBodyRewriter: SyntaxRewriter {
   var pendingExtensions: [ExtensionDeclSyntax] = []
 
   override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+    guard !structureMinimalTypeBodyIsLocal(Syntax(node)) else { return super.visit(node) }
     guard let rewritten = fixed(node: node, name: node.name, block: node.memberBlock) else {
       return super.visit(node)
     }
@@ -193,6 +194,7 @@ internal final class StructureMinimalTypeBodyRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+    guard !structureMinimalTypeBodyIsLocal(Syntax(node)) else { return super.visit(node) }
     guard let rewritten = fixed(node: node, name: node.name, block: node.memberBlock) else {
       return super.visit(node)
     }

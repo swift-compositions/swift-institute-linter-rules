@@ -43,8 +43,20 @@ extension Lint.Rule {
                 expectation: .findings(2)
             ),
             .init(
-                id: "compound suite name category in a test suite without a domain",
-                source: "@Suite struct Test { @Suite struct Unit {} }",
+                id: "compound suite name category reported once at a misplaced parent",
+                source: "@Suite struct Test { @Suite struct Unit {}; @Suite struct `Edge Case` {}; @Suite struct Integration {} }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "compound suite name template parent reported once",
+                source: "extension Foo { @Suite struct `Foo Tests` { @Suite struct Unit {}; @Suite struct `Edge Case` {}; @Suite struct Integration {} } }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "compound suite name noncanonical child of a misplaced parent",
+                source: "@Suite struct `Foo Tests` { @Suite struct Helpers {} }",
                 path: "Tests/Naming Tests/Foo Tests.swift",
                 expectation: .findings(2)
             ),
@@ -96,15 +108,13 @@ private let compoundSuiteCategories: Swift::Set<Swift::String> = [
     "Unit", "Edge Case", "Integration", "Performance",
 ]
 
-private func compoundSuiteIsCategoryOfDomainTest(_ node: Syntax, name: TokenSyntax) -> Swift::Bool {
+private func compoundSuiteIsCategoryOfParentSuite(_ node: Syntax, name: TokenSyntax) -> Swift::Bool {
     guard compoundSuiteCategories.contains(Lint.Syntax.Identifier.unescaped(name.text)),
         node.parent?.is(MemberBlockItemSyntax.self) == true,
         let container = node.parent?.parent?.parent?.parent
     else { return false }
-    if let testSuite = container.as(StructDeclSyntax.self) {
-        return Lint.Syntax.Identifier.unescaped(testSuite.name.text) == "Test"
-            && compoundSuiteHasSuiteAttribute(testSuite.attributes)
-            && compoundSuiteHasDomain(container)
+    if let parentSuite = container.as(StructDeclSyntax.self) {
+        return compoundSuiteHasSuiteAttribute(parentSuite.attributes)
     }
     if let testExtension = container.as(ExtensionDeclSyntax.self),
         let member = testExtension.extendedType.as(MemberTypeSyntax.self)
@@ -132,7 +142,7 @@ internal final class NamingCompoundSuiteVisitor: SyntaxVisitor {
         guard Lint.Syntax.Identifier.unescaped(name.text) != "Test"
             || !compoundSuiteHasDomain(node)
         else { return }
-        guard !compoundSuiteIsCategoryOfDomainTest(node, name: name) else { return }
+        guard !compoundSuiteIsCategoryOfParentSuite(node, name: name) else { return }
         let location = converter.location(for: name.positionAfterSkippingLeadingTrivia)
         matches.append(
             Diagnostic.Record(

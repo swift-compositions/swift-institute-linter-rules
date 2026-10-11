@@ -7,6 +7,12 @@ extension Lint.Rule {
     default: .warning,
     controls: [
       .init(
+        id: "minimal type body function-local type",
+        source: "func f() { struct Local { var value: Int; func read() -> Int { value } } }",
+        path: "Tests/Structure Tests/Local.swift",
+        expectation: .clean
+      ),
+      .init(
         id: "minimal type body method",
         source: "struct Value { func read() -> Int { 0 } }",
         path: "Sources/Structure Core/Value.swift",
@@ -185,6 +191,9 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
   }
 
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+    if structureMinimalTypeBodyIsLocal(Syntax(node)) {
+      return .visitChildren
+    }
     if structureMinimalTypeBodyHasExtensionPatternAttribute(node.attributes) {
       return .visitChildren
     }
@@ -193,6 +202,9 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
   }
 
   override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+    if structureMinimalTypeBodyIsLocal(Syntax(node)) {
+      return .visitChildren
+    }
     if structureMinimalTypeBodyHasExtensionPatternAttribute(node.attributes) {
       return .visitChildren
     }
@@ -204,6 +216,9 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
   }
 
   override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+    if structureMinimalTypeBodyIsLocal(Syntax(node)) {
+      return .visitChildren
+    }
     if structureMinimalTypeBodyHasExtensionPatternAttribute(node.attributes) {
       return .visitChildren
     }
@@ -212,6 +227,9 @@ internal final class StructureMinimalTypeBodyVisitor: SyntaxVisitor {
   }
 
   override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+    if structureMinimalTypeBodyIsLocal(Syntax(node)) {
+      return .visitChildren
+    }
     if structureMinimalTypeBodyHasExtensionPatternAttribute(node.attributes) {
       return .visitChildren
     }
@@ -244,3 +262,16 @@ internal let structureMinimalTypeBodyNonMacroCapitalisedAttributes: Swift::Set<S
   "IBOutlet", "IBAction", "IBDesignable", "IBInspectable", "IBSegueAction",
   "GKInspectable",
 ]
+
+internal func structureMinimalTypeBodyIsLocal(_ node: Syntax) -> Swift::Bool {
+  var current = node.parent
+  while let candidate = current {
+    if candidate.is(CodeBlockSyntax.self) || candidate.is(ClosureExprSyntax.self)
+      || candidate.is(AccessorBlockSyntax.self)
+    {
+      return true
+    }
+    current = candidate.parent
+  }
+  return false
+}
