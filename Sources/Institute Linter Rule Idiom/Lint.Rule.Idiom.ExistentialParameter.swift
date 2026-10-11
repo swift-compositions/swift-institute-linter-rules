@@ -71,6 +71,14 @@ internal let idiomExistentialParameterMessage: Swift::String =
     + "`any P` boxes its argument and erases its type; take `some P` or a "
     + "generic parameter instead. `any Error` is admitted."
 
+internal let idiomExistentialParameterNestedMessage: Swift::String =
+    "[existential parameter] [SOURCE-EXISTENTIAL-PARAMETER]: `any P` inside a "
+    + "parameter's type (for example `[any P]`) boxes each element. If the elements "
+    + "share one concrete type, take `[some P]` or a generic `[T]`. If they must "
+    + "differ, `some P` cannot express that: take a parameter pack "
+    + "(`repeat each T` with `T: P`) or an enum of the concrete cases. "
+    + "`any Error` is admitted."
+
 internal final class IdiomExistentialParameterVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
@@ -90,6 +98,7 @@ internal final class IdiomExistentialParameterVisitor: SyntaxVisitor {
         }
         let finder = IdiomExistentialParameterFinder(viewMode: .sourceAccurate)
         finder.walk(node.type)
+        let topLevel = idiomExistentialParameterUnwrapped(node.type).is(SomeOrAnyTypeSyntax.self)
         for position in finder.positions {
             let location = converter.location(for: position)
             matches.append(
@@ -102,12 +111,25 @@ internal final class IdiomExistentialParameterVisitor: SyntaxVisitor {
                     ),
                     severity: severity,
                     identifier: "existential parameter",
-                    message: idiomExistentialParameterMessage
+                    message: topLevel ? idiomExistentialParameterMessage : idiomExistentialParameterNestedMessage
                 )
             )
         }
         return .visitChildren
     }
+}
+
+internal func idiomExistentialParameterUnwrapped(_ type: TypeSyntax) -> TypeSyntax {
+    if let attributed = type.as(AttributedTypeSyntax.self) {
+        return idiomExistentialParameterUnwrapped(attributed.baseType)
+    }
+    if let optional = type.as(OptionalTypeSyntax.self) {
+        return idiomExistentialParameterUnwrapped(optional.wrappedType)
+    }
+    if let tuple = type.as(TupleTypeSyntax.self), tuple.elements.count == 1, let only = tuple.elements.first {
+        return idiomExistentialParameterUnwrapped(only.type)
+    }
+    return type
 }
 
 internal enum IdiomExistentialParameterCodableWitness {

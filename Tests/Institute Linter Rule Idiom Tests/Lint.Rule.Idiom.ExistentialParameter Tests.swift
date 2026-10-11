@@ -149,3 +149,18 @@ extension Lint.Rule.`existential parameter Tests`.`Edge Case` {
     #expect(findings.isEmpty)
   }
 }
+
+extension Lint.Rule.`existential parameter Tests`.`Edge Case` {
+  @Test
+  func `a collection of existentials names the heterogeneous alternatives`() {
+    let findings = Lint.Rule.`existential parameter Tests`.findings(
+      """
+      func render(_ view: any View, fallback: (any View)?, into sinks: [any Sink]) {}
+      """
+    )
+    #expect(findings.count == 3)
+    #expect(findings[0].message.contains("take `some P`"))
+    #expect(findings[1].message.contains("take `some P`"))
+    #expect(findings[2].message.contains("parameter pack"))
+  }
+}
