@@ -296,3 +296,39 @@ extension `Lint Rule Bundle institute Tests`.`Composition` {
     }
   }
 }
+
+extension `Lint Rule Bundle institute Tests` {
+  @Suite struct `Severity` {}
+
+  static func effectiveSeverity(of id: Swift::String) -> Diagnostic.Severity? {
+    Lint.Rule.Bundle.institute
+      .first { $0.rule.id.underlying == id }
+      .map { $0.severity ?? $0.rule.severity.default }
+  }
+}
+
+extension `Lint Rule Bundle institute Tests`.`Severity` {
+  @Test(arguments: [
+    "architecture namespace shape",
+    "binary serializable uint8 witness",
+    "byte conforms to arithmetic protocol",
+    "platform layer import",
+    "sendable struct with class member",
+    "suppression reason required",
+    "test file suffix",
+    "typed throws cannot use self error",
+    "uint8 conforms to byte protocol",
+    "uint8 forwarder missing disfavored",
+    "unchecked sendable revalidation anchor",
+    "wrapper backing exposed",
+    "xctest import",
+  ])
+  func `rules graduated after two clean fleet measurements are errors`(id: Swift::String) {
+    #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: id) == .error)
+  }
+
+  @Test
+  func `lifecycle typealias review stays a note`() {
+    #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: "lifecycle typealias review") == .note)
+  }
+}
