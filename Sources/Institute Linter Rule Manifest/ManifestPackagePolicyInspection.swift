@@ -23,10 +23,12 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
     private var wrongApplePlatforms: Swift::Set<Swift::String> = []
     private var platformShapeUnhandled = false
     private var l1MacroTarget = false
+    private let mentionsSwiftSettings: Swift::Bool
 
     internal init(_ tree: SourceFileSyntax, filePath: Swift::String) {
         self.sourceText = tree.description
         self.isL1 = filePath.contains("/swift-atoms/") || filePath.contains("/swift-molecules/")
+        self.mentionsSwiftSettings = tree.tokens(viewMode: .sourceAccurate).contains { $0.text == "swiftSettings" }
         super.init(viewMode: .sourceAccurate)
         walk(tree)
     }
@@ -64,7 +66,7 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
         if platformShapeUnhandled {
             return "computed or noncanonical Apple platform declaration"
         }
-        if ordinaryTargetCount > 0 && recognizedSettingsLoop == nil {
+        if ordinaryTargetCount > 0 && recognizedSettingsLoop == nil && mentionsSwiftSettings {
             return "ordinary target settings are not applied by a recognized package.targets loop"
         }
         return nil
@@ -95,17 +97,12 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
     }
 
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
-        let compact = Self.compact(node)
-        let recognized =
-            compact.contains("fortargetinpackage.targetswhere!")
-            && compact.contains(".system")
-            && compact.contains(".binary")
-            && compact.contains(".plugin")
-            && compact.contains(".macro")
-            && compact.contains(".contains(target.type)")
-            && compact.contains("target.swiftSettings=")
-        if recognized {
-            recognizedSettingsLoop = compact
+        if node.pattern.trimmedDescription == "target",
+            node.sequence.trimmedDescription == "package.targets",
+            node.whereClause.map({ Self.excludesOnlyNonSourceTargets($0.condition) }) ?? true,
+            node.body.statements.contains(where: { Self.compact($0).hasPrefix("target.swiftSettings=") })
+        {
+            recognizedSettingsLoop = Self.compact(node.body)
         }
         return .visitChildren
     }
@@ -174,6 +171,24 @@ internal final class ManifestPackagePolicyInspection: SyntaxVisitor {
             current = candidate.parent
         }
         return false
+    }
+
+    private static let nonSourceTargetTypes: Swift::Set<Swift::String> = ["system", "binary", "plugin", "macro"]
+
+    private static func excludesOnlyNonSourceTargets(_ condition: ExprSyntax) -> Swift::Bool {
+        guard let negation = condition.as(PrefixOperatorExprSyntax.self),
+            negation.operator.text == "!",
+            let call = negation.expression.as(FunctionCallExprSyntax.self),
+            let member = call.calledExpression.as(MemberAccessExprSyntax.self),
+            member.declName.baseName.text == "contains",
+            let array = member.base?.as(ArrayExprSyntax.self),
+            call.arguments.count == 1,
+            call.arguments.first?.expression.trimmedDescription == "target.type"
+        else { return false }
+        let excluded = array.elements.compactMap {
+            $0.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text
+        }
+        return excluded.count == array.elements.count && excluded.allSatisfy(nonSourceTargetTypes.contains)
     }
 
     private static func compact(_ syntax: some SyntaxProtocol) -> Swift::String {

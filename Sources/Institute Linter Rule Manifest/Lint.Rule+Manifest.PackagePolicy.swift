@@ -22,6 +22,25 @@ extension Lint.Rule {
         expectation: .clean
       ),
       .init(
+        id: "package policy revision 1 no target settings",
+        source: "// swift-tools-version: 6.4\nimport PackageDescription\n"
+          + "let package = Package(name: \"Fixture\", targets: [.target(name: \"Fixture\")], swiftLanguageModes: [.v6])",
+        path: "Package.swift",
+        expectation: .findings(7)
+      ),
+      .init(
+        id: "package policy revision 1 settings loop without macro exclusion",
+        source: "// swift-tools-version: 6.4\nimport PackageDescription\n"
+          + "let package = Package(name: \"Fixture\", targets: [.target(name: \"Fixture\")], swiftLanguageModes: [.v6])\n"
+          + "for target in package.targets where ![.system, .binary, .plugin].contains(target.type) {\n"
+          + "    target.swiftSettings = (target.swiftSettings ?? []) + [.strictMemorySafety(), "
+          + ".enableUpcomingFeature(\"ExistentialAny\"), .enableUpcomingFeature(\"InternalImportsByDefault\"), "
+          + ".enableUpcomingFeature(\"MemberImportVisibility\"), .enableUpcomingFeature(\"NonisolatedNonsendingByDefault\"), "
+          + ".enableExperimentalFeature(\"Lifetimes\"), .enableUpcomingFeature(\"InferIsolatedConformances\")]\n}",
+        path: "Package.swift",
+        expectation: .clean
+      ),
+      .init(
         id: "package policy revision 1 versioned manifest",
         source: "// swift-tools-version: 6.4\nimport PackageDescription\n"
           + "let package = Package(name: \"Fixture\", targets: [], swiftLanguageModes: [.v6])",

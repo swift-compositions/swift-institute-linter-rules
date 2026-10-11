@@ -79,6 +79,57 @@ extension Lint.Rule.`package policy revision 1 Tests`.Unit {
     #expect(observation.coverage == .measured)
     #expect(observation.findings.count == 2)
   }
+
+  @Test
+  func `settings loop that does not exclude macro targets is measured`() {
+    let source = Lint.Rule.`package policy revision 1 Tests`.clean.replacing(
+      "![.system, .binary, .plugin, .macro]",
+      with: "![.system, .binary, .plugin]"
+    )
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
+    #expect(observation.coverage == .measured)
+    #expect(observation.findings.isEmpty)
+  }
+
+  @Test
+  func `settings loop over every target is measured`() {
+    let source = Lint.Rule.`package policy revision 1 Tests`.clean.replacing(
+      " where ![.system, .binary, .plugin, .macro].contains(target.type)",
+      with: ""
+    )
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
+    #expect(observation.coverage == .measured)
+    #expect(observation.findings.isEmpty)
+  }
+
+  @Test
+  func `settings declared in a local list inside the loop are read`() {
+    let source = Lint.Rule.`package policy revision 1 Tests`.clean
+      .replacing(
+        "    target.swiftSettings = (target.swiftSettings ?? []) + [",
+        with: "    let ecosystem: [SwiftSetting] = ["
+      )
+      .replacing("    ]\n}", with: "    ]\n    target.swiftSettings = (target.swiftSettings ?? []) + ecosystem\n}")
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
+    #expect(observation.coverage == .measured)
+    #expect(observation.findings.isEmpty)
+  }
+
+  @Test
+  func `manifest that applies no target settings reports every setting`() {
+    let source = """
+      // swift-tools-version: 6.4
+      import PackageDescription
+      let package = Package(
+          name: "fixture",
+          targets: [.target(name: "Fixture"), .testTarget(name: "Fixture Tests")],
+          swiftLanguageModes: [.v6]
+      )
+      """
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
+    #expect(observation.coverage == .measured)
+    #expect(observation.findings.count == 7)
+  }
 }
 
 extension Lint.Rule.`package policy revision 1 Tests`.`Edge Case` {
@@ -107,6 +158,52 @@ extension Lint.Rule.`package policy revision 1 Tests`.`Edge Case` {
     let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
     guard case .unmeasured = observation.coverage else {
       Issue.record("computed target scope was accepted as measured")
+      return
+    }
+  }
+
+  @Test
+  func `settings loop that excludes an ordinary target type is unmeasured`() {
+    let source = Lint.Rule.`package policy revision 1 Tests`.clean.replacing(
+      "![.system, .binary, .plugin, .macro]",
+      with: "![.system, .binary, .plugin, .macro, .test]"
+    )
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
+    guard case .unmeasured = observation.coverage else {
+      Issue.record("a loop that skips test targets was accepted as applying settings to them")
+      return
+    }
+  }
+
+  @Test
+  func `conditional settings assignment in the loop is unmeasured`() {
+    let source = Lint.Rule.`package policy revision 1 Tests`.clean
+      .replacing(
+        "    target.swiftSettings = (target.swiftSettings ?? []) + [",
+        with: "    if target.name == \"Fixture\" { target.swiftSettings = (target.swiftSettings ?? []) + ["
+      )
+      .replacing("    ]\n}", with: "    ] }\n}")
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
+    guard case .unmeasured = observation.coverage else {
+      Issue.record("settings applied to one target were accepted as applied to all")
+      return
+    }
+  }
+
+  @Test
+  func `per-target settings without a loop are unmeasured`() {
+    let source = """
+      // swift-tools-version: 6.4
+      import PackageDescription
+      let package = Package(
+          name: "fixture",
+          targets: [.target(name: "Fixture", swiftSettings: settings)],
+          swiftLanguageModes: [.v6]
+      )
+      """
+    let observation = Lint.Rule.`package policy revision 1 Tests`.observation(source)
+    guard case .unmeasured = observation.coverage else {
+      Issue.record("computed per-target settings were accepted as measured")
       return
     }
   }
