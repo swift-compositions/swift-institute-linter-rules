@@ -170,3 +170,19 @@ extension Lint.Rule.`compound suite name Tests`.`Edge Case` {
     #expect(findings.count == 1)
   }
 }
+
+extension Lint.Rule.`compound suite name Tests`.`Edge Case` {
+  @Test
+  func `the domain template with its categories is clean`() {
+    let source = """
+      extension URI {
+          @Suite struct `URI Tests` {
+              @Suite struct Unit {}
+              @Suite struct `Edge Case` {}
+              @Suite struct Integration {}
+          }
+      }
+      """
+    #expect(Lint.Rule.`compound suite name Tests`.findings(in: source).isEmpty)
+  }
+}

@@ -49,8 +49,20 @@ extension Lint.Rule {
                 expectation: .findings(1)
             ),
             .init(
-                id: "compound suite name template parent reported once",
+                id: "compound suite name domain template",
                 source: "extension Foo { @Suite struct `Foo Tests` { @Suite struct Unit {}; @Suite struct `Edge Case` {}; @Suite struct Integration {} } }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "compound suite name template without a domain",
+                source: "@Suite struct `Foo Tests` { @Suite struct Unit {} }",
+                path: "Tests/Naming Tests/Foo Tests.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "compound suite name concatenated tests suite in a domain",
+                source: "extension Foo { @Suite struct FooTests {} }",
                 path: "Tests/Naming Tests/Foo Tests.swift",
                 expectation: .findings(1)
             ),
@@ -81,8 +93,10 @@ extension Lint.Rule {
 
 @usableFromInline
 internal let namingCompoundSuiteMessage: Swift::String =
-    "[compound suite name] [SWIFT-TEST-002]: `@Suite` types MUST occupy a "
-    + "`<Domain>.Test` subdomain (`extension Foo { @Suite struct Test {} }`)."
+    "[compound suite name] [SWIFT-TEST-002]: `@Suite` types MUST sit directly in "
+    + "their domain, as `extension Foo { @Suite struct Test {} }` or "
+    + "`extension Foo { @Suite struct \\`Foo Tests\\` {} }`, with Unit, Edge Case, "
+    + "Integration and Performance nested inside."
 
 private func compoundSuiteHasSuiteAttribute(_ attributes: AttributeListSyntax) -> Swift::Bool {
     for attribute in attributes {
@@ -102,6 +116,12 @@ private func compoundSuiteHasDomain(_ node: Syntax) -> Swift::Bool {
         || declaration.is(EnumDeclSyntax.self)
         || declaration.is(ClassDeclSyntax.self)
         || declaration.is(ActorDeclSyntax.self)
+}
+
+private func compoundSuiteIsDomainTestSuite(_ name: TokenSyntax) -> Swift::Bool {
+    let unescaped = Lint.Syntax.Identifier.unescaped(name.text)
+    return unescaped == "Test"
+        || (name.text.hasPrefix("`") && unescaped.hasSuffix(" Tests") && unescaped.count > " Tests".count)
 }
 
 private let compoundSuiteCategories: Swift::Set<Swift::String> = [
@@ -139,9 +159,7 @@ internal final class NamingCompoundSuiteVisitor: SyntaxVisitor {
 
     private func checkSuite(_ node: Syntax, attributes: AttributeListSyntax, name: TokenSyntax) {
         guard compoundSuiteHasSuiteAttribute(attributes) else { return }
-        guard Lint.Syntax.Identifier.unescaped(name.text) != "Test"
-            || !compoundSuiteHasDomain(node)
-        else { return }
+        guard !compoundSuiteIsDomainTestSuite(name) || !compoundSuiteHasDomain(node) else { return }
         guard !compoundSuiteIsCategoryOfParentSuite(node, name: name) else { return }
         let location = converter.location(for: name.positionAfterSkippingLeadingTrivia)
         matches.append(
