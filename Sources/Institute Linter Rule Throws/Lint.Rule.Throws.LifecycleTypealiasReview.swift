@@ -4,7 +4,7 @@ internal import SwiftSyntax
 extension Lint.Rule {
     public static let `lifecycle typealias review` = Lint.Rule(
         id: "lifecycle typealias review",
-        default: .warning,
+        default: .note,
         controls: [
             .init(
                 id: "lifecycle typealias review shared lifecycle error",

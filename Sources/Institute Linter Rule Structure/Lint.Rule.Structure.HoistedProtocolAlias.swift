@@ -39,12 +39,9 @@ extension Lint.Rule {
 
 @usableFromInline
 internal let structureHoistedProtocolAliasMessage: Swift::String =
-    "[hoisted protocol alias] [API-IMPL-009]: declaring-"
-    + "module conformance via the `.Protocol` typealias path is a "
-    + "self-referential cycle. Use the hoisted protocol name "
-    + "(`_FooProtocol`) directly in the declaring module. The "
-    + "typealias path (`Owner.Inner.Protocol`) is for CONSUMER "
-    + "modules — different type, no cycle."
+    "[hoisted protocol alias] [API-IMPL-009]: declare the protocol hoisted as "
+    + "`_XProtocol` and expose it as `X.Protocol`; the declaring module conforms "
+    + "through `_XProtocol`, never through the `X.Protocol` path."
 
 internal func structureHoistedProtocolAliasIsSelfProtocolConformance(
     extendedName: Swift::String,
