@@ -4,7 +4,7 @@ internal import SwiftSyntax
 extension Lint.Rule {
     public static let `safe attribute undocumented` = Lint.Rule(
         id: "safe attribute undocumented",
-        default: .warning,
+        default: .note,
         controls: [
             .init(
                 id: "safe attribute undocumented missing",
@@ -43,17 +43,11 @@ extension Lint.Rule {
 
 @usableFromInline
 internal let memorySafeAttributeUndocumentedMessage: Swift::String =
-    "[safe attribute undocumented] [MEM-SAFE-025c]: every `@safe`-attributed "
-    + "declaration MUST carry an adjacent invariant disclosure — either a "
-    + "`// SAFETY:` / `// WHY:` line-comment block in the declaration's "
-    + "leading trivia, OR a `## Safety Invariant` section within an adjacent "
-    + "`///` doc-comment. The disclosure SHOULD cite a [MEM-SAFE-024] "
-    + "Category (A/B/C/D) when applicable; multi-line free-form prose is "
-    + "acceptable when the site is not categorizable. Adjacency means no "
-    + "blank line between the disclosure and the declaration token. "
-    + "Per [MEM-SAFE-025b], `@safe` is admitted on any declaration in "
-    + "`Sources/` (SE-0458's intent); this rule polices the institute "
-    + "disclosure requirement layered on top."
+    "[safe attribute undocumented] [MEM-SAFE-025c]: review prompt, never strict. "
+    + "This `@safe` declaration asserts that its unsafe operations uphold an "
+    + "invariant ([MEM-SAFE-024] Category A/B/C/D). Sources carry no comments, so "
+    + "the invariant belongs in the type's construction and its tests: confirm "
+    + "they establish it."
 
 internal final class MemorySafeAttributeUndocumentedVisitor: SyntaxVisitor {
     let source: Source.File

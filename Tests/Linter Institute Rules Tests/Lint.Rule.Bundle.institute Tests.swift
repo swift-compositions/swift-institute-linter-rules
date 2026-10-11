@@ -331,6 +331,11 @@ extension `Lint Rule Bundle institute Tests`.`Severity` {
   }
 
   @Test
+  func `safe attribute undocumented stays a note`() {
+    #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: "safe attribute undocumented") == .note)
+  }
+
+  @Test
   func `lifecycle typealias review stays a note`() {
     #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: "lifecycle typealias review") == .note)
   }
