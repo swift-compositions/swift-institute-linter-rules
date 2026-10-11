@@ -63,6 +63,7 @@ extension Lint.Rule.Bundle {
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
             .enable(.`path dependency`, severity: .error),
+            .enable(.`redirected dependency url`),
             .enable(.`canonical settings tail`),
             .enable(.`statement where expression fits`),
             .enable(.`existential parameter`),

@@ -56,6 +56,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
   // Naming grammar pair (#65, principal directive 2026-08-09).
   "manifest naming grammar",
   "path dependency",
+  "redirected dependency url",
   "canonical settings tail",
   "statement where expression fits",
   "existential parameter",
