@@ -171,3 +171,18 @@ extension Lint.Rule.`bounded index static capacity Tests`.`Edge Case` {
     #expect(findings.count == 2)
   }
 }
+
+extension Lint.Rule.`bounded index static capacity Tests`.`Edge Case` {
+  @Test
+  func `an extension in another file of a value-generic type is checked`() {
+    let declaring = "public struct Inset<let N: Int> {}"
+    let index = Lint.Source.Index.collect(from: Parser.parse(source: declaring))
+    let parsed = Lint.Source.parsed(
+      from: "extension Inset { public subscript(axis: Int) -> Int { 0 } }",
+      file: "Sources/Inset/Inset+Subscript.swift",
+      index: index
+    )
+    let findings = Lint.Rule.`bounded index static capacity`.observe(parsed, .warning).findings
+    #expect(findings.count == 1)
+  }
+}

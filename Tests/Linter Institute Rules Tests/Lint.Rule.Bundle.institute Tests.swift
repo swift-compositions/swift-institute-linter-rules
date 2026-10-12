@@ -312,6 +312,13 @@ extension `Lint Rule Bundle institute Tests`.`Severity` {
   @Test(arguments: [
     "architecture namespace shape",
     "binary serializable uint8 witness",
+    "borrowing self short circuit",
+    "default trait",
+    "hoisted protocol alias",
+    "mock factory zero collision",
+    "nested tag",
+    "redirected dependency url",
+    "uint8 ascii extension",
     "byte conforms to arithmetic protocol",
     "convention c representability",
     "dead case per platform",

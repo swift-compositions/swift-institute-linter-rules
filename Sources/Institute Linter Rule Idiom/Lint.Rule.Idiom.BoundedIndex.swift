@@ -50,7 +50,7 @@ extension Lint.Rule {
                 source: source.file,
                 severity: severity,
                 converter: source.converter,
-                valueGenericTypes: types.names
+                valueGenericTypes: types.names.union(source.index.valueGenericTypes)
             )
             visitor.walk(source.tree)
             return visitor.matches

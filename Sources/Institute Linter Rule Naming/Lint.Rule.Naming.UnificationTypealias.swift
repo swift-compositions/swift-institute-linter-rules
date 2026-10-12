@@ -7,6 +7,22 @@ extension Lint.Rule {
         default: .warning,
         controls: [
             .init(
+                id: "unification typealias associated type witness",
+                source: "public protocol Keyed { associatedtype HandlerKey }\n"
+                    + "public struct Sample: Keyed {}\n"
+                    + "extension Sample { public typealias HandlerKey = Handler.Key }",
+                path: "Sources/Naming Core/Witness.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "unification typealias same name without a requirement",
+                source: "public protocol Keyed { associatedtype Other }\n"
+                    + "public struct Sample: Keyed {}\n"
+                    + "extension Sample { public typealias HandlerKey = Handler.Key }",
+                path: "Sources/Naming Core/Witness.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "unification typealias different leaf",
                 source: "public typealias SourceLocation = Text.Location",
                 path: "Sources/Naming Core/DifferentLeaf.swift",
@@ -29,7 +45,8 @@ extension Lint.Rule {
             let visitor = NamingUnificationTypealiasVisitor(
                 source: source.file,
                 severity: severity,
-                converter: source.converter
+                converter: source.converter,
+                index: source.index
             )
             visitor.walk(source.tree)
             return visitor.matches
@@ -47,13 +64,35 @@ internal final class NamingUnificationTypealiasVisitor: SyntaxVisitor {
     let source: Source.File
     let severity: Diagnostic.Severity
     let converter: SourceLocationConverter
+    let index: Lint.Source.Index
     var matches: [Diagnostic.Record] = []
 
-    init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
+    init(
+        source: Source.File,
+        severity: Diagnostic.Severity,
+        converter: SourceLocationConverter,
+        index: Lint.Source.Index
+    ) {
         self.source = source
         self.severity = severity
         self.converter = converter
+        self.index = index
         super.init(viewMode: .sourceAccurate)
+    }
+
+    private func enclosingTypeName(of node: Syntax) -> Swift::String? {
+        var current = node.parent
+        while let candidate = current {
+            if let decl = candidate.as(ExtensionDeclSyntax.self) {
+                return decl.extendedType.trimmedDescription
+            }
+            if let decl = candidate.as(StructDeclSyntax.self) { return decl.name.text }
+            if let decl = candidate.as(EnumDeclSyntax.self) { return decl.name.text }
+            if let decl = candidate.as(ClassDeclSyntax.self) { return decl.name.text }
+            if let decl = candidate.as(ActorDeclSyntax.self) { return decl.name.text }
+            current = candidate.parent
+        }
+        return nil
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -70,6 +109,11 @@ internal final class NamingUnificationTypealiasVisitor: SyntaxVisitor {
             return .visitChildren
         }
         if Naming.isInsideConformingContext(Syntax(node)) {
+            return .visitChildren
+        }
+        if let owner = enclosingTypeName(of: Syntax(node)),
+            index.witnessesAssociatedType(named: lhsName, on: owner)
+        {
             return .visitChildren
         }
         if Naming.isProtocolSentinel(rhsLeaf) {
