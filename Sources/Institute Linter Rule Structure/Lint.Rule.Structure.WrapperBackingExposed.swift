@@ -7,6 +7,19 @@ extension Lint.Rule {
         default: .warning,
         controls: [
             .init(
+                id: "wrapper backing exposed protocol requirement witness",
+                source: "public protocol _OptionalProtocol<Wrapped> { associatedtype Wrapped; var _wrapped: Wrapped? { get } }\n"
+                    + "extension Optional: _OptionalProtocol { public var _wrapped: Wrapped? { self } }",
+                path: "Sources/Structure Core/Optional.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "wrapper backing exposed public backing without a requirement",
+                source: "public struct Box { public var _backing: Int }",
+                path: "Sources/Structure Core/Box.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "wrapper backing exposed internal backing",
                 source: "struct Wrapper { var _backing: Int }",
                 path: "Sources/Structure Core/Wrapper.swift",
@@ -29,7 +42,8 @@ extension Lint.Rule {
             let visitor = StructureWrapperBackingExposedVisitor(
                 source: source.file,
                 severity: severity,
-                converter: source.converter
+                converter: source.converter,
+                index: source.index
             )
             visitor.walk(source.tree)
             return visitor.matches
@@ -89,12 +103,40 @@ internal final class StructureWrapperBackingExposedVisitor: SyntaxVisitor {
     let converter: SourceLocationConverter
     var matches: [Diagnostic.Record] = []
     var typeDepth: Swift::Int = 0
+    let index: Lint.Source.Index
 
-    init(source: Source.File, severity: Diagnostic.Severity, converter: SourceLocationConverter) {
+    init(
+        source: Source.File,
+        severity: Diagnostic.Severity,
+        converter: SourceLocationConverter,
+        index: Lint.Source.Index
+    ) {
         self.source = source
         self.severity = severity
         self.converter = converter
+        self.index = index
         super.init(viewMode: .sourceAccurate)
+    }
+
+    private func witnessesRequirement(_ name: Swift::String, _ node: Syntax) -> Swift::Bool {
+        var current = node.parent
+        while let candidate = current {
+            let owner: Swift::String? =
+                if let decl = candidate.as(ExtensionDeclSyntax.self) {
+                    decl.extendedType.trimmedDescription
+                } else if let decl = candidate.as(StructDeclSyntax.self) {
+                    decl.name.text
+                } else if let decl = candidate.as(EnumDeclSyntax.self) {
+                    decl.name.text
+                } else if let decl = candidate.as(ClassDeclSyntax.self) {
+                    decl.name.text
+                } else {
+                    nil
+                }
+            if let owner { return index.witnessesRequirement(named: name, on: owner) }
+            current = candidate.parent
+        }
+        return false
     }
 
     override func visit(_: StructDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -144,6 +186,7 @@ internal final class StructureWrapperBackingExposedVisitor: SyntaxVisitor {
                     identifier.identifier.text
                 )
             else { continue }
+            guard !witnessesRequirement(identifier.identifier.text, Syntax(node)) else { continue }
             let location = converter.location(
                 for: node.bindingSpecifier.positionAfterSkippingLeadingTrivia
             )
