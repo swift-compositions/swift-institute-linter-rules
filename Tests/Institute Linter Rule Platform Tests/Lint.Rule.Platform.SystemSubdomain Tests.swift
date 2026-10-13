@@ -202,3 +202,16 @@ extension Lint.Rule.`system subdomain Tests`.`Edge Case` {
     #expect(findings.isEmpty)
   }
 }
+
+extension Lint.Rule.`system subdomain Tests`.`Edge Case` {
+  @Test
+  func `the file system domain under a platform is NOT flagged`() {
+    let source = """
+      extension Windows.`32`.Kernel.File.System {
+          public enum Stats: Sendable {}
+      }
+      """
+    let findings = Lint.Rule.`system subdomain Tests`.findings(in: source)
+    #expect(findings.isEmpty)
+  }
+}

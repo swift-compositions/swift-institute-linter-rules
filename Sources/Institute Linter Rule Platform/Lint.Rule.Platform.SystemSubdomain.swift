@@ -19,6 +19,12 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "system subdomain file system domain",
+                source: "extension Windows.`32`.Kernel.File.System { public enum Stats {} }",
+                path: "Sources/Platform Core/FileSystem.swift",
+                expectation: .clean
+            ),
+            .init(
                 id: "system subdomain nonplatform parent",
                 source: "public enum Domain { public enum System {} }",
                 path: "Sources/Platform Core/DomainSystem.swift",
@@ -62,6 +68,9 @@ internal func platformSystemSubdomainIsPlatformSystemMemberType(
 ) -> AbsolutePosition? {
     guard let member = type.as(MemberTypeSyntax.self) else { return nil }
     guard member.name.text == "System" else { return nil }
+    if let parent = member.baseType.as(MemberTypeSyntax.self), parent.name.text == "File" {
+        return nil
+    }
     guard let root = platformSystemSubdomainRootIdentifier(member.baseType) else {
         return nil
     }
