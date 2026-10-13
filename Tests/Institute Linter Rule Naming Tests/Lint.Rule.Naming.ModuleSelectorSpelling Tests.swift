@@ -122,3 +122,48 @@ extension Lint.Rule.`module selector spelling Tests`.Integration {
     #expect(proposal == .unchanged)
   }
 }
+
+extension Lint.Rule.`module selector spelling Tests`.`Edge Case` {
+  @Test
+  func `a module whose namespace type the package declares is not flagged`() {
+    let findings = Lint.Rule.`module selector spelling`
+      .observe(
+        Lint.Source.parsed(
+          from: "import RFC_Cookie_Core\nlet cookie: RFC_Cookie_Core.Cookie? = nil\nlet value = RFC_Cookie_Core.Cookie()",
+          file: "Tests/RFC Cookie Tests/Cookie Tests.swift",
+          types: ["RFC_Cookie_Core"]
+        ),
+        .warning
+      )
+      .findings
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `a specification namespace module is not flagged`() {
+    let findings = Lint.Rule.`module selector spelling Tests`.findings(
+      """
+      import RFC_6265
+      import ISO_8824
+      import INCITS_4_1986
+      let cookie: RFC_6265.Cookie? = nil
+      let error = ISO_8824.Error.self
+      let ascii = INCITS_4_1986.ControlCharacters.lf
+      """
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `a module without a numbered or declared namespace is still flagged`() {
+    let findings = Lint.Rule.`module selector spelling Tests`.findings(
+      """
+      import CSS_Standard
+      import RFC_6265_Coder
+      let value = CSS_Standard.Color.red
+      let coder = RFC_6265_Coder.Coder.self
+      """
+    )
+    #expect(findings.count == 2)
+  }
+}

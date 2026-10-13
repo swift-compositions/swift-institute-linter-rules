@@ -30,6 +30,18 @@ extension Lint.Rule {
                 path: "Sources/Naming Consumer/Value.swift",
                 expectation: .clean
             ),
+            .init(
+                id: "module selector spelling package namespace type",
+                source: "import Naming_Core\npublic enum Naming_Core {}\nlet value = Naming_Core.Value()",
+                path: "Sources/Naming Core/Naming_Core.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "module selector spelling specification namespace",
+                source: "import RFC_6265\nlet cookie: RFC_6265.Cookie? = nil\nlet error = ISO_8824.Error.self",
+                path: "Sources/Naming Consumer/Value.swift",
+                expectation: .clean
+            ),
         ],
         observe: Lint.Rule.measured { source, severity in
             let modules = NamingModuleSelectorImports(viewMode: .sourceAccurate)
@@ -38,7 +50,7 @@ extension Lint.Rule {
                 source: source.file,
                 severity: severity,
                 converter: source.converter,
-                modules: modules.names
+                modules: modules.names.subtracting(source.types)
             )
             visitor.walk(source.tree)
             return visitor.matches
@@ -50,7 +62,7 @@ extension Lint.Rule {
                 source: source.file,
                 severity: .warning,
                 converter: source.converter,
-                modules: modules.names
+                modules: modules.names.subtracting(source.types)
             )
             visitor.walk(source.tree)
             guard !visitor.periods.isEmpty else { return .unchanged }
@@ -75,10 +87,20 @@ internal final class NamingModuleSelectorImports: SyntaxVisitor {
     var names: Swift::Set<Swift::String> = ["Swift"]
 
     override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
-        if let module = node.path.first?.name.text, module.contains("_") {
+        if let module = node.path.first?.name.text, module.contains("_"),
+            !Self.isSpecificationNamespace(module)
+        {
             names.insert(module)
         }
         return .skipChildren
+    }
+}
+
+extension NamingModuleSelectorImports {
+    static func isSpecificationNamespace(_ module: Swift::String) -> Swift::Bool {
+        guard let last = module.split(separator: "_").last, module.split(separator: "_").count > 1
+        else { return false }
+        return last.allSatisfy(\.isNumber)
     }
 }
 

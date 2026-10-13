@@ -12,6 +12,7 @@
 import Lint
 import Linter_Rules
 import Linter_Rules_Test_Support
+import SwiftParser
 import Testing
 
 @testable import Linter_Institute_Rules
@@ -270,7 +271,11 @@ extension `Lint Rule Bundle institute Tests`.`Composition` {
     for entry in Lint.Rule.Bundle.institute {
       for control in entry.rule.controls {
         let observation = entry.rule.observe(
-          Lint.Source.parsed(from: control.source, file: control.path.underlying),
+          Lint.Source.parsed(
+            from: control.source,
+            file: control.path.underlying,
+            types: Lint.Brand.types(in: Parser.parse(source: control.source))
+          ),
           .warning
         )
         #expect(
@@ -286,7 +291,11 @@ extension `Lint Rule Bundle institute Tests`.`Composition` {
     for entry in Lint.Rule.Bundle.institute {
       for control in entry.rule.controls where control.applicability == .applicable {
         let observation = entry.rule.observe(
-          Lint.Source.parsed(from: control.source, file: control.path.underlying),
+          Lint.Source.parsed(
+            from: control.source,
+            file: control.path.underlying,
+            types: Lint.Brand.types(in: Parser.parse(source: control.source))
+          ),
           .warning
         )
         #expect(
