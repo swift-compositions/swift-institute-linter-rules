@@ -343,6 +343,7 @@ extension `Lint Rule Bundle institute Tests`.`Severity` {
     "uint8 forwarder missing disfavored",
     "unchecked sendable revalidation anchor",
     "wrapper backing exposed",
+    "system subdomain",
     "xctest import",
   ])
   func `rules graduated after two clean fleet measurements are errors`(id: Swift::String) {
