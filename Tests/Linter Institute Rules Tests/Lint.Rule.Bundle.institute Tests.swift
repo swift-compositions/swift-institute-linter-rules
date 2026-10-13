@@ -58,6 +58,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
   "manifest naming grammar",
   "path dependency",
   "redirected dependency url",
+  "apache license",
   "canonical settings tail",
   "statement where expression fits",
   "existential parameter",
@@ -274,7 +275,8 @@ extension `Lint Rule Bundle institute Tests`.`Composition` {
           Lint.Source.parsed(
             from: control.source,
             file: control.path.underlying,
-            types: Lint.Brand.types(in: Parser.parse(source: control.source))
+            types: Lint.Brand.types(in: Parser.parse(source: control.source)),
+            index: Lint.Source.Index(control: control)
           ),
           .warning
         )
@@ -294,7 +296,8 @@ extension `Lint Rule Bundle institute Tests`.`Composition` {
           Lint.Source.parsed(
             from: control.source,
             file: control.path.underlying,
-            types: Lint.Brand.types(in: Parser.parse(source: control.source))
+            types: Lint.Brand.types(in: Parser.parse(source: control.source)),
+            index: Lint.Source.Index(control: control)
           ),
           .warning
         )
@@ -354,5 +357,12 @@ extension `Lint Rule Bundle institute Tests`.`Severity` {
   @Test
   func `lifecycle typealias review stays a note`() {
     #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: "lifecycle typealias review") == .note)
+  }
+}
+
+extension Lint.Source.Index {
+  fileprivate init(control: Lint.Rule.Control) {
+    self = .collect(from: Parser.parse(source: control.source))
+    self.license = control.license
   }
 }
