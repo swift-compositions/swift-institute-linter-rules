@@ -19,6 +19,12 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "phantom suppression qualified maximal bound",
+                source: "extension Tagged: Swift.Escapable where Tag: ~Copyable & ~Swift.Escapable, Underlying: Swift.Escapable & ~Copyable {}",
+                path: "Sources/Naming Core/QualifiedMaximalBound.swift",
+                expectation: .clean
+            ),
+            .init(
                 id: "phantom suppression stored value",
                 source: "extension Sequence { public func collect<Element: ~Copyable>(_ value: [Element]) {} }",
                 path: "Sources/Naming Core/StoredValue.swift",
@@ -187,6 +193,7 @@ private func suppressedIsCopyable(_ suppressed: SuppressedTypeSyntax) -> Swift::
 
 private func suppressedLeaf(_ suppressed: SuppressedTypeSyntax) -> Swift::String? {
     suppressed.type.as(IdentifierTypeSyntax.self)?.name.text
+        ?? suppressed.type.as(MemberTypeSyntax.self)?.name.text
 }
 
 private func usedAsPhantomDiscriminator(_ name: Swift::String, in body: Swift::String) -> Swift::Bool {

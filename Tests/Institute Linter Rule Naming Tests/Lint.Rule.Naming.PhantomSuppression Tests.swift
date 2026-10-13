@@ -329,3 +329,21 @@ extension Lint.Rule.`phantom suppression Tests`.`Edge Case` {
     #expect(findings.count == 1)
   }
 }
+
+extension Lint.Rule.`phantom suppression Tests`.`Edge Case` {
+  @Test
+  func `module-qualified ~Swift.Escapable counts as maximal`() {
+    let findings = Lint.Rule.`phantom suppression Tests`.findings(
+      in: "extension Tagged: Swift.Escapable where Tag: ~Copyable & ~Swift.Escapable, Underlying: Swift.Escapable & ~Copyable {}"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test
+  func `module-qualified ~Swift.Copyable alone is still flagged`() {
+    let findings = Lint.Rule.`phantom suppression Tests`.findings(
+      in: "extension Tagged where Underlying == Ordinal, Tag: ~Swift.Copyable { public var probe: Int { 0 } }"
+    )
+    #expect(findings.count == 1)
+  }
+}
