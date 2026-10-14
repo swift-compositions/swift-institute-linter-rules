@@ -115,13 +115,13 @@ internal func manifestIsRootPackageManifest(_ path: Swift::String) -> Swift::Boo
   path.split(separator: "/").filter { $0 != "." } == ["Package.swift"]
 }
 
-internal let manifestLicenseOwnHolders: [Swift::String] = [
+package let manifestLicenseOwnHolders: [Swift::String] = [
   "coen ten thije boonkkamp",
   "swift institute",
   "free software foundation",
 ]
 
-internal func manifestLicenseNamesUpstreamHolder(_ text: Swift::String) -> Swift::Bool {
+package func manifestLicenseNamesUpstreamHolder(_ text: Swift::String) -> Swift::Bool {
   text.split(separator: "\n").contains { line in
     var rest = Swift::Substring(manifestApacheLicenseNormalized(Swift::String(line)))
     guard rest.hasPrefix("copyright ") else { return false }
@@ -153,7 +153,7 @@ internal func manifestApacheLicenseMessage(_ license: Lint.Source.Index.License)
     + "upstream holder's licence names that holder in a `Copyright (c) <year> <holder>` line."
 }
 
-internal func manifestApacheLicenseNormalized(_ text: Swift::String) -> Swift::String {
+package func manifestApacheLicenseNormalized(_ text: Swift::String) -> Swift::String {
   var result = ""
   var pendingSpace = false
   for character in text.lowercased() {
@@ -346,3 +346,8 @@ internal let manifestApacheLicenseTerms: Swift::String = """
 
        END OF TERMS AND CONDITIONS
     """
+
+package func manifestLicenseNamesUpstreamHolder(_ license: Lint.Source.Index.License) -> Swift::Bool {
+  guard case .text(let text) = license else { return false }
+  return manifestLicenseNamesUpstreamHolder(text)
+}

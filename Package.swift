@@ -211,6 +211,7 @@ let package = Package(
       name: "Institute Linter Rule Structure",
       dependencies: [
         .product(name: "Lint", package: "swift-lint"),
+        .target(name: "Institute Linter Rule Manifest"),
         .product(name: "Linter Rule Structure", package: "swift-linter-rules"),
         .product(name: "Cardinal", package: "swift-cardinal"),
         .product(name: "SwiftSyntax", package: "swift-syntax"),
@@ -220,6 +221,7 @@ let package = Package(
       name: "Institute Linter Rule Testing",
       dependencies: [
         .product(name: "Lint", package: "swift-lint"),
+        .target(name: "Institute Linter Rule Manifest"),
         .product(name: "SwiftSyntax", package: "swift-syntax"),
       ]
     ),

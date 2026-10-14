@@ -1,4 +1,5 @@
 public import Lint
+internal import Institute_Linter_Rule_Manifest
 internal import SwiftSyntax
 
 extension Lint.Rule {
@@ -6,6 +7,13 @@ extension Lint.Rule {
         id: "test file suffix",
         default: .warning,
         controls: [
+            .init(
+                id: "test file suffix upstream licensed package",
+                source: "@Suite struct ValueTests {}",
+                path: "Tests/Testing Tests/ValueTests.swift",
+                expectation: .clean,
+                license: .text("MIT License\n\nCopyright (c) 2025 Point-Free, Inc.\n\nPermission is hereby granted")
+            ),
             .init(
                 id: "test file suffix joined suffix",
                 source: "@Suite struct ValueTests {}",
@@ -26,6 +34,7 @@ extension Lint.Rule {
             ),
         ],
         observe: Lint.Rule.measured { source, severity in
+            if manifestLicenseNamesUpstreamHolder(source.index.license) { return [] }
             let filePath = source.file.filePath
             let components = filePath.split(separator: "/", omittingEmptySubsequences: true)
             guard components.contains("Tests") else { return [] }

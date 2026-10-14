@@ -1,4 +1,5 @@
 public import Lint
+internal import Institute_Linter_Rule_Manifest
 internal import SwiftSyntax
 
 extension Lint.Rule {
@@ -6,6 +7,13 @@ extension Lint.Rule {
     id: "file name nested path",
     default: .warning,
     controls: [
+      .init(
+        id: "file name nested path upstream licensed package",
+        source: "enum Array { struct Dynamic {} }",
+        path: "Sources/Structure Core/Array.swift",
+        expectation: .clean,
+        license: .text("MIT License\n\nCopyright (c) 2025 Point-Free, Inc.\n\nPermission is hereby granted")
+      ),
       .init(
         id: "file name nested path own module selector",
         source: "extension Cyclic::Cyclic.Group { public struct Modulus { public let value: Int } }",
@@ -38,6 +46,7 @@ extension Lint.Rule {
       ),
     ],
     observe: Lint.Rule.measured { source, severity in
+      if manifestLicenseNamesUpstreamHolder(source.index.license) { return [] }
       let path = source.file.filePath
       guard path.hasPrefix("Sources/") || path.contains("/Sources/") else {
         return []
