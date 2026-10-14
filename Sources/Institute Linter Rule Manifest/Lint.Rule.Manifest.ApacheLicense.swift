@@ -42,6 +42,27 @@ extension Lint.Rule {
         license: .text(Swift::String(manifestApacheLicenseTerms.dropLast(200)))
       ),
       .init(
+        id: "apache license upstream holder",
+        source: "let package = Package(name: \"Fixture\")",
+        path: "Package.swift",
+        expectation: .clean,
+        license: .text("MIT License\n\nCopyright (c) 2025 Point-Free, Inc.\n\nPermission is hereby granted")
+      ),
+      .init(
+        id: "apache license own holder",
+        source: "let package = Package(name: \"Fixture\")",
+        path: "Package.swift",
+        expectation: .findings(1),
+        license: .text("MIT License\n\nCopyright (c) 2026 Swift Institute\n\nPermission is hereby granted")
+      ),
+      .init(
+        id: "apache license license author",
+        source: "let package = Package(name: \"Fixture\")",
+        path: "Package.swift",
+        expectation: .findings(1),
+        license: .text("GNU Affero General Public License\n\n_Copyright © 2007 Free Software Foundation, Inc._")
+      ),
+      .init(
         id: "apache license unread",
         source: "let package = Package(name: \"Fixture\")",
         path: "Package.swift",
@@ -65,6 +86,9 @@ extension Lint.Rule {
       let findings: [Diagnostic.Record]
       switch source.index.license {
       case .text(let text) where manifestApacheLicenseNormalized(text).contains(manifestApacheLicenseCanonical):
+        findings = []
+
+      case .text(let text) where manifestLicenseNamesUpstreamHolder(text):
         findings = []
 
       case .unread, .absent, .text:
@@ -91,6 +115,30 @@ internal func manifestIsRootPackageManifest(_ path: Swift::String) -> Swift::Boo
   path.split(separator: "/").filter { $0 != "." } == ["Package.swift"]
 }
 
+internal let manifestLicenseOwnHolders: [Swift::String] = [
+  "coen ten thije boonkkamp",
+  "swift institute",
+  "free software foundation",
+]
+
+internal func manifestLicenseNamesUpstreamHolder(_ text: Swift::String) -> Swift::Bool {
+  text.split(separator: "\n").contains { line in
+    var rest = Swift::Substring(manifestApacheLicenseNormalized(Swift::String(line)))
+    guard rest.hasPrefix("copyright ") else { return false }
+    rest = rest.dropFirst("copyright ".count)
+    if rest.hasPrefix("(c) ") {
+      rest = rest.dropFirst(4)
+    } else if rest.hasPrefix("© ") {
+      rest = rest.dropFirst(2)
+    } else {
+      return false
+    }
+    let holder = rest.drop { $0.isNumber || $0 == "-" || $0 == "," || $0 == " " }
+    guard holder.first?.isLetter == true else { return false }
+    return !manifestLicenseOwnHolders.contains { holder.hasPrefix($0) }
+  }
+}
+
 internal func manifestApacheLicenseMessage(_ license: Lint.Source.Index.License) -> Swift::String {
   let found: Swift::String
   switch license {
@@ -101,7 +149,8 @@ internal func manifestApacheLicenseMessage(_ license: Lint.Source.Index.License)
     found = "the root LICENSE does not carry the complete Apache License 2.0 terms"
   }
   return "[apache license]: every Swift Institute package is licensed under the Apache License 2.0; "
-    + found + ". Use the full Apache License 2.0 text (sections 1 to 9)."
+    + found + ". Use the full Apache License 2.0 text (sections 1 to 9); a package that keeps an "
+    + "upstream holder's licence names that holder in a `Copyright (c) <year> <holder>` line."
 }
 
 internal func manifestApacheLicenseNormalized(_ text: Swift::String) -> Swift::String {

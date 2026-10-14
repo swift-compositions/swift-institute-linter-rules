@@ -84,3 +84,31 @@ extension Lint.Rule.`apache license Tests`.`Edge Case` {
     #expect(source.applicability == .inapplicable)
   }
 }
+
+extension Lint.Rule.`apache license Tests`.`Edge Case` {
+  @Test
+  func `a licence naming an upstream holder is exempt`() {
+    let pointFree = "MIT License\n\nCopyright (c) 2025 Point-Free, Inc.\n\nPermission is hereby granted"
+    #expect(Lint.Rule.`apache license Tests`.observe(license: .text(pointFree)).findings.isEmpty)
+  }
+
+  @Test
+  func `a licence naming our own holders is not exempt`() {
+    for holder in ["Coen ten Thije Boonkkamp", "Swift Institute"] {
+      let mit = "MIT License\n\nCopyright (c) 2025-2026 \(holder)\n\nPermission is hereby granted"
+      #expect(Lint.Rule.`apache license Tests`.observe(license: .text(mit)).findings.count == 1)
+    }
+  }
+
+  @Test
+  func `the licence author's own copyright is not an upstream holder`() {
+    let agpl = "GNU Affero General Public License\n\n_Copyright © 2007 Free Software Foundation, Inc._"
+    #expect(Lint.Rule.`apache license Tests`.observe(license: .text(agpl)).findings.count == 1)
+  }
+
+  @Test
+  func `a copyright line without a holder is not an exemption`() {
+    let bare = "Copyright (c) 2026\n\nAll rights reserved."
+    #expect(Lint.Rule.`apache license Tests`.observe(license: .text(bare)).findings.count == 1)
+  }
+}
