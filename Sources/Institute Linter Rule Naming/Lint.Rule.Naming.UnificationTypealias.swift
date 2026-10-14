@@ -35,6 +35,30 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "unification typealias case-only leaf",
+                source: "public typealias sRGB = IEC_61966.`2`.`1`.SRGB",
+                path: "Sources/Naming Core/CaseOnlyLeaf.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "unification typealias quoted case-only leaf",
+                source: "private typealias `event` = Kernel.Event",
+                path: "Sources/Naming Core/QuotedCaseOnlyLeaf.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "unification typealias different letters",
+                source: "public typealias sRGB = Color.SRGBA",
+                path: "Sources/Naming Core/DifferentLetters.swift",
+                expectation: .findings(1)
+            ),
+            .init(
+                id: "unification typealias different underscore",
+                source: "public typealias SR_GB = Color.SRGB",
+                path: "Sources/Naming Core/DifferentUnderscore.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "unification typealias swift bridge",
                 source: "public typealias Protocol = Swift.Equatable",
                 path: "Sources/Naming Core/SwiftBridge.swift",
@@ -102,7 +126,9 @@ internal final class NamingUnificationTypealiasVisitor: SyntaxVisitor {
         }
         if member.genericArgumentClause != nil { return .visitChildren }
         let rhsLeaf = member.name.text
-        guard rhsLeaf != lhsName else { return .visitChildren }
+        guard Lint.Syntax.Identifier.unescaped(rhsLeaf).lowercased()
+            != Lint.Syntax.Identifier.unescaped(lhsName).lowercased()
+        else { return .visitChildren }
         if let baseIdentifier = member.baseType.as(IdentifierTypeSyntax.self),
             baseIdentifier.name.text == "Swift"
         {

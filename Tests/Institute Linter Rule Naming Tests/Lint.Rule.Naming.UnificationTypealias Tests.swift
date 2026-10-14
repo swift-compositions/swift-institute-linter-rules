@@ -48,6 +48,39 @@ extension Lint.Rule.`unification typealias Tests`.Unit {
 }
 
 extension Lint.Rule.`unification typealias Tests`.`Edge Case` {
+  @Test(arguments: [
+    ("sRGB", "SRGB"),
+    ("SRGB", "sRGB"),
+    ("srgb", "SRGB"),
+    ("sRGB", "Srgb"),
+    ("event", "Event"),
+    ("URL", "Url"),
+    ("évent", "Évent"),
+    ("`sRGB`", "SRGB"),
+    ("sRGB", "`SRGB`"),
+  ])
+  func `case-only leaf spellings preserve the domain name`(alias: String, leaf: String) {
+    let findings = Lint.Rule.`unification typealias Tests`.findings(
+      in: "public typealias \(alias) = Domain.Nested.\(leaf)"
+    )
+    #expect(findings.isEmpty)
+  }
+
+  @Test(arguments: [
+    ("sRGB", "SRGBA"),
+    ("SR_GB", "SRGB"),
+    ("_SRGB", "SRGB"),
+    ("évent", "Event"),
+    ("`sRGB`", "SRGBA"),
+  ])
+  func `different leaf names remain rename bridges`(alias: String, leaf: String) {
+    let findings = Lint.Rule.`unification typealias Tests`.findings(
+      in: "public typealias \(alias) = Domain.Nested.\(leaf)"
+    )
+    #expect(findings.count == 1)
+    #expect(findings.allSatisfy { $0.identifier == "unification typealias" })
+  }
+
   @Test
   func `same-leaf typealias is NOT flagged`() {
     // Handled by [API-NAME-004a] NamespaceAdoption instead.
