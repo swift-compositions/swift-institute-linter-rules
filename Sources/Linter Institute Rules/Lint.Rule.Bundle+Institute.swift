@@ -71,6 +71,7 @@ extension Lint.Rule.Bundle {
             .enable(.`platform floor`),
             .enable(.`upward layer edge`),
             .enable(.`module selector spelling`),
+            .enable(.`type name capital`),
             .enable(.`ascii identifier`),
             .enable(.`exported import`),
             .enable(.`comment in source`),

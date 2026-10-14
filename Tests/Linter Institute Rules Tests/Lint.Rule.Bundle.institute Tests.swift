@@ -59,6 +59,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
   "path dependency",
   "redirected dependency url",
   "apache license",
+  "type name capital",
   "canonical settings tail",
   "statement where expression fits",
   "existential parameter",
