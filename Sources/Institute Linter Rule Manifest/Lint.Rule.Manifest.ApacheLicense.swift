@@ -168,11 +168,11 @@ package func manifestApacheLicenseNormalized(_ text: Swift::String) -> Swift::St
   return result
 }
 
-internal let manifestApacheLicenseCanonical: Swift::String = manifestApacheLicenseNormalized(
+package let manifestApacheLicenseCanonical: Swift::String = manifestApacheLicenseNormalized(
   manifestApacheLicenseTerms
 )
 
-internal let manifestApacheLicenseTerms: Swift::String = """
+package let manifestApacheLicenseTerms: Swift::String = """
        TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
        1. Definitions.
@@ -347,7 +347,8 @@ internal let manifestApacheLicenseTerms: Swift::String = """
        END OF TERMS AND CONDITIONS
     """
 
-package func manifestLicenseNamesUpstreamHolder(_ license: Lint.Source.Index.License) -> Swift::Bool {
+package func manifestLicenseIsUpstream(_ license: Lint.Source.Index.License) -> Swift::Bool {
   guard case .text(let text) = license else { return false }
-  return manifestLicenseNamesUpstreamHolder(text)
+  return !manifestApacheLicenseNormalized(text).contains(manifestApacheLicenseCanonical)
+    && manifestLicenseNamesUpstreamHolder(text)
 }

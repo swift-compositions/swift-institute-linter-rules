@@ -46,7 +46,7 @@ extension Lint.Rule {
       ),
     ],
     observe: Lint.Rule.measured { source, severity in
-      if manifestLicenseNamesUpstreamHolder(source.index.license) { return [] }
+      if manifestLicenseIsUpstream(source.index.license) { return [] }
       let path = source.file.filePath
       guard path.hasPrefix("Sources/") || path.contains("/Sources/") else {
         return []

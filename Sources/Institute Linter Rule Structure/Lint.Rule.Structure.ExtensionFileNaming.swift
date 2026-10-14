@@ -15,6 +15,13 @@ extension Lint.Rule {
         license: .text("MIT License\n\nCopyright (c) 2025 Point-Free, Inc.\n\nPermission is hereby granted")
       ),
       .init(
+        id: "extension file naming apache with upstream notice",
+        source: "extension Array.Dynamic { func iterate() {} }",
+        path: "Sources/Structure Core/Array.Dynamic+Iteration.swift",
+        expectation: .findings(1),
+        license: .text(manifestApacheLicenseTerms + "\n\nCopyright (c) 2019 Point-Free, Inc.\n\nPermission is hereby granted")
+      ),
+      .init(
         id: "extension file naming own licensed package",
         source: "extension Array.Dynamic { func iterate() {} }",
         path: "Sources/Structure Core/Array.Dynamic+Iteration.swift",
@@ -71,7 +78,7 @@ extension Lint.Rule {
       ),
     ],
     observe: Lint.Rule.measured { source, severity in
-      if manifestLicenseNamesUpstreamHolder(source.index.license) { return [] }
+      if manifestLicenseIsUpstream(source.index.license) { return [] }
       let path = source.file.filePath
       guard path.hasPrefix("Sources/") || path.contains("/Sources/") else {
         return []
