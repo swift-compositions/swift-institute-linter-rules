@@ -64,7 +64,7 @@ extension Lint.Rule.Bundle {
             .enable(.`bare string dependency`),
             .enable(.`path dependency`, severity: .error),
             .enable(.`redirected dependency url`, severity: .error),
-            .enable(.`apache license`),
+            .enable(.`apache license`, severity: .error),
             .enable(.`canonical settings tail`),
             .enable(.`statement where expression fits`),
             .enable(.`existential parameter`),
