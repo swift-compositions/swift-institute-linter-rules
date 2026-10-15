@@ -333,14 +333,6 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "Institute Linter Rule Conformance Tests",
-      dependencies: [
-        .target(name: "Institute Linter Rule Conformance"),
-        .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
-        .product(name: "SwiftParser", package: "swift-syntax"),
-      ]
-    ),
-    .testTarget(
       name: "Institute Linter Rule Closure Tests",
       dependencies: [
         .target(name: "Institute Linter Rule Closure"),
