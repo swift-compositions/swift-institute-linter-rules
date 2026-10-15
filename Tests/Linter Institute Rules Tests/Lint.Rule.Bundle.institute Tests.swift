@@ -99,7 +99,6 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
   "hoisted protocol alias",
   "int public parameter",
   "intermediate binding then return",
-  "leaf body typealias missing",
   "lifecycle order",
   "lifecycle typealias review",
   "minimal type body",
