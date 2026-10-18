@@ -47,8 +47,7 @@ internal let structureTypeTransformPlacementMessage: Swift::String =
 
 internal let structureTypeTransformPlacementPrefixes: [Swift::String] = ["to", "as"]
 
-internal func structureTypeTransformPlacementTransformSuffix(of name: Swift::String) -> Swift::String?
-{
+internal func structureTypeTransformPlacementTransformSuffix(of name: Swift::String) -> Swift::String? {
     for prefix in structureTypeTransformPlacementPrefixes {
         guard name.hasPrefix(prefix) else { continue }
         let suffix = String(name.dropFirst(prefix.count))
@@ -58,8 +57,7 @@ internal func structureTypeTransformPlacementTransformSuffix(of name: Swift::Str
     return nil
 }
 
-internal func structureTypeTransformPlacementReturnTypeLeafName(_ type: TypeSyntax) -> Swift::String?
-{
+internal func structureTypeTransformPlacementReturnTypeLeafName(_ type: TypeSyntax) -> Swift::String? {
     if let identifier = type.as(IdentifierTypeSyntax.self) {
         return identifier.name.text
     }

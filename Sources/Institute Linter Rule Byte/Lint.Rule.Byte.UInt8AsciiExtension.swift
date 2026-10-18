@@ -153,4 +153,3 @@ private func memberBlockDeclaresAsciiNamespaceMember(_ block: MemberBlockSyntax)
     }
     return false
 }
-

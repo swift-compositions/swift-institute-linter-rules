@@ -197,7 +197,8 @@ internal func platformLayerImportSpecNamespaceExemption(
     imports: Swift::Set<Swift::String>,
     members: Swift::Set<Swift::String>
 ) -> Swift::Set<Swift::String> {
-    let specUse = !members.isEmpty
+    let specUse =
+        !members.isEmpty
         && members.allSatisfy { member in
             platformLayerImportSpecNamespaceModules[member].map { imports.contains($0) } ?? false
         }

@@ -283,8 +283,7 @@ private func genericArgumentsBind(
     guard let clause else { return false }
     for argument in clause.arguments {
         guard let argumentType = argument.argument.as(TypeSyntax.self) else { continue }
-        if let identifier = argumentType.as(IdentifierTypeSyntax.self), identifier.name.text == name
-        {
+        if let identifier = argumentType.as(IdentifierTypeSyntax.self), identifier.name.text == name {
             return true
         }
         if usedAsGenericArgument(name, in: argumentType) { return true }

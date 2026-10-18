@@ -123,9 +123,11 @@ internal final class IdiomValueGenericTypeCollector: SyntaxVisitor {
         var qualified = name.text
         var current = node.parent
         while let candidate = current {
-            if let decl = candidate.as(StructDeclSyntax.self) { qualified = decl.name.text + "." + qualified }
-            else if let decl = candidate.as(EnumDeclSyntax.self) { qualified = decl.name.text + "." + qualified }
-            else if let decl = candidate.as(ExtensionDeclSyntax.self) {
+            if let decl = candidate.as(StructDeclSyntax.self) {
+                qualified = decl.name.text + "." + qualified
+            } else if let decl = candidate.as(EnumDeclSyntax.self) {
+                qualified = decl.name.text + "." + qualified
+            } else if let decl = candidate.as(ExtensionDeclSyntax.self) {
                 qualified = decl.extendedType.trimmedDescription + "." + qualified
                 break
             }

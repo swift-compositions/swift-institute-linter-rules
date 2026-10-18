@@ -126,8 +126,9 @@ internal final class NamingUnificationTypealiasVisitor: SyntaxVisitor {
         }
         if member.genericArgumentClause != nil { return .visitChildren }
         let rhsLeaf = member.name.text
-        guard Lint.Syntax.Identifier.unescaped(rhsLeaf).lowercased()
-            != Lint.Syntax.Identifier.unescaped(lhsName).lowercased()
+        guard
+            Lint.Syntax.Identifier.unescaped(rhsLeaf).lowercased()
+                != Lint.Syntax.Identifier.unescaped(lhsName).lowercased()
         else { return .visitChildren }
         if let baseIdentifier = member.baseType.as(IdentifierTypeSyntax.self),
             baseIdentifier.name.text == "Swift"

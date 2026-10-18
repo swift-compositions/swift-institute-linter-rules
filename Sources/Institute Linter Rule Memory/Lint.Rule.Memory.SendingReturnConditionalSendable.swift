@@ -268,8 +268,7 @@ private func sendingConditionalIsPublicOrPackageEffective(
     return false
 }
 
-private func sendingConditionalHasPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Swift::Bool
-{
+private func sendingConditionalHasPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Swift::Bool {
     for modifier in modifiers {
         switch modifier.name.tokenKind {
         case .keyword(.public), .keyword(.open), .keyword(.package): return true

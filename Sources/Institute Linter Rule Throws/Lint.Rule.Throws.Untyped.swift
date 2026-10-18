@@ -48,12 +48,11 @@ internal let throwsUntypedMessage: Swift::String =
     + "— a test rethrows to the runner and has no API surface)."
 
 @usableFromInline
-internal let throwsConformanceForcedAllowlist:
-    [(protocolSuffix: Swift::String, method: Swift::String)] = [
-        (protocolSuffix: "TestScoping", method: "provideScope"),
-        (protocolSuffix: "Encodable", method: "encode"),
-        (protocolSuffix: "Decodable", method: "init(from:)"),
-    ]
+internal let throwsConformanceForcedAllowlist: [(protocolSuffix: Swift::String, method: Swift::String)] = [
+    (protocolSuffix: "TestScoping", method: "provideScope"),
+    (protocolSuffix: "Encodable", method: "encode"),
+    (protocolSuffix: "Decodable", method: "init(from:)"),
+]
 
 internal final class ThrowsUntypedVisitor: SyntaxVisitor {
     let source: Source.File

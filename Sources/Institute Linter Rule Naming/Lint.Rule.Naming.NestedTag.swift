@@ -153,10 +153,10 @@ private let nestedTagMarkerProtocols: Swift::Set<Swift::String> = [
 
 private func nestedTagConformsBeyondMarkers(inheritance: InheritanceClauseSyntax?) -> Swift::Bool {
     inheritance?.inheritedTypes.contains { inherited in
-            inherited.type.is(SuppressedTypeSyntax.self) == false
-                && !nestedTagMarkerProtocols.contains(
-                    inherited.type.trimmedDescription.split(separator: ".").last.map(Swift::String.init) ?? ""
-                )
+        inherited.type.is(SuppressedTypeSyntax.self) == false
+            && !nestedTagMarkerProtocols.contains(
+                inherited.type.trimmedDescription.split(separator: ".").last.map(Swift::String.init) ?? ""
+            )
     } ?? false
 }
 

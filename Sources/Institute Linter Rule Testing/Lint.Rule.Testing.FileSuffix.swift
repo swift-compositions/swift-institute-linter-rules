@@ -1,5 +1,5 @@
-public import Lint
 internal import Institute_Linter_Rule_Manifest
+public import Lint
 internal import SwiftSyntax
 
 extension Lint.Rule {
