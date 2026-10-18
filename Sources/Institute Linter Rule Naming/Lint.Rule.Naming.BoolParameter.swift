@@ -61,8 +61,10 @@ private func namingBoolParameterIsBoolType(_ type: TypeSyntax) -> Bool {
     while let attributed = current.as(AttributedTypeSyntax.self) {
         current = attributed.baseType
     }
-    while let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1 {
-        current = tuple.elements.first!.type
+    while let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1,
+        let element = tuple.elements.first
+    {
+        current = element.type
     }
     if let identifier = current.as(IdentifierTypeSyntax.self) {
         return identifier.name.text == "Bool"

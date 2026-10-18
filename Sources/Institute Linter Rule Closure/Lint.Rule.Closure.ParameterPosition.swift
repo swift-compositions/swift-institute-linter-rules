@@ -47,8 +47,10 @@ internal let closureParameterPositionMessage: Swift::String =
 
 internal func isClosureType(_ type: TypeSyntax) -> Swift::Bool {
     var current = closureStrippingWrapperTypes(type)
-    while let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1 {
-        current = tuple.elements.first!.type
+    while let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1,
+        let element = tuple.elements.first
+    {
+        current = element.type
     }
     return current.is(FunctionTypeSyntax.self)
 }
