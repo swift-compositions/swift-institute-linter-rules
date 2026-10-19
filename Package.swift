@@ -128,6 +128,7 @@ let package = Package(
         .package(url: "https://github.com/swift-atoms/swift-byte.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-text.git", branch: "main", traits: ["Byte"]),
         .package(url: "https://github.com/swift-compositions/swift-linter-rules.git", branch: "main"),
+        .package(url: "https://github.com/swift-standards/swift-spm-standard.git", branch: "main"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "603.0.2"..<"604.0.0"),
     ],
     targets: [
@@ -195,6 +196,8 @@ let package = Package(
             dependencies: [
                 .product(name: "Lint", package: "swift-lint"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SPM Standard", package: "swift-spm-standard"),
+                .product(name: "Byte", package: "swift-byte"),
             ]
         ),
         .target(

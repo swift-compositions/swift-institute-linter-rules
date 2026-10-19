@@ -37,7 +37,7 @@ extension Lint.Rule {
             ),
         ],
         observe: { source, severity in
-            guard manifestIsPackageManifest(source.file.filePath),
+            guard manifestIsPackageManifest(source.file.filePath, path: source.path.underlying, text: source.tree.description),
                 let layer = manifestLayer(ofPath: source.file.filePath)
             else {
                 return Lint.Rule.Observation(

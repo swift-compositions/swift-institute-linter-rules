@@ -41,6 +41,20 @@ extension Lint.Rule {
                 expectation: .clean
             ),
             .init(
+                id: "package policy revision 1 nested non-manifest",
+                source: "// swift-tools-version: 6.3\n",
+                path: "Tests/Fixtures/plain/Package.swift",
+                expectation: .clean,
+                applicability: .inapplicable
+            ),
+            .init(
+                id: "package policy revision 1 nested manifest",
+                source: "// swift-tools-version: 6.3\nimport PackageDescription\n"
+                    + "let package = Package(name: \"Fixture\", targets: [], swiftLanguageModes: [.v6])",
+                path: "Tests/Package.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "package policy revision 1 versioned manifest",
                 source: "// swift-tools-version: 6.4\nimport PackageDescription\n"
                     + "let package = Package(name: \"Fixture\", targets: [], swiftLanguageModes: [.v6])",
@@ -49,7 +63,7 @@ extension Lint.Rule {
             ),
         ],
         observe: { source, severity in
-            guard manifestIsPackageManifest(source.file.filePath) else {
+            guard manifestIsPackageManifest(source.file.filePath, path: source.path.underlying, text: source.tree.description) else {
                 return Lint.Rule.Observation(
                     findings: [],
                     coverage: .measured,

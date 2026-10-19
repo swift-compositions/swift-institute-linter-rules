@@ -29,7 +29,7 @@ extension Lint.Rule {
             ),
         ],
         observe: { source, severity in
-            guard manifestIsPackageManifest(source.file.filePath) else {
+            guard manifestIsPackageManifest(source.file.filePath, path: source.path.underlying, text: source.tree.description) else {
                 return Lint.Rule.Observation(
                     findings: [],
                     coverage: .measured,
@@ -68,7 +68,7 @@ extension Lint.Rule {
             )
         },
         repair: { source in
-            guard manifestIsPackageManifest(source.file.filePath) else { return .unchanged }
+            guard manifestIsPackageManifest(source.file.filePath, path: source.path.underlying, text: source.tree.description) else { return .unchanged }
             let text = source.tree.description
             let tail = text.range(of: manifestCanonicalSettingsTailHead).map { Swift::String(text[$0.lowerBound...]) }
             return

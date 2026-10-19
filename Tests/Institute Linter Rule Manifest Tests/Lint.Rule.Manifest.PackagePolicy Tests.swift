@@ -282,3 +282,29 @@ extension Lint.Rule.`package policy revision 1 Tests`.Integration {
         #expect(observation.coverage == .measured)
     }
 }
+
+extension Lint.Rule.`package policy revision 1 Tests`.`Edge Case` {
+    @Test func `the root manifest is a manifest whatever it contains`() {
+        #expect(manifestIsPackageManifest("/repo/Package.swift", path: "Package.swift", text: "// swift-tools-version: 6.4\n"))
+    }
+
+    @Test func `a nested Package.swift that only names a tools version is not a manifest`() {
+        #expect(
+            !manifestIsPackageManifest(
+                "/repo/Tests/Fixtures/plain/Package.swift",
+                path: "Tests/Fixtures/plain/Package.swift",
+                text: "// swift-tools-version: 6.3\n"
+            )
+        )
+    }
+
+    @Test func `a nested real manifest is a manifest`() {
+        #expect(
+            manifestIsPackageManifest(
+                "/repo/Tests/Package.swift",
+                path: "Tests/Package.swift",
+                text: "// swift-tools-version: 6.4\nimport PackageDescription\nlet package = Package(name: \"testing\")\n"
+            )
+        )
+    }
+}
