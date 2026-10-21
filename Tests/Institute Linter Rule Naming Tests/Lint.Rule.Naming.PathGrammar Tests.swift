@@ -73,6 +73,15 @@ extension Lint.Rule.`path name grammar Tests`.Unit {
         #expect(findings.first?.message.contains("file name segment") == true)
     }
 
+    @Test
+    func `a repeated compound segment is reported once`() {
+        let findings = Lint.Rule.`path name grammar Tests`.findings(
+            in: "extension PaymentMethods { struct PaymentMethods {} }",
+            file: "Sources/Payments/PaymentMethods.PaymentMethods.swift"
+        )
+        #expect(findings.count == 1)
+    }
+
     // Negative controls — current correct spellings.
     @Test
     func `spaced directory and dotted basename are permitted`() {

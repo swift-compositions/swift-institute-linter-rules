@@ -98,6 +98,7 @@ internal func namingPathGrammarFindings(
 
     var records: [Diagnostic.Record] = []
     func emit(_ message: Swift::String) {
+        guard !records.contains(where: { $0.message == message }) else { return }
         records.append(
             Diagnostic.Record(
                 location: Source.Location(
