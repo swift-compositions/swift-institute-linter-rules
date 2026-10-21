@@ -28,6 +28,24 @@ extension Lint.Rule {
                 expectation: .findings(1)
             ),
             .init(
+                id: "test target naming computed names",
+                source: "extension String { static let fixture: Self = \"Fixture\"; "
+                    + "var tests: Self { self + \" Tests\" } }; "
+                    + "let package = Package(name: \"Fixture\", targets: ["
+                    + ".target(name: .fixture), .testTarget(name: .fixture.tests)])",
+                path: "Package.swift",
+                expectation: .clean
+            ),
+            .init(
+                id: "test target naming computed names missing suffix",
+                source: "extension String { static let fixture: Self = \"Fixture\"; "
+                    + "static let checks: Self = \"FixtureChecks\" }; "
+                    + "let package = Package(name: \"Fixture\", targets: ["
+                    + ".target(name: .fixture), .testTarget(name: .checks)])",
+                path: "Package.swift",
+                expectation: .findings(1)
+            ),
+            .init(
                 id: "test target naming outside manifest",
                 source: "let target = Target.testTarget(name: \"FixtureTests\")",
                 path: "Sources/Fixture/Fixture.swift",
@@ -44,6 +62,7 @@ extension Lint.Rule {
                 )
             }
             let visitor = ManifestTestTargetNamingVisitor(viewMode: .sourceAccurate)
+            visitor.collectManifestAccessors(source.tree)
             visitor.walk(source.tree)
             let subjects = Swift::Set(visitor.targets.map(\.name))
             var seen: Swift::Set<Swift::String> = []
@@ -77,7 +96,11 @@ extension Lint.Rule {
             }
             let coverage: Lint.Rule.Coverage =
                 visitor.unnamed
-                ? .unmeasured(.unsupportedSourceShape("target name is not a string literal"))
+                ? .unmeasured(
+                    .unsupportedSourceShape(
+                        visitor.unhandledSourceShape ?? "target name is not a string literal"
+                    )
+                )
                 : .measured
             return Lint.Rule.Observation(findings: findings, coverage: coverage)
         }
@@ -97,6 +120,23 @@ internal final class ManifestTestTargetNamingVisitor: SyntaxVisitor {
     var targets: [Declared] = []
     var testTargets: [Declared] = []
     var unnamed = false
+    var unhandledSourceShape: Swift::String?
+    private var stringStaticAccessorBodies: [Swift::String: ExprSyntax] = [:]
+    private var stringInstanceAccessorBodies: [Swift::String: ExprSyntax] = [:]
+
+    internal func collectManifestAccessors(_ file: SourceFileSyntax) {
+        let stringTypes: Swift::Set<Swift::String> = ["String", "Swift.String"]
+        stringStaticAccessorBodies = manifestAccessorBodies(
+            in: file,
+            extendedTypes: stringTypes,
+            static: true
+        )
+        stringInstanceAccessorBodies = manifestAccessorBodies(
+            in: file,
+            extendedTypes: stringTypes,
+            static: false
+        )
+    }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self) else {
@@ -109,10 +149,15 @@ internal final class ManifestTestTargetNamingVisitor: SyntaxVisitor {
         else {
             return .visitChildren
         }
-        guard let literal = argument.expression.as(StringLiteralExprSyntax.self),
-            let name = manifestStringLiteralText(literal)
+        guard
+            let name = manifestResolvedString(
+                argument.expression,
+                staticAccessors: stringStaticAccessorBodies,
+                instanceAccessors: stringInstanceAccessorBodies,
+                unhandledSourceShape: &unhandledSourceShape
+            )
         else {
-            unnamed = unnamed || isTest
+            unnamed = true
             return .visitChildren
         }
         let declared = Declared(name: name, position: node.positionAfterSkippingLeadingTrivia)

@@ -135,3 +135,50 @@ extension Lint.Rule.`test target naming Tests`.Integration {
         #expect(observation.findings.count == 1)
     }
 }
+
+extension Lint.Rule.`test target naming Tests`.`Edge Case` {
+    @Test
+    func `target names computed through String accessors are resolved`() {
+        let observation = Lint.Rule.`test target naming Tests`.observation(
+            """
+            extension String {
+                static let products: Self = "Products"
+                var live: Self { self + " Live" }
+                var tests: Self { self + " Tests" }
+            }
+            let package = Package(
+                name: "swift-products",
+                targets: [
+                    .target(name: .products),
+                    .target(name: .products.live),
+                    .testTarget(name: .products.tests),
+                    .testTarget(name: .products.live.tests),
+                ]
+            )
+            """
+        )
+        #expect(observation.coverage == .measured)
+        #expect(observation.findings.isEmpty)
+    }
+
+    @Test
+    func `a computed test target name that names no target is measured and flagged`() {
+        let observation = Lint.Rule.`test target naming Tests`.observation(
+            """
+            extension String {
+                static let products: Self = "Products"
+                var tests: Self { self + " Tests" }
+            }
+            let package = Package(
+                name: "swift-products",
+                targets: [
+                    .target(name: .products),
+                    .testTarget(name: "Other".tests),
+                ]
+            )
+            """
+        )
+        #expect(observation.coverage == .measured)
+        #expect(observation.findings.count == 1)
+    }
+}
