@@ -104,6 +104,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "minimal type body",
     "namespace adoption typealias",
     "nested tag",
+    "noncopyable protocol shim dependency",
     "noncopyable error",
     "nonisolated unsafe without invariant",
     "optimize suppression attribute",

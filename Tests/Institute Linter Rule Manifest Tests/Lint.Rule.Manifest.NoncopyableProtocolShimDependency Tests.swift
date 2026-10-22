@@ -14,8 +14,12 @@ extension Lint.Rule {
 
 extension Lint.Rule.`noncopyable protocol shim dependency Tests` {
     static func findings(_ manifest: Swift::String) -> [Diagnostic.Record] {
-        Lint.Rule.`noncopyable protocol shim dependency`
-            .observe(Lint.Source.parsed(from: manifest, file: "Package.swift"), .warning)
+        let rule = Lint.Rule.`noncopyable protocol shim dependency`
+        return rule
+            .observe(
+                Lint.Source.parsed(from: manifest, file: "Package.swift"),
+                rule.severity.default
+            )
             .findings
     }
 }
@@ -23,6 +27,7 @@ extension Lint.Rule.`noncopyable protocol shim dependency Tests` {
 extension Lint.Rule.`noncopyable protocol shim dependency Tests`.Unit {
     @Test
     func `a noncopyable protocol shim dependency warns`() {
+        #expect(Lint.Rule.`noncopyable protocol shim dependency`.severity.default == .warning)
         let findings = Lint.Rule.`noncopyable protocol shim dependency Tests`.findings(
             """
             let package = Package(

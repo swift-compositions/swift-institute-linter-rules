@@ -61,6 +61,7 @@ extension Lint.Rule.Bundle {
             .enable(.`sli literal`),
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
+            .enable(.`noncopyable protocol shim dependency`),
             .enable(.`path dependency`, severity: .error),
             .enable(.`redirected dependency url`, severity: .error),
             .enable(.`apache license`, severity: .error),
