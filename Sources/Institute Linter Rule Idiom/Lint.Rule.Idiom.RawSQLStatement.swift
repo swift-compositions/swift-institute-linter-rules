@@ -137,7 +137,7 @@ internal final class IdiomRawSQLStatementVisitor: SyntaxVisitor {
         }
         let isSQLRequest = name == "SQLRequest"
         let isRowFetch = idiomRawSQLIsRowFetch(node.calledExpression)
-        guard (hasSQLArgument || isSQLRequest || isRowFetch),
+        guard hasSQLArgument || isSQLRequest || isRowFetch,
             idiomRawSQLStatementLiteral(in: node.arguments) != nil
         else { return .visitChildren }
         emit(at: node.positionAfterSkippingLeadingTrivia)
