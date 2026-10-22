@@ -36,11 +36,13 @@ extension Lint.Rule {
             ),
         ],
         observe: { source, severity in
-            guard manifestIsPackageManifest(
-                source.file.filePath,
-                path: source.path.underlying,
-                text: source.tree.description
-            ) else {
+            guard
+                manifestIsPackageManifest(
+                    source.file.filePath,
+                    path: source.path.underlying,
+                    text: source.tree.description
+                )
+            else {
                 return Lint.Rule.Observation(
                     findings: [],
                     coverage: .measured,
@@ -61,9 +63,10 @@ extension Lint.Rule {
             visitor.collectManifestAccessors(source.tree)
             visitor.walk(source.tree)
             let findings = visitor.resolvedMatches()
-            let coverage: Lint.Rule.Coverage = visitor.unhandledSourceShape.map {
-                .unmeasured(.unsupportedSourceShape($0))
-            } ?? .measured
+            let coverage: Lint.Rule.Coverage =
+                visitor.unhandledSourceShape.map {
+                    .unmeasured(.unsupportedSourceShape($0))
+                } ?? .measured
             return Lint.Rule.Observation(findings: findings, coverage: coverage)
         }
     )
@@ -239,7 +242,8 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
             let url = resolvedString(urlArgument.expression),
             manifestGitHubRepository(url) == "swiftlang/swift-syntax"
         else { return }
-        let name = node.arguments.first(where: { $0.label?.text == "name" })
+        let name =
+            node.arguments.first(where: { $0.label?.text == "name" })
             .flatMap { resolvedString($0.expression) }
             ?? "swift-syntax"
         swiftSyntaxPackageNames.insert(name)
@@ -265,7 +269,8 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
         if let reference = expression.as(DeclReferenceExprSyntax.self) {
             let name = reference.baseName.text
             guard !visited.contains(name), let body = fileScopeBindings[name] else {
-                unhandledSourceShape = unhandledSourceShape
+                unhandledSourceShape =
+                    unhandledSourceShape
                     ?? "unresolved dependency array reference '\(name)'"
                 return []
             }
@@ -276,7 +281,8 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
                 .filter { $0.as(BinaryOperatorExprSyntax.self) == nil }
                 .flatMap { resolvedElements($0, visited: visited) }
         }
-        unhandledSourceShape = unhandledSourceShape
+        unhandledSourceShape =
+            unhandledSourceShape
             ?? "computed dependency array '\(expression.trimmedDescription)'"
         return []
     }
@@ -300,10 +306,13 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
         {
             let factory = member.declName.baseName.text
             if factory == "target" || factory == "byName" {
-                guard let argument = call.arguments.first(where: {
-                    $0.label?.text == "name" || $0.label == nil
-                }), let name = resolvedString(argument.expression) else {
-                    unhandledSourceShape = unhandledSourceShape
+                guard
+                    let argument = call.arguments.first(where: {
+                        $0.label?.text == "name" || $0.label == nil
+                    }), let name = resolvedString(argument.expression)
+                else {
+                    unhandledSourceShape =
+                        unhandledSourceShape
                         ?? "computed local target dependency '\(expression.trimmedDescription)'"
                     return nil
                 }
@@ -318,7 +327,8 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
                 guard let argument = call.arguments.first(where: { $0.label?.text == "name" }),
                     let name = resolvedString(argument.expression)
                 else {
-                    unhandledSourceShape = unhandledSourceShape
+                    unhandledSourceShape =
+                        unhandledSourceShape
                         ?? "computed product dependency '\(expression.trimmedDescription)'"
                     return nil
                 }
@@ -335,7 +345,8 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
         if let member = expression.as(MemberAccessExprSyntax.self), member.base == nil {
             let name = member.declName.baseName.text
             guard !visited.contains(name), let body = dependencyAccessorBodies[name] else {
-                unhandledSourceShape = unhandledSourceShape
+                unhandledSourceShape =
+                    unhandledSourceShape
                     ?? "unresolved target dependency accessor '\(name)'"
                 return nil
             }
@@ -351,7 +362,8 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
         if let reference = expression.as(DeclReferenceExprSyntax.self) {
             let name = reference.baseName.text
             guard !visited.contains(name), let body = fileScopeBindings[name] else {
-                unhandledSourceShape = unhandledSourceShape
+                unhandledSourceShape =
+                    unhandledSourceShape
                     ?? "unresolved target dependency reference '\(name)'"
                 return nil
             }
@@ -364,7 +376,8 @@ internal final class ManifestMacroHostOnlyVisitor: SyntaxVisitor {
                 )
             }
         }
-        unhandledSourceShape = unhandledSourceShape
+        unhandledSourceShape =
+            unhandledSourceShape
             ?? "unhandled target dependency '\(expression.trimmedDescription)'"
         return nil
     }
