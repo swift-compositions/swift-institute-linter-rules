@@ -102,6 +102,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "intermediate binding then return",
     "lifecycle order",
     "lifecycle typealias review",
+    "literal conformance shadows validating init",
     "minimal type body",
     "namespace adoption typealias",
     "nested tag",
