@@ -2,6 +2,7 @@ import Foundation
 import Lint
 import Linter_Rule_Package
 import Linter_Rules
+import Linter_Rules_Test_Support
 import Testing
 
 #if canImport(Darwin) || canImport(Glibc) || canImport(Musl) || canImport(Android)
