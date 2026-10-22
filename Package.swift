@@ -145,6 +145,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Byte", package: "swift-byte"),
                 .product(name: "Lint", package: "swift-lint"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ]
         ),
