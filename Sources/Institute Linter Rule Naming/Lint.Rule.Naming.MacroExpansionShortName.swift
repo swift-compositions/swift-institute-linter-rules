@@ -90,11 +90,12 @@ internal final class NamingMacroExpansionShortNameVisitor: SyntaxVisitor {
             node.modifiers.contains(where: {
                 $0.name.text == "static" || $0.name.text == "class"
             }),
-            namingMacroExpansionShortNameIsMacroImplementation(node)
+            namingMacroExpansionShortNameIsMacroImplementation(node),
+            let body = node.body
         else { return .visitChildren }
 
         let finder = NamingMacroExpansionShortNameFinder(viewMode: .sourceAccurate)
-        finder.walk(node.body)
+        finder.walk(body)
         for finding in finder.matches {
             let location = converter.location(
                 for: finding.literal.openingQuote.positionAfterSkippingLeadingTrivia
