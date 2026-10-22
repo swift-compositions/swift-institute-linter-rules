@@ -404,7 +404,8 @@ let package = Package(
                 .target(name: "Institute Linter Rule SQL"),
                 .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
-            ]
+            ],
+            exclude: ["Fixtures"]
         ),
         .testTarget(
             name: "Institute Linter Rule Structure Tests",

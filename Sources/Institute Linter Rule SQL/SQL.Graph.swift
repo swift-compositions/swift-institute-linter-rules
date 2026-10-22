@@ -15,23 +15,26 @@ extension SQL {
             sourceRoots = visitor.sourceRoots
             targets = visitor.targets
         }
+    }
+}
 
-        internal func isLibrary(sourcePath: Swift::String) -> Swift::Bool {
-            let path = sourcePath.replacing("\\", with: "/")
-            let explicit = sourceRoots
+extension SQL.Graph {
+    internal func isLibrary(sourcePath: Swift::String) -> Swift::Bool {
+        let path = sourcePath.replacing("\\", with: "/")
+        let explicit =
+            sourceRoots
                 .filter { path == $0.value || path.hasPrefix($0.value + "/") }
                 .max { $0.value.count < $1.value.count }?
                 .key
-            let target = explicit ?? defaultTarget(path)
-            guard let target, targets.contains(target) else { return false }
-            return !executable.contains(target)
-        }
+        let target = explicit ?? defaultTarget(path)
+        guard let target, targets.contains(target) else { return false }
+        return !executable.contains(target)
+    }
 
-        private func defaultTarget(_ path: Swift::String) -> Swift::String? {
-            let components = path.split(separator: "/", omittingEmptySubsequences: true)
-            guard components.count >= 3, components[0] == "Sources" else { return nil }
-            return Swift::String(components[1])
-        }
+    private func defaultTarget(_ path: Swift::String) -> Swift::String? {
+        let components = path.split(separator: "/", omittingEmptySubsequences: true)
+        guard components.count >= 3, components[0] == "Sources" else { return nil }
+        return Swift::String(components[1])
     }
 }
 
