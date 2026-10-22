@@ -294,6 +294,7 @@ let package = Package(
                 // A5 move (2026-07-07) — relocated from swift-primitives-linter-rules.
                 .target(name: "Institute Linter Rule RawValue"),
                 .target(name: "Institute Linter Rule Cardinal"),
+                .product(name: "Linter Rule Package", package: "swift-linter-rules"),
                 .product(name: "Linter Rules", package: "swift-linter-rules"),
             ]
         ),
@@ -455,6 +456,7 @@ let package = Package(
             name: "Linter Institute Rules Tests",
             dependencies: [
                 .target(name: "Linter Institute Rules"),
+                .product(name: "Linter Rule Package", package: "swift-linter-rules"),
                 .product(name: "Linter Rules", package: "swift-linter-rules"),
                 .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
             ]

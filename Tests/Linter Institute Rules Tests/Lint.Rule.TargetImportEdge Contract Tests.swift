@@ -1,5 +1,6 @@
 import Foundation
 import Lint
+import Linter_Rule_Package
 import Linter_Rules
 import Testing
 
@@ -114,14 +115,14 @@ import Testing
                 files: [
                     "Sources/Consumer/Consumer.swift": "import Dependency\n",
                     "Dependency/Package.swift": """
-                        // swift-tools-version: 6.4
-                        import PackageDescription
-                        let package = Package(
-                            name: "dependency",
-                            products: [.library(name: "Library", targets: ["Dependency"])],
-                            targets: [.target(name: "Dependency")]
-                        )
-                        """,
+                    // swift-tools-version: 6.4
+                    import PackageDescription
+                    let package = Package(
+                        name: "dependency",
+                        products: [.library(name: "Library", targets: ["Dependency"])],
+                        targets: [.target(name: "Dependency")]
+                    )
+                    """,
                 ]
             )
             defer { fixture.remove() }
@@ -143,17 +144,17 @@ import Testing
                 files: [
                     "Sources/Consumer/Consumer.swift": "#if canImport(Transitive)\nimport Transitive\n#endif\n",
                     "Dependency/Package.swift": """
-                        // swift-tools-version: 6.4
-                        import PackageDescription
-                        let package = Package(
-                            name: "dependency",
-                            products: [
-                                .library(name: "Facade", targets: ["Facade"]),
-                                .library(name: "Transitive", targets: ["Transitive"]),
-                            ],
-                            targets: [.target(name: "Facade"), .target(name: "Transitive")]
-                        )
-                        """,
+                    // swift-tools-version: 6.4
+                    import PackageDescription
+                    let package = Package(
+                        name: "dependency",
+                        products: [
+                            .library(name: "Facade", targets: ["Facade"]),
+                            .library(name: "Transitive", targets: ["Transitive"]),
+                        ],
+                        targets: [.target(name: "Facade"), .target(name: "Transitive")]
+                    )
+                    """,
                 ]
             )
             defer { fixture.remove() }

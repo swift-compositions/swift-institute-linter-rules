@@ -17,6 +17,7 @@ internal import Institute_Linter_Rule_Throws
 internal import Institute_Linter_Rule_Try
 internal import Institute_Linter_Rule_Unchecked
 public import Lint
+internal import Linter_Rule_Package
 internal import Linter_Rules
 
 extension Lint.Rule.Bundle {
