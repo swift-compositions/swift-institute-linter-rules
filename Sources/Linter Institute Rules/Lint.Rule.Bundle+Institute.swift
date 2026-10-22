@@ -59,6 +59,7 @@ extension Lint.Rule.Bundle {
             .enable(.`enumerated with subscript`, severity: .error),
             .enable(.`intermediate binding then return`),
             .enable(.`literal conformance shadows validating init`),
+            .enable(.`leading dot builder statements`),
             .enable(.`counter loop iteration`),
             .enable(.`string utf8 scanning`),
             .enable(.`sli literal`),

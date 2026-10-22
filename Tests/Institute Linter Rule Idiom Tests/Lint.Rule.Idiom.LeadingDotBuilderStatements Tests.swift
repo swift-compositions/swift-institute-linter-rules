@@ -14,6 +14,7 @@ import Linter_Rules_Test_Support
 import SwiftParser
 import SwiftSyntax
 import Testing
+import Text
 
 @testable import Institute_Linter_Rule_Idiom
 
@@ -65,6 +66,18 @@ extension Lint.Rule.`leading dot builder statements Tests`.Unit {
             route {
                 .post
                 HTTP.Target.resource("greet")
+            }
+            """
+        let findings = Lint.Rule.`leading dot builder statements Tests`.findings(in: source)
+        #expect(findings.isEmpty)
+    }
+
+    @Test
+    func `semicolon creates an explicit expression boundary`() {
+        let source = """
+            route {
+                .post;
+                .resource("greet")
             }
             """
         let findings = Lint.Rule.`leading dot builder statements Tests`.findings(in: source)

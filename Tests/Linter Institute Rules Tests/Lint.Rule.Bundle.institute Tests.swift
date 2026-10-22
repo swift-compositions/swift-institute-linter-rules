@@ -103,6 +103,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "lifecycle order",
     "lifecycle typealias review",
     "literal conformance shadows validating init",
+    "leading dot builder statements",
     "minimal type body",
     "namespace adoption typealias",
     "nested tag",
