@@ -23,9 +23,9 @@ extension SQL.Graph {
         let path = sourcePath.replacing("\\", with: "/")
         let explicit =
             sourceRoots
-                .filter { path == $0.value || path.hasPrefix($0.value + "/") }
-                .max { $0.value.count < $1.value.count }?
-                .key
+            .filter { path == $0.value || path.hasPrefix($0.value + "/") }
+            .max { $0.value.count < $1.value.count }?
+            .key
         let target = explicit ?? defaultTarget(path)
         guard let target, targets.contains(target) else { return false }
         return !executable.contains(target)
