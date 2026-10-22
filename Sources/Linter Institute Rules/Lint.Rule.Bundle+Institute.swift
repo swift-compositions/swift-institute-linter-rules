@@ -13,10 +13,10 @@ internal import Institute_Linter_Rule_Platform
 internal import Institute_Linter_Rule_RawValue
 internal import Institute_Linter_Rule_Structure
 internal import Institute_Linter_Rule_Testing
-internal import Institute_Linter_Rule_Wording
 internal import Institute_Linter_Rule_Throws
 internal import Institute_Linter_Rule_Try
 internal import Institute_Linter_Rule_Unchecked
+internal import Institute_Linter_Rule_Wording
 public import Lint
 internal import Linter_Rules
 
