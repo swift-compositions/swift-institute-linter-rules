@@ -130,8 +130,11 @@ let package = Package(
             branch: "main"
         ),
         .package(url: "https://github.com/swift-atoms/swift-byte.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-either.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-text.git", branch: "main", traits: ["Byte"]),
+        .package(url: "https://github.com/swift-compositions/swift-file-system.git", branch: "main"),
         .package(url: "https://github.com/swift-compositions/swift-linter-rules.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-paths.git", branch: "main"),
         .package(url: "https://github.com/swift-standards/swift-spm-standard.git", branch: "main"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "603.0.2"..<"604.0.0"),
     ],
@@ -221,7 +224,11 @@ let package = Package(
         .target(
             name: "Institute Linter Rule Workflow",
             dependencies: [
+                .product(name: "Byte", package: "swift-byte"),
+                .product(name: "Either", package: "swift-either"),
+                .product(name: "File System Core", package: "swift-file-system"),
                 .product(name: "Lint", package: "swift-lint"),
+                .product(name: "Paths", package: "swift-paths"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ]
         ),
@@ -399,6 +406,8 @@ let package = Package(
             name: "Institute Linter Rule Workflow Tests",
             dependencies: [
                 .target(name: "Institute Linter Rule Workflow"),
+                .product(name: "Byte", package: "swift-byte"),
+                .product(name: "File System Test Support", package: "swift-file-system"),
                 .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
             ]

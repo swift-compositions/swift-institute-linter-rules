@@ -17,15 +17,10 @@ import Testing
 
 @testable import Linter_Institute_Rules
 
-/// Converts every rule declared across the 18 institute rule packs to a
-/// hand-maintained master list. This is the same enumeration the #1
-/// source-level review performed by hand, since amended: 90 declared
-/// rules at #26 origination, +3 (#29/#30/#31 — sending return conditional
-/// sendable state, protocol sentinel under generic front door, foundation
-/// integration leaf target) landed enabled without a matching update
-/// here, discovered and backfilled here — 93 declared rules, 92 enabled +
-/// 1 deliberate exclusion — this test converts that receipt into a
-/// standing gate: whoever adds or removes a rule from a pack MUST update
+/// Converts every rule declared across the 19 institute rule packs to a
+/// hand-maintained master list. The current contract is 121 declared rules,
+/// 116 enabled and 5 deliberate exclusions. Whoever adds or removes a rule
+/// from a pack MUST update
 /// this list in the same change, or the composition-drift test below
 /// fails and says exactly which id is missing or extra.
 ///
@@ -153,6 +148,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "unsafe assignment granularity",
     "untyped throws",
     "variable named impl",
+    "workflow job all steps conditional",
     "wrapper backing exposed",
     "xctest import",
     "zero or one literal",
@@ -191,7 +187,7 @@ struct `Lint Rule Bundle institute Tests` {
 /// `Lint.Rule.Bundle.institute` is `Lint.Rule.Bundle.universal + [...]` —
 /// the FULL enabled-id set therefore always contains every universal id
 /// too, by construction. Every test below that means to reason about
-/// "what THIS package's 18 rule packs contribute" first subtracts the
+/// "what THIS package's 19 rule packs contribute" first subtracts the
 /// universal tier's own ids back out, or it would be comparing the
 /// master list against a set it can never equal.
 private func instituteContributedEnabledIDs() -> Swift::Set<Swift::String> {
@@ -254,7 +250,7 @@ extension `Lint Rule Bundle institute Tests`.`Id integrity` {
 
     @Test
     func `institute-declared ids do not collide with the universal-tier bundle`() {
-        // Compares the 18 institute packs' OWN declared ids (not the
+        // Compares the 19 institute packs' OWN declared ids (not the
         // concatenated bundle, which trivially contains every universal id)
         // against the universal tier.
         let universalIDs = Swift::Set(Lint.Rule.Bundle.universal.map(\.rule.id.underlying))

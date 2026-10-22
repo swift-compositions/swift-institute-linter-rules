@@ -81,6 +81,7 @@ Rule packs, one library product each:
 | `Manifest` | Package manifest dependency-declaration shape |
 | `Memory` | Noncopyable extension constraints, pointer arithmetic, Sendable struct shape, unsafe-assignment granularity, unchecked-Sendable anchors |
 | `Platform` | C types in public API, platform conditionals, dead cases per platform, platform namespace layering |
+| `Workflow` | GitHub Actions job and step condition placement |
 | `RawValue` | `.rawValue` chaining and bit-pattern conversion anti-patterns, Tagged-newtype public initializer and unchecked-construction shapes |
 | `Structure` | Single type per file, raw-value access, wrapper shapes, minimal type bodies, hoisted protocol aliases |
 | `Testing` | Test function naming, performance-suite serialization |
