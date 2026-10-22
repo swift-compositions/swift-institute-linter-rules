@@ -14,9 +14,12 @@ extension Lint.Rule {
 }
 
 extension Lint.Rule.`coder family layering Tests` {
-    static func findings(_ manifest: Swift::String) -> [Diagnostic.Record] {
+    static func findings(
+        _ source: Swift::String,
+        file: Swift::String = "Package.swift"
+    ) -> [Diagnostic.Record] {
         Lint.Rule.`coder family layering`
-            .observe(Lint.Source.parsed(from: manifest, file: "Package.swift"), .warning)
+            .observe(Lint.Source.parsed(from: source, file: file), .warning)
             .findings
     }
 
@@ -97,6 +100,21 @@ extension Lint.Rule.`coder family layering Tests`.`Edge Case` {
 
 extension Lint.Rule.`coder family layering Tests`.Integration {
     @Test
+    func `parser package rejects serializer packages`() {
+        let findings = Lint.Rule.`coder family layering Tests`.findings(
+            Lint.Rule.`coder family layering Tests`.manifest(
+                package: "swift-json-parser",
+                dependency: "swift-json-serializer"
+            )
+        )
+        #expect(findings.count == 1)
+        #expect(
+            findings[0].message
+                == "[coder family layering]: `swift-json-parser` must not depend on serializer packages or products; found dependency `swift-json-serializer`."
+        )
+    }
+
+    @Test
     func `parser package rejects serializer products`() {
         let findings = Lint.Rule.`coder family layering Tests`.findings(
             Lint.Rule.`coder family layering Tests`.manifest(
@@ -124,6 +142,32 @@ extension Lint.Rule.`coder family layering Tests`.Integration {
         #expect(
             findings[0].message
                 == "[coder family layering]: `swift-rfc-9112` must keep parsing and serializing dependencies and targets in its `swift-rfc-9112-coder` sibling; found dependency `swift-parser`."
+        )
+    }
+
+    @Test
+    func `rfc domain package rejects wire coding targets`() {
+        let manifest = "let package = Package(name: \"swift-rfc-9112\", targets: ["
+            + ".target(name: \"RFC 9112 Parser\")])"
+        let findings = Lint.Rule.`coder family layering Tests`.findings(manifest)
+        #expect(findings.count == 1)
+        #expect(
+            findings[0].message
+                == "[coder family layering]: `swift-rfc-9112` must keep parsing and serializing dependencies and targets in its `swift-rfc-9112-coder` sibling; found target `RFC 9112 Parser`."
+        )
+    }
+
+    @Test
+    func `rfc domain package rejects parse and serialize functions`() {
+        let source = "func parse() {}\nfunc serialize() {}"
+        let findings = Lint.Rule.`coder family layering Tests`.findings(
+            source,
+            file: "/workspace/swift-ietf/swift-rfc-9112/Sources/RFC 9112/Wire.swift"
+        )
+        #expect(findings.count == 2)
+        #expect(
+            findings[0].message
+                == "[coder family layering]: `swift-rfc-9112` must keep `parse` and `serialize` function declarations in its `swift-rfc-9112-coder` sibling; found function `parse`."
         )
     }
 }

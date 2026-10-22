@@ -54,6 +54,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "canimport conditional",
     "chained rawvalue access",
     "closure typed throws annotation",
+    "coder family layering",
     "compound identifier",
     // Naming grammar pair (#65, principal directive 2026-08-09).
     "manifest naming grammar",
