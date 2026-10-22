@@ -118,6 +118,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "property named flags",
     "protocol sentinel under generic front door",
     "raw value access",
+    "raw sql statement",
     "redundant prefix",
     "result wrapper for rethrows shim",
     "safe attribute undocumented",

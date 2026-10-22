@@ -59,6 +59,7 @@ extension Lint.Rule.Bundle {
             .enable(.`counter loop iteration`),
             .enable(.`string utf8 scanning`),
             .enable(.`sli literal`),
+            .enable(.`raw sql statement`),
             .enable(.`unknown default`),
             .enable(.`bare string dependency`),
             .enable(.`path dependency`, severity: .error),
