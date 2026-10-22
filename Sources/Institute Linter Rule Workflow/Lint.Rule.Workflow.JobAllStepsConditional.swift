@@ -237,7 +237,8 @@ private func workflowJobAllStepsConditionalLines(
     _ workflow: Swift.String
 ) -> [(number: Swift.Int, indent: Swift.Int, content: Swift.Substring)] {
     workflow.split(separator: "\n", omittingEmptySubsequences: false).enumerated().compactMap {
-        offset, raw in
+        offset,
+        raw in
         let line = raw.last == "\r" ? raw.dropLast() : raw[...]
         let indent = line.prefix(while: { $0 == " " }).count
         let content = line.dropFirst(indent)
