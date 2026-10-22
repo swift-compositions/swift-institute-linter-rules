@@ -31,6 +31,14 @@ extension Lint.Rule.`never body witness Tests`.Unit {
         )
         #expect(findings.count == 1)
     }
+
+    @Test
+    func `explicit Never associated type witness in a Core target is flagged`() {
+        let findings = Lint.Rule.`never body witness Tests`.findings(
+            "struct Leaf: Parsing { typealias Body = Never }"
+        )
+        #expect(findings.count == 1)
+    }
 }
 
 extension Lint.Rule.`never body witness Tests`.`Edge Case` {
@@ -55,6 +63,14 @@ extension Lint.Rule.`never body witness Tests`.`Edge Case` {
         let findings = Lint.Rule.`never body witness Tests`.findings(
             "struct Leaf: Parsing { var body: Never { fatalError() } }",
             file: "Sources/Parsing Conformances/Leaf.swift"
+        )
+        #expect(findings.isEmpty)
+    }
+
+    @Test
+    func `immutable Never property is not a body witness`() {
+        let findings = Lint.Rule.`never body witness Tests`.findings(
+            "struct Namespace { let body: Never }"
         )
         #expect(findings.isEmpty)
     }

@@ -103,6 +103,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "lifecycle typealias review",
     "minimal type body",
     "namespace adoption typealias",
+    "never body witness",
     "nested tag",
     "noncopyable error",
     "nonisolated unsafe without invariant",
