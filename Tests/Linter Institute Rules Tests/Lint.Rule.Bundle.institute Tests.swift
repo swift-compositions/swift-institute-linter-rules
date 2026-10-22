@@ -101,6 +101,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "intermediate binding then return",
     "lifecycle order",
     "lifecycle typealias review",
+    "macro host only",
     "minimal type body",
     "namespace adoption typealias",
     "nested tag",
