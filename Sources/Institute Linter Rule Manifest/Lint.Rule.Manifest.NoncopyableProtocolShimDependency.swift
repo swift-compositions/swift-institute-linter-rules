@@ -32,11 +32,13 @@ extension Lint.Rule {
             ),
         ],
         observe: { source, severity in
-            guard manifestIsPackageManifest(
-                source.file.filePath,
-                path: source.path.underlying,
-                text: source.tree.description
-            ) else {
+            guard
+                manifestIsPackageManifest(
+                    source.file.filePath,
+                    path: source.path.underlying,
+                    text: source.tree.description
+                )
+            else {
                 return Lint.Rule.Observation(
                     findings: [],
                     coverage: .measured,

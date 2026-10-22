@@ -15,7 +15,8 @@ extension Lint.Rule {
 extension Lint.Rule.`noncopyable protocol shim dependency Tests` {
     static func findings(_ manifest: Swift::String) -> [Diagnostic.Record] {
         let rule = Lint.Rule.`noncopyable protocol shim dependency`
-        return rule
+        return
+            rule
             .observe(
                 Lint.Source.parsed(from: manifest, file: "Package.swift"),
                 rule.severity.default
@@ -46,9 +47,9 @@ extension Lint.Rule.`noncopyable protocol shim dependency Tests`.Unit {
         #expect(
             findings[0].message
                 == "[noncopyable protocol shim dependency]: package dependency identity "
-                    + "`swift-equation` is one of `swift-equation`, `swift-comparison`, or "
-                    + "`swift-hash`; use the corresponding Swift standard-library protocol "
-                    + "when only noncopyable protocol support is needed."
+                + "`swift-equation` is one of `swift-equation`, `swift-comparison`, or "
+                + "`swift-hash`; use the corresponding Swift standard-library protocol "
+                + "when only noncopyable protocol support is needed."
         )
     }
 
