@@ -42,6 +42,7 @@ extension Lint.Rule.`binding get set Tests`.Unit {
         #expect(findings.count == 1)
         #expect(findings.first?.identifier == "binding get set")
         #expect(findings.first?.severity == .warning)
+        #expect(findings.first?.message == idiomBindingGetSetMessage)
     }
 
     @Test
@@ -69,6 +70,14 @@ extension Lint.Rule.`binding get set Tests`.`Edge Case` {
     func `qualified specialized custom Binding still fires`() {
         let findings = Lint.Rule.`binding get set Tests`.findings(
             in: "let value = SwiftUI.Binding<Bool>(get: { model.value }, set: { model.value = $0 })"
+        )
+        #expect(findings.count == 1)
+    }
+
+    @Test
+    func `optional Binding held in a local still fires`() {
+        let findings = Lint.Rule.`binding get set Tests`.findings(
+            in: "if let value = Binding(optionalBinding) { use(value) }"
         )
         #expect(findings.count == 1)
     }
