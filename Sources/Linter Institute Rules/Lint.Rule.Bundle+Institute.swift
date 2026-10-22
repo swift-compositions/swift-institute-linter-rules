@@ -84,6 +84,7 @@ extension Lint.Rule.Bundle {
             .enable(.`package policy revision 1`, severity: .warning),
             .enable(.`manifest naming grammar`),
             .enable(.`path name grammar`),
+            .enable(.`macro expansion short name`, severity: .warning),
             .enable(.`foundation integration leaf target`),
             .enable(.`borrowing self short circuit`, severity: .error),
             .enable(.`noncopyable error`, severity: .error),

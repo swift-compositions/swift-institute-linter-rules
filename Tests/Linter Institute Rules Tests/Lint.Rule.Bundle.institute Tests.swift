@@ -57,6 +57,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "compound identifier",
     // Naming grammar pair (#65, principal directive 2026-08-09).
     "manifest naming grammar",
+    "macro expansion short name",
     "path dependency",
     "redirected dependency url",
     "apache license",
