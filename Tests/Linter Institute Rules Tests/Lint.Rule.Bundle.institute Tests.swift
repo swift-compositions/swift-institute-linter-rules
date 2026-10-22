@@ -39,6 +39,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "architecture foundation type",
     "architecture import boundary",
     "architecture namespace shape",
+    "associated type shadows namespace",
     "bare string dependency",
     "benchmark timed required",
     "binary serializable rawvalue uint8",

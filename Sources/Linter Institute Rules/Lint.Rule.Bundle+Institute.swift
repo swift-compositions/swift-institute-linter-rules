@@ -25,6 +25,7 @@ extension Lint.Rule.Bundle {
             .enable(.`architecture import boundary`),
             .enable(.`architecture foundation type`),
             .enable(.`architecture namespace shape`, severity: .error),
+            .enable(.`associated type shadows namespace`),
             .enable(.`bool public parameter`),
             .enable(.`ad hoc box class`),
             .enable(.`compound identifier`),
