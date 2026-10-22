@@ -60,7 +60,7 @@ extension Lint.Rule.`binding get set Tests`.`Edge Case` {
         let source = """
             @Bindable var model = model
             View(value: $state, property: $model.property)
-            let projected = $model[dynamicMember: \.property]
+            let projected = $model[dynamicMember: \\.property]
             """
         let findings = Lint.Rule.`binding get set Tests`.findings(in: source)
         #expect(findings.isEmpty)
