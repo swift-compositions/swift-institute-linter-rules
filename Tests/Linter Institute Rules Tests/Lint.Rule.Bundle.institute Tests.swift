@@ -45,6 +45,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "binary serializable rawvalue uint8",
     "binary serializable uint8 witness",
     "bitpattern rawvalue chain",
+    "binding get set",
     "bool public parameter",
     "borrowing self short circuit",
     "bounded index static capacity",
