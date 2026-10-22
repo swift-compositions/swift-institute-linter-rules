@@ -155,14 +155,23 @@ private func idiomNeverBodyWitnessIsProtocolDefault(_ node: Syntax) -> Swift::Bo
     var current = node.parent
     while let candidate = current {
         if let extensionDecl = candidate.as(ExtensionDeclSyntax.self) {
-            return extensionDecl.genericWhereClause?.requirements.contains { requirement in
+            guard let requirements = extensionDecl.genericWhereClause?.requirements else {
+                return false
+            }
+            for requirement in requirements {
                 guard let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self)
-                else { return false }
-                return (idiomLastTypeName(sameType.leftType) == "Body"
+                else {
+                    continue
+                }
+                if (idiomLastTypeName(sameType.leftType) == "Body"
                     && idiomIsNever(sameType.rightType))
                     || (idiomIsNever(sameType.leftType)
                         && idiomLastTypeName(sameType.rightType) == "Body")
-            } ?? false
+                {
+                    return true
+                }
+            }
+            return false
         }
         if candidate.is(StructDeclSyntax.self) || candidate.is(EnumDeclSyntax.self)
             || candidate.is(ClassDeclSyntax.self) || candidate.is(ActorDeclSyntax.self)
