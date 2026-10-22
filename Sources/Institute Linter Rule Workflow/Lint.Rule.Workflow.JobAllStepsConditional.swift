@@ -3,6 +3,7 @@ internal import Either
 internal import File_System_Core
 public import Lint
 internal import Paths
+internal import SwiftSyntax
 
 extension Lint.Rule {
     public static let `workflow job all steps conditional` = Lint.Rule(
@@ -111,7 +112,7 @@ private func workflowJobAllStepsConditionalPackageFindings(
         return (name, path)
     }
     .sorted(by: { $0.0 < $1.0 })
-    .flatMap { _, path in
+    .flatMap { (_, path) -> [Diagnostic.Record] in
         guard let contents = workflowJobAllStepsConditionalRead(path) else { return [] }
         return workflowJobAllStepsConditionalFindings(
             in: contents,
@@ -156,13 +157,16 @@ internal func workflowJobAllStepsConditionalFindings(
     severity: Diagnostic.Severity
 ) -> [Diagnostic.Record] {
     let lines = workflowJobAllStepsConditionalLines(workflow)
-    guard let jobsIndex = lines.firstIndex(where: {
-        $0.indent == 0 && workflowJobAllStepsConditionalKey($0.content) == "jobs"
-            && workflowJobAllStepsConditionalHasBlockValue($0.content)
-    }) else { return [] }
+    guard
+        let jobsIndex = lines.firstIndex(where: {
+            $0.indent == 0 && workflowJobAllStepsConditionalKey($0.content) == "jobs"
+                && workflowJobAllStepsConditionalHasBlockValue($0.content)
+        })
+    else { return [] }
 
     let jobsIndent = lines[jobsIndex].indent
-    let jobsEnd = lines[(jobsIndex + 1)...].firstIndex(where: { $0.indent <= jobsIndent })
+    let jobsEnd =
+        lines[(jobsIndex + 1)...].firstIndex(where: { $0.indent <= jobsIndent })
         ?? lines.endIndex
     let jobLines = lines[(jobsIndex + 1)..<jobsEnd]
     guard let jobIndent = jobLines.map({ $0.indent }).min() else { return [] }
@@ -183,14 +187,17 @@ internal func workflowJobAllStepsConditionalFindings(
         }) {
             return nil
         }
-        guard let stepsIndex = body.firstIndex(where: {
-            $0.indent == directIndent
-                && workflowJobAllStepsConditionalKey($0.content) == "steps"
-                && workflowJobAllStepsConditionalHasBlockValue($0.content)
-        }) else { return nil }
-        let stepsEnd = lines[(stepsIndex + 1)..<end].firstIndex(where: {
-            $0.indent <= directIndent
-        }) ?? end
+        guard
+            let stepsIndex = body.firstIndex(where: {
+                $0.indent == directIndent
+                    && workflowJobAllStepsConditionalKey($0.content) == "steps"
+                    && workflowJobAllStepsConditionalHasBlockValue($0.content)
+            })
+        else { return nil }
+        let stepsEnd =
+            lines[(stepsIndex + 1)..<end].firstIndex(where: {
+                $0.indent <= directIndent
+            }) ?? end
         let steps = lines[(stepsIndex + 1)..<stepsEnd]
         guard let stepIndent = steps.filter({ $0.content.hasPrefix("-") }).map({ $0.indent }).min()
         else { return nil }
@@ -199,7 +206,8 @@ internal func workflowJobAllStepsConditionalFindings(
         }
         guard !stepStarts.isEmpty,
             stepStarts.enumerated().allSatisfy({ stepOffset, stepStart in
-                let stepEnd = stepOffset + 1 < stepStarts.count
+                let stepEnd =
+                    stepOffset + 1 < stepStarts.count
                     ? stepStarts[stepOffset + 1]
                     : stepsEnd
                 return workflowJobAllStepsConditionalStepHasIf(
