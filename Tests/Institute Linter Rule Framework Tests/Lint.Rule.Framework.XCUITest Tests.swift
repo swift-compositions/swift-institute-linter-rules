@@ -46,6 +46,7 @@ extension Lint.Rule.`xcuitest reference Tests`.Unit {
         #expect(findings.count == 3)
         #expect(findings.allSatisfy { $0.identifier == "xcuitest reference" })
         #expect(findings.allSatisfy { $0.severity == .warning })
+        #expect(findings.allSatisfy { $0.message == frameworkXCUITestMessage })
     }
 
     @Test
