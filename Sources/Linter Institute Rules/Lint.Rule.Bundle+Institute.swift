@@ -44,6 +44,7 @@ extension Lint.Rule.Bundle {
             .enable(.`diagnostic message format`, severity: .error),
             .enable(.`foundation import`),
             .enable(.`xctest import`, severity: .error),
+            .enable(.`xcuitest reference`),
             .enable(.`uint8 conforms to byte protocol`, severity: .error),
             .enable(.`byte conforms to arithmetic protocol`, severity: .error),
             .enable(.`binary serializable uint8 witness`, severity: .error),

@@ -156,6 +156,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "variable named impl",
     "wrapper backing exposed",
     "xctest import",
+    "xcuitest reference",
     "zero or one literal",
 ]
 
