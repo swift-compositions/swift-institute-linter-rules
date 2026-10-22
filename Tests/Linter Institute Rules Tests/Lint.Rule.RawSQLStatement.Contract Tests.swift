@@ -10,7 +10,10 @@
 // ===----------------------------------------------------------------------===//
 
 import Lint
+import Linter_Rules_Test_Support
 import Testing
+
+@testable import Linter_Institute_Rules
 
 @Suite
 struct `Raw SQL statement Contract Tests` {
@@ -30,7 +33,7 @@ struct `Raw SQL statement Contract Tests` {
 
     @Test
     func `whole statement literal is a violation`() {
-        #expect(rule != nil)
+        #expect(rule.map { _ in true } == true)
         #expect(findings("let query = #sql(\"SELECT * FROM records\")").count == 1)
     }
 
