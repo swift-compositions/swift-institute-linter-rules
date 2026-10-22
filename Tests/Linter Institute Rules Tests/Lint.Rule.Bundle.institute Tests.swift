@@ -17,7 +17,7 @@ import Testing
 
 @testable import Linter_Institute_Rules
 
-/// Converts every rule declared across the 18 institute rule packs to a
+/// Converts every rule declared across the 19 institute rule packs to a
 /// hand-maintained master list. This is the same enumeration the #1
 /// source-level review performed by hand, since amended: 90 declared
 /// rules at #26 origination, +3 (#29/#30/#31 — sending return conditional
@@ -139,6 +139,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "test file suffix",
     "test function naming",
     "throwing wrapper init",
+    "toolbar content hidden",
     "try optional",
     "type transform placement",
     "typealiased namespace bridge",
@@ -193,7 +194,7 @@ struct `Lint Rule Bundle institute Tests` {
 /// `Lint.Rule.Bundle.institute` is `Lint.Rule.Bundle.universal + [...]` —
 /// the FULL enabled-id set therefore always contains every universal id
 /// too, by construction. Every test below that means to reason about
-/// "what THIS package's 18 rule packs contribute" first subtracts the
+/// "what THIS package's 19 rule packs contribute" first subtracts the
 /// universal tier's own ids back out, or it would be comparing the
 /// master list against a set it can never equal.
 private func instituteContributedEnabledIDs() -> Swift::Set<Swift::String> {
@@ -361,6 +362,11 @@ extension `Lint Rule Bundle institute Tests`.`Severity` {
     @Test
     func `lifecycle typealias review stays a note`() {
         #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: "lifecycle typealias review") == .note)
+    }
+
+    @Test
+    func `toolbar content hidden stays a warning`() {
+        #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: "toolbar content hidden") == .warning)
     }
 }
 

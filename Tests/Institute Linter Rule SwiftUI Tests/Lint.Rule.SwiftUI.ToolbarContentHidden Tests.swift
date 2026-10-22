@@ -45,6 +45,7 @@ extension Lint.Rule.`toolbar content hidden Tests`.Unit {
         let findings = Lint.Rule.`toolbar content hidden Tests`.findings(in: source)
         #expect(findings.count == 1)
         #expect(findings.first?.severity == .warning)
+        #expect(findings.first?.message == swiftUIToolbarContentHiddenMessage)
     }
 
     @Test

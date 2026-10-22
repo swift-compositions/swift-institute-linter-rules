@@ -12,6 +12,7 @@ internal import Institute_Linter_Rule_Naming
 internal import Institute_Linter_Rule_Platform
 internal import Institute_Linter_Rule_RawValue
 internal import Institute_Linter_Rule_Structure
+internal import Institute_Linter_Rule_SwiftUI
 internal import Institute_Linter_Rule_Testing
 internal import Institute_Linter_Rule_Throws
 internal import Institute_Linter_Rule_Try
@@ -119,6 +120,7 @@ extension Lint.Rule.Bundle {
             .enable(.`test function naming`),
             .enable(.`performance suite serialized`, severity: .error),
             .enable(.`test display name string`),
+            .enable(.`toolbar content hidden`),
             .enable(.`closure typed throws annotation`),
             .enable(.`do throws for typed catch`),
             .enable(.`do throws for typed catch with throw`),

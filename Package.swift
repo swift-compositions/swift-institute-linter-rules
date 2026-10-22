@@ -299,6 +299,7 @@ let package = Package(
                 .target(name: "Institute Linter Rule Platform"),
                 .target(name: "Institute Linter Rule Structure"),
                 .target(name: "Institute Linter Rule Testing"),
+                .target(name: "Institute Linter Rule SwiftUI"),
                 .target(name: "Institute Linter Rule Throws"),
                 .target(name: "Institute Linter Rule Try"),
                 .target(name: "Institute Linter Rule Unchecked"),
