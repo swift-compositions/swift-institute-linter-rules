@@ -28,9 +28,10 @@ extension Lint.Rule.`coder family layering Tests` {
         dependency: Swift::String,
         product: Swift::String? = nil
     ) -> Swift::String {
-        let productDependency = product.map {
-            ", targets: [.target(name: \"Fixture\", dependencies: [.product(name: \"\($0)\", package: \"\(dependency)\")])]"
-        } ?? ""
+        let productDependency =
+            product.map {
+                ", targets: [.target(name: \"Fixture\", dependencies: [.product(name: \"\($0)\", package: \"\(dependency)\")])]"
+            } ?? ""
         return "let package = Package(name: \"\(package)\", dependencies: ["
             + ".package(url: \"https://github.com/swift-molecules/\(dependency).git\", branch: \"main\")]"
             + productDependency + ")"
@@ -147,7 +148,8 @@ extension Lint.Rule.`coder family layering Tests`.Integration {
 
     @Test
     func `rfc domain package rejects wire coding targets`() {
-        let manifest = "let package = Package(name: \"swift-rfc-9112\", targets: ["
+        let manifest =
+            "let package = Package(name: \"swift-rfc-9112\", targets: ["
             + ".target(name: \"RFC 9112 Parser\")])"
         let findings = Lint.Rule.`coder family layering Tests`.findings(manifest)
         #expect(findings.count == 1)

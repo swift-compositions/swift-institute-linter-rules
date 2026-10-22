@@ -113,7 +113,8 @@ internal final class ManifestCoderFamilyLayeringVisitor: SyntaxVisitor {
         else { return .visitChildren }
         record(
             at: node.name.positionAfterSkippingLeadingTrivia,
-            message: "[coder family layering]: `\(packageName)` must keep `parse` and `serialize` function declarations in its `\(packageName)-coder` sibling; found function `\(node.name.text)`."
+            message:
+                "[coder family layering]: `\(packageName)` must keep `parse` and `serialize` function declarations in its `\(packageName)-coder` sibling; found function `\(node.name.text)`."
         )
         return .visitChildren
     }
@@ -160,7 +161,8 @@ internal final class ManifestCoderFamilyLayeringVisitor: SyntaxVisitor {
             if !allowed.contains(dependency) {
                 record(
                     at: literal.positionAfterSkippingLeadingTrivia,
-                    message: "[coder family layering]: `\(owner)` may depend only on `swift-coder`, `\(family)`, `\(family)-parser`, and `\(family)-serializer`; found `\(dependency)`."
+                    message:
+                        "[coder family layering]: `\(owner)` may depend only on `swift-coder`, `\(family)`, `\(family)-parser`, and `\(family)-serializer`; found `\(dependency)`."
                 )
             }
             return
@@ -169,7 +171,8 @@ internal final class ManifestCoderFamilyLayeringVisitor: SyntaxVisitor {
         if owner.hasSuffix("-parser"), dependency.hasSuffix("-serializer") {
             record(
                 at: literal.positionAfterSkippingLeadingTrivia,
-                message: "[coder family layering]: `\(owner)` must not depend on serializer packages or products; found dependency `\(dependency)`."
+                message:
+                    "[coder family layering]: `\(owner)` must not depend on serializer packages or products; found dependency `\(dependency)`."
             )
             return
         }
@@ -189,14 +192,16 @@ internal final class ManifestCoderFamilyLayeringVisitor: SyntaxVisitor {
             let name = manifestStringLiteralText(nameLiteral),
             name.lowercased().contains("serializer")
         else { return }
-        let dependency = node.arguments
+        let dependency =
+            node.arguments
             .first(where: { $0.label?.text == "package" })?
             .expression.as(StringLiteralExprSyntax.self)
             .flatMap { manifestStringLiteralText($0) }
             ?? "unknown package"
         record(
             at: nameLiteral.positionAfterSkippingLeadingTrivia,
-            message: "[coder family layering]: `\(owner)` must not depend on serializer packages or products; found product `\(name)` from `\(dependency)`."
+            message:
+                "[coder family layering]: `\(owner)` must not depend on serializer packages or products; found product `\(name)` from `\(dependency)`."
         )
     }
 
@@ -250,7 +255,8 @@ internal final class ManifestCoderFamilyLayeringVisitor: SyntaxVisitor {
 
     private func isWireCodingDependency(_ name: Swift::String) -> Swift::Bool {
         name == "swift-parser" || name == "swift-serializer" || name == "swift-coder"
-            || name.hasSuffix("-parser") || name.hasSuffix("-serializer") || name.hasSuffix("-coder")
+            || name.hasSuffix("-parser") || name.hasSuffix("-serializer")
+            || name.hasSuffix("-coder")
     }
 
     private func isWireCodingTarget(_ name: Swift::String) -> Swift::Bool {
