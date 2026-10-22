@@ -82,6 +82,7 @@ extension Lint.Rule.Bundle {
             .enable(.`manifest naming grammar`),
             .enable(.`path name grammar`),
             .enable(.`foundation integration leaf target`),
+            .enable(.`macro host only`, severity: .warning),
             .enable(.`borrowing self short circuit`, severity: .error),
             .enable(.`noncopyable error`, severity: .error),
             .enable(.`extension noncopyable constraint`),
