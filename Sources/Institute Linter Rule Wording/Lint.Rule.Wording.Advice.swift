@@ -1,4 +1,5 @@
 public import Lint
+internal import SwiftSyntax
 
 extension Lint.Rule {
     public static let `advice wording` = Lint.Rule(
