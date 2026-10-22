@@ -76,6 +76,10 @@ let package = Package(
             targets: ["Institute Linter Rule Platform"]
         ),
         .library(
+            name: "Institute Linter Rule Workflow",
+            targets: ["Institute Linter Rule Workflow"]
+        ),
+        .library(
             name: "Institute Linter Rule Structure",
             targets: ["Institute Linter Rule Structure"]
         ),
@@ -215,6 +219,13 @@ let package = Package(
             ]
         ),
         .target(
+            name: "Institute Linter Rule Workflow",
+            dependencies: [
+                .product(name: "Lint", package: "swift-lint"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+            ]
+        ),
+        .target(
             name: "Institute Linter Rule Structure",
             dependencies: [
                 .product(name: "Lint", package: "swift-lint"),
@@ -286,6 +297,7 @@ let package = Package(
                 .target(name: "Institute Linter Rule Manifest"),
                 .target(name: "Institute Linter Rule Memory"),
                 .target(name: "Institute Linter Rule Platform"),
+                .target(name: "Institute Linter Rule Workflow"),
                 .target(name: "Institute Linter Rule Structure"),
                 .target(name: "Institute Linter Rule Testing"),
                 .target(name: "Institute Linter Rule Throws"),
@@ -379,6 +391,14 @@ let package = Package(
             dependencies: [
                 .target(name: "Institute Linter Rule Platform"),
                 .product(name: "Linter Rule Testing", package: "swift-linter-rules"),
+                .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+            ]
+        ),
+        .testTarget(
+            name: "Institute Linter Rule Workflow Tests",
+            dependencies: [
+                .target(name: "Institute Linter Rule Workflow"),
                 .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
             ]

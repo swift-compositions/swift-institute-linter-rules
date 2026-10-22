@@ -16,6 +16,7 @@ internal import Institute_Linter_Rule_Testing
 internal import Institute_Linter_Rule_Throws
 internal import Institute_Linter_Rule_Try
 internal import Institute_Linter_Rule_Unchecked
+internal import Institute_Linter_Rule_Workflow
 public import Lint
 internal import Linter_Rules
 
@@ -100,6 +101,7 @@ extension Lint.Rule.Bundle {
             .enable(.`optionset shell pattern`),
             .enable(.`platform layer import`, severity: .error),
             .enable(.`canimport conditional`),
+            .enable(.`workflow job all steps conditional`),
             .enable(.`swift protocol qualification`),
             .enable(.`system subdomain`, severity: .error),
             .enable(.`typealiased namespace bridge`),
