@@ -21,7 +21,10 @@ internal import Linter_Rules
 
 extension Lint.Rule.Bundle {
     public static let institute: [Lint.Rule.Configuration] =
-        Lint.Rule.Bundle.universal + [
+        Lint.Rule.Bundle.universal.filter {
+            $0.rule.id.underlying != Lint.Rule.`target import edge`.id.underlying
+        } + [
+            .enable(.`target import edge`, severity: .warning),
             .enable(.`architecture import boundary`),
             .enable(.`architecture foundation type`),
             .enable(.`architecture namespace shape`, severity: .error),

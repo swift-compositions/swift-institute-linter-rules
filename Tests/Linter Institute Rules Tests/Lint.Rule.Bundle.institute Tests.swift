@@ -324,6 +324,11 @@ extension `Lint Rule Bundle institute Tests` {
 }
 
 extension `Lint Rule Bundle institute Tests`.`Severity` {
+    @Test
+    func `undeclared target import dependency stays a warning`() {
+        #expect(`Lint Rule Bundle institute Tests`.effectiveSeverity(of: "target import edge") == .warning)
+    }
+
     @Test(arguments: [
         "architecture namespace shape",
         "binary serializable uint8 witness",
