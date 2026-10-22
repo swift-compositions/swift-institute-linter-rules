@@ -159,14 +159,15 @@ private func idiomNeverBodyWitnessIsProtocolDefault(_ node: Syntax) -> Swift::Bo
                 return false
             }
             for requirement in requirements {
-                guard let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self)
+                guard
+                    let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self),
+                    let left = sameType.leftType.as(TypeSyntax.self),
+                    let right = sameType.rightType.as(TypeSyntax.self)
                 else {
                     continue
                 }
-                if (idiomLastTypeName(sameType.leftType) == "Body"
-                    && idiomIsNever(sameType.rightType))
-                    || (idiomIsNever(sameType.leftType)
-                        && idiomLastTypeName(sameType.rightType) == "Body")
+                if (idiomLastTypeName(left) == "Body" && idiomIsNever(right))
+                    || (idiomIsNever(left) && idiomLastTypeName(right) == "Body")
                 {
                     return true
                 }
