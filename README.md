@@ -82,6 +82,7 @@ Rule packs, one library product each:
 | `Memory` | Noncopyable extension constraints, pointer arithmetic, Sendable struct shape, unsafe-assignment granularity, unchecked-Sendable anchors |
 | `Platform` | C types in public API, platform conditionals, dead cases per platform, platform namespace layering |
 | `RawValue` | `.rawValue` chaining and bit-pattern conversion anti-patterns, Tagged-newtype public initializer and unchecked-construction shapes |
+| `SQL` | SQL execution calls at executable and app edges rather than in library targets |
 | `Structure` | Single type per file, raw-value access, wrapper shapes, minimal type bodies, hoisted protocol aliases |
 | `Testing` | Test function naming, performance-suite serialization |
 | `Throws` | Typed-throws adoption: untyped and existential throws, typed do-catch, hoisted errors, result-shim patterns |

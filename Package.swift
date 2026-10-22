@@ -76,6 +76,10 @@ let package = Package(
             targets: ["Institute Linter Rule Platform"]
         ),
         .library(
+            name: "Institute Linter Rule SQL",
+            targets: ["Institute Linter Rule SQL"]
+        ),
+        .library(
             name: "Institute Linter Rule Structure",
             targets: ["Institute Linter Rule Structure"]
         ),
@@ -128,6 +132,7 @@ let package = Package(
         .package(url: "https://github.com/swift-atoms/swift-byte.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-text.git", branch: "main", traits: ["Byte"]),
         .package(url: "https://github.com/swift-compositions/swift-linter-rules.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-file-system.git", branch: "main"),
         .package(url: "https://github.com/swift-standards/swift-spm-standard.git", branch: "main"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "603.0.2"..<"604.0.0"),
     ],
@@ -215,6 +220,15 @@ let package = Package(
             ]
         ),
         .target(
+            name: "Institute Linter Rule SQL",
+            dependencies: [
+                .product(name: "File System", package: "swift-file-system"),
+                .product(name: "Lint", package: "swift-lint"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+            ]
+        ),
+        .target(
             name: "Institute Linter Rule Structure",
             dependencies: [
                 .product(name: "Lint", package: "swift-lint"),
@@ -286,6 +300,7 @@ let package = Package(
                 .target(name: "Institute Linter Rule Manifest"),
                 .target(name: "Institute Linter Rule Memory"),
                 .target(name: "Institute Linter Rule Platform"),
+                .target(name: "Institute Linter Rule SQL"),
                 .target(name: "Institute Linter Rule Structure"),
                 .target(name: "Institute Linter Rule Testing"),
                 .target(name: "Institute Linter Rule Throws"),
@@ -379,6 +394,14 @@ let package = Package(
             dependencies: [
                 .target(name: "Institute Linter Rule Platform"),
                 .product(name: "Linter Rule Testing", package: "swift-linter-rules"),
+                .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+            ]
+        ),
+        .testTarget(
+            name: "Institute Linter Rule SQL Tests",
+            dependencies: [
+                .target(name: "Institute Linter Rule SQL"),
                 .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
             ]

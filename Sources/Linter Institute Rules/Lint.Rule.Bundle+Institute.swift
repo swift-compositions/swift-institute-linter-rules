@@ -11,6 +11,7 @@ internal import Institute_Linter_Rule_Memory
 internal import Institute_Linter_Rule_Naming
 internal import Institute_Linter_Rule_Platform
 internal import Institute_Linter_Rule_RawValue
+internal import Institute_Linter_Rule_SQL
 internal import Institute_Linter_Rule_Structure
 internal import Institute_Linter_Rule_Testing
 internal import Institute_Linter_Rule_Throws
@@ -104,6 +105,7 @@ extension Lint.Rule.Bundle {
             .enable(.`swift protocol qualification`),
             .enable(.`system subdomain`, severity: .error),
             .enable(.`typealiased namespace bridge`),
+            .enable(.`sql execution in library target`),
             .enable(.`hoisted protocol alias`, severity: .error),
             .enable(.`minimal type body`),
             .enable(.`raw value access`),

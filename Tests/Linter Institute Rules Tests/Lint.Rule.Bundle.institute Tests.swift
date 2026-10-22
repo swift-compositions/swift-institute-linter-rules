@@ -127,6 +127,7 @@ private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "single type namespace",
     "single type per file",
     "sli literal",
+    "sql execution in library target",
     "stdlib forwarder outside sli",
     "string utf8 scanning",
     "suite categories",
