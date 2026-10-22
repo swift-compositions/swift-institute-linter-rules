@@ -35,6 +35,7 @@ import Testing
 /// the property this test exists to enforce.
 private let allDeclaredRuleIDs: Swift::Set<Swift::String> = [
     "ad hoc box class",
+    "advice wording",
     // Architecture pack (TX-A2, swift-compositions/swift-linter#44).
     "architecture foundation type",
     "architecture import boundary",

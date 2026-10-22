@@ -84,6 +84,10 @@ let package = Package(
             targets: ["Institute Linter Rule Testing"]
         ),
         .library(
+            name: "Institute Linter Rule Wording",
+            targets: ["Institute Linter Rule Wording"]
+        ),
+        .library(
             name: "Institute Linter Rule Throws",
             targets: ["Institute Linter Rule Throws"]
         ),
@@ -233,6 +237,13 @@ let package = Package(
             ]
         ),
         .target(
+            name: "Institute Linter Rule Wording",
+            dependencies: [
+                .product(name: "Lint", package: "swift-lint"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+            ]
+        ),
+        .target(
             name: "Institute Linter Rule Throws",
             dependencies: [
                 .product(name: "Lint", package: "swift-lint"),
@@ -288,6 +299,7 @@ let package = Package(
                 .target(name: "Institute Linter Rule Platform"),
                 .target(name: "Institute Linter Rule Structure"),
                 .target(name: "Institute Linter Rule Testing"),
+                .target(name: "Institute Linter Rule Wording"),
                 .target(name: "Institute Linter Rule Throws"),
                 .target(name: "Institute Linter Rule Try"),
                 .target(name: "Institute Linter Rule Unchecked"),
@@ -401,6 +413,14 @@ let package = Package(
                 .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "Text", package: "swift-text"),
+            ]
+        ),
+        .testTarget(
+            name: "Institute Linter Rule Wording Tests",
+            dependencies: [
+                .target(name: "Institute Linter Rule Wording"),
+                .product(name: "Linter Rules Test Support", package: "swift-linter-rules"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
             ]
         ),
         .testTarget(
